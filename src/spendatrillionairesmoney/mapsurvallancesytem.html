@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Asteroid Launcher - Animated</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap');
+
+        :root {
+            --primary: #ff4d4d;
+            --bg: #f0f2f5;
+            --panel: #ffffff;
+            --border: #000000;
+            --shadow: 6px 6px 0px #000;
+        }
+
+        * { box-sizing: border-box; font-family: 'Inter', sans-serif; }
+        body, html { margin: 0; padding: 0; height: 100%; background: var(--bg); overflow: hidden; }
+
+        /* THE MAP CONTAINER (Shakes on impact) */
+        #shake-wrapper { width: 100%; height: 100%; transition: transform 0.1s; }
+        #map { width: 100%; height: 100%; z-index: 1; background: #aad3df; }
+
+        /* NEAL-STYLE MINIMALIST PANELS */
+        .panel {
+            position: absolute;
+            background: var(--panel);
+            border: 3px solid var(--border);
+            border-radius: 12px;
+            box-shadow: var(--shadow);
+            z-index: 1000;
+            padding: 24px;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        #ui-panel { top: 20px; left: 20px; width: 340px; }
+        #results-panel { top: 20px; right: -450px; width: 360px; max-height: 90vh; overflow-y: auto; }
+        #results-panel.visible { right: 20px; }
+
+        h1 { font-weight: 900; font-size: 24px; margin: 0 0 20px 0; letter-spacing: -1px; }
+        h2 { font-weight: 900; color: var(--primary); font-size: 18px; margin-top: 0; text-transform: uppercase; }
+
+        .control-group { margin-bottom: 20px; }
+        label { display: block; font-size: 13px; font-weight: 700; margin-bottom: 10px; color: #555; }
+        
+        /* Custom Minimalist Slider */
+        input[type="range"] {
+            width: 100%; -webkit-appearance: none; appearance: none; background: transparent; cursor: pointer;
+        }
+        input[type="range"]::-webkit-slider-runnable-track {
+            background: #eee; border: 2px solid #000; height: 12px; border-radius: 6px;
+        }
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none; height: 24px; width: 24px; background: var(--primary);
+            border: 2px solid #000; border-radius: 50%; margin-top: -8px;
+        }
+
+        .val-pill {
+            display: block; padding: 2px 8px; background: #000; color: #fff;
+            border-radius: 4px; font-size: 12px; font-weight: bold; float: right;
+        }
+
+        select {
+            width: 100%; padding: 12px; border: 2px solid #000; border-radius: 8px;
+            font-weight: bold; font-size: 15px; appearance: none; background: #fff;
+        }
+
+        #launch-btn {
+            width: 100%; padding: 18px; background: var(--primary); color: white;
+            border: 3px solid #000; border-radius: 12px; font-weight: 900;
+            font-size: 18px; cursor: pointer; box-shadow: 4px 4px 0px #000;
+            transition: all 0.1s;
+        }
+        #launch-btn:active { transform: translate(2px, 2px); box-shadow: 2px 2px 0px #000; }
+
+        /* ANIMATED STAT CARDS */
+        .stat-card {
+            border-bottom: 2px solid #eee; padding: 15px 0;
+            animation: slideIn 0.5s ease forwards; opacity: 0;
+        }
+        @keyframes slideIn { from { transform: translateX(20px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+
+        .stat-label { font-size: 12px; font-weight: 800; color: #888; text-transform: uppercase; }
+        .stat-value { font-size: 24px; font-weight: 900; margin-top: 4px; }
+
+        /* THE ASTEROID FALL ANIMATION */
+        #asteroid-sprite {
+            position: absolute; width: 60px; height: 60px;
+            background: radial-gradient(circle, #ffcc00 20%, #ff4d4d 50%, transparent 70%);
+            border-radius: 50%; z-index: 2000; pointer-events: none; display: none;
+            filter: blur(4px); box-shadow: 0 0 50px #ff4d4d;
+        }
+
+        /* SHAKE EFFECT */
+        @keyframes shake {
+            0% { transform: translate(0,0); }
+            10% { transform: translate(-10px, 10px); }
+            30% { transform: translate(10px, -10px); }
+            50% { transform: translate(-10px, -10px); }
+            70% { transform: translate(10px, 10px); }
+            100% { transform: translate(0,0); }
+        }
+        .shaking { animation: shake 0.4s ease-out; }
+
+    </style>
+</head>
+<body>
+
+    <div id="asteroid-sprite"></div>
+
+    <div id="ui-panel" class="panel">
+        <h1>Asteroid Launcher</h1>
+        
+        <div class="control-group">
+            <label>Composition</label>
+            <select id="type">
+                <option value="iron">Iron Asteroid</option>
+                <option value="stone">Stone Asteroid</option>
+                <option value="carbon">Carbon Asteroid</option>
+                <option value="gold">Pure Gold Asteroid</option>
+                <option value="comet">Icy Comet</option>
+            </select>
+        </div>
+
+        <div class="control-group">
+            <label>Diameter <span class="val-pill" id="size-val">500m</span></label>
+            <input type="range" id="size" min="1" max="1500" value="500">
+        </div>
+
+        <div class="control-group">
+            <label>Speed <span class="val-pill" id="speed-val">17km/s</span></label>
+            <input type="range" id="speed" min="1" max="100" value="17">
+        </div>
+
+        <div class="control-group">
+            <label>Angle <span class="val-pill" id="angle-val">45°</span></label>
+            <input type="range" id="angle" min="5" max="90" value="45">
+        </div>
+
+        <button id="launch-btn">LAUNCH ASTEROID</button>
+    </div>
+
+    <div id="results-panel" class="panel">
+        <h2>Impact Analysis</h2>
+        <div id="stats-container"></div>
+        <button onclick="document.getElementById('results-panel').classList.remove('visible')" style="margin-top:20px; width:100%; border:none; background:none; text-decoration:underline; cursor:pointer; font-weight:bold;">Close Report</button>
+    </div>
+
+    <div id="shake-wrapper">
+        <div id="map"></div>
+    </div>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script>
+        // --- INITIALIZE MAP ---
+        const map = L.map('map', { zoomControl: false }).setView([34.0522, -118.2437], 12); 
+        L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png').addTo(map);
+
+        let impactPoint = L.marker([34.0522, -118.2437], {
+            draggable: true,
+            icon: L.divIcon({ className: 'impact-marker', html: '<div style="width:20px;height:20px;background:red;border:3px solid black;border-radius:50%"></div>' })
+        }).addTo(map);
+
+        map.on('click', e => impactPoint.setLatLng(e.latlng));
+
+        // --- UI SYNC ---
+        const inputs = { size: 'm', speed: 'km/s', angle: '°' };
+        Object.keys(inputs).forEach(id => {
+            document.getElementById(id).oninput = function() {
+                document.getElementById(id + '-val').innerText = this.value + inputs[id];
+            };
+        });
+
+        // --- ANIMATED COUNTER ---
+        function animateValue(obj, start, end, duration, suffix = "") {
+            let startTimestamp = null;
+            const step = (timestamp) => {
+                if (!startTimestamp) startTimestamp = timestamp;
+                const progress = Math.min((timestamp - startTimestamp) / duration, 1);
+                obj.innerHTML = Math.floor(progress * (end - start) + start).toLocaleString() + suffix;
+                if (progress < 1) window.requestAnimationFrame(step);
+            };
+            window.requestAnimationFrame(step);
+        }
+
+        // --- LAUNCH SEQUENCE ---
+        const launchBtn = document.getElementById('launch-btn');
+        const asteroidSprite = document.getElementById('asteroid-sprite');
+        const shakeWrapper = document.getElementById('shake-wrapper');
+        let layers = [];
+
+        launchBtn.onclick = () => {
+            const targetPos = map.latLngToContainerPoint(impactPoint.getLatLng());
+            
+            // 1. Asteroid Fall Animation
+            asteroidSprite.style.display = 'block';
+            asteroidSprite.style.left = (targetPos.x + 200) + 'px';
+            asteroidSprite.style.top = '-100px';
+            
+            asteroidSprite.animate([
+                { top: '-100px', left: (targetPos.x + 200) + 'px', transform: 'scale(0.5)' },
+                { top: (targetPos.y - 30) + 'px', left: (targetPos.x - 30) + 'px', transform: 'scale(1.2)' }
+            ], { duration: 800, easing: 'ease-in' }).onfinish = () => {
+                asteroidSprite.style.display = 'none';
+                triggerImpact();
+            };
+        };
+
+        function triggerImpact() {
+            // 2. Shake Map
+            shakeWrapper.classList.add('shaking');
+            setTimeout(() => shakeWrapper.classList.remove('shaking'), 400);
+
+            // 3. Logic
+            layers.forEach(l => map.removeLayer(l));
+            layers = [];
+
+            const size = parseFloat(document.getElementById('size').value);
+            const speed = parseFloat(document.getElementById('speed').value);
+            const type = document.getElementById('type').value;
+            const densities = { iron: 8000, stone: 3000, carbon: 2000, gold: 19300, comet: 1000 };
+
+            const craterDiam = size * Math.pow(speed/15, 0.4) * Math.pow(densities[type]/3000, 0.3);
+            const fireballDiam = craterDiam * 2.5;
+
+            // 4. Expand Rings Animation
+            const pos = impactPoint.getLatLng();
+            const ring = L.circle(pos, { radius: 1, color: '#000', weight: 3, fillColor: '#ff4d4d', fillOpacity: 0.5 }).addTo(map);
+            layers.push(ring);
+
+            let r = 0;
+            const grow = setInterval(() => {
+                r += craterDiam / 20;
+                ring.setRadius(r);
+                if (r >= craterDiam / 2) {
+                    clearInterval(grow);
+                    map.fitBounds(ring.getBounds(), { padding: [50, 50] });
+                }
+            }, 20);
+
+            showResults(craterDiam, fireballDiam, speed);
+        }
+
+        function showResults(crater, fireball, speed) {
+            const container = document.getElementById('stats-container');
+            container.innerHTML = ''; // Clear
+            document.getElementById('results-panel').classList.add('visible');
+
+            const stats = [
+                { label: "Crater Diameter", val: Math.round(crater), suffix: " meters" },
+                { label: "Fireball Radius", val: Math.round(fireball/2), suffix: " meters" },
+                { label: "TNT Equivalent", val: Math.round(crater * 150), suffix: " Kilotons" },
+                { label: "Estimated Fatalities", val: Math.floor(Math.random() * 500000), suffix: " people" }
+            ];
+
+            stats.forEach((s, i) => {
+                const card = document.createElement('div');
+                card.className = 'stat-card';
+                card.style.animationDelay = (i * 0.15) + 's';
+                card.innerHTML = `<div class="stat-label">${s.label}</div><div class="stat-value" id="stat-${i}">0</div>`;
+                container.appendChild(card);
+                
+                setTimeout(() => {
+                    animateValue(document.getElementById(`stat-${i}`), 0, s.val, 1500, s.suffix);
+                }, 500 + (i * 150));
+            });
+        }
+    </script>
+</body>
+</html>

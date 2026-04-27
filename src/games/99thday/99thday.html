@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Not a Robot</title>
+    <style>
+        :root {
+            --blue: #4a90e2;
+            --gray: #f9f9f9;
+            --border: #d3d3d3;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #f0f2f5;
+            font-family: "Roboto", Arial, sans-serif;
+            overflow: hidden;
+        }
+
+        /* 1. INITIAL CHECKBOX WIDGET */
+        #captcha-widget {
+            background: white;
+            border: 1px solid var(--border);
+            border-radius: 3px;
+            padding: 15px 12px;
+            display: flex;
+            align-items: center;
+            width: 300px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            transition: opacity 0.3s;
+        }
+
+        .checkbox-container {
+            width: 28px;
+            height: 28px;
+            border: 2px solid #c1c1c1;
+            border-radius: 2px;
+            cursor: pointer;
+            position: relative;
+            margin-right: 15px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .checkbox-container:hover { border-color: #b2b2b2; }
+
+        #spinner {
+            width: 20px;
+            height: 20px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid var(--blue);
+            border-radius: 50%;
+            display: none;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        .captcha-text { font-size: 14px; color: #555; flex-grow: 1; }
+        .captcha-logo { text-align: center; font-size: 10px; color: #9b9b9b; }
+
+        /* 2. THE POPUP MODAL */
+        #modal {
+            position: absolute;
+            background: white;
+            width: 380px;
+            border: 1px solid #ccc;
+            box-shadow: 0 0 10px rgba(0,0,0,0.2);
+            display: none;
+            flex-direction: column;
+            padding: 10px;
+            z-index: 100;
+        }
+
+        .modal-header {
+            background: var(--blue);
+            color: white;
+            padding: 20px;
+            margin: -10px -10px 10px -10px;
+        }
+
+        .modal-header h2 { margin: 0; font-size: 22px; font-weight: 900; }
+        .modal-header p { margin: 5px 0 0; font-size: 15px; }
+
+        /* TASK 1: THE GRID */
+        .grid-container {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 4px;
+        }
+
+        .grid-item {
+            aspect-ratio: 1;
+            background-size: cover;
+            cursor: pointer;
+            border: 0px solid white;
+            transition: transform 0.1s;
+        }
+
+        .grid-item.selected {
+            transform: scale(0.85);
+            outline: 4px solid var(--blue);
+            z-index: 1;
+        }
+
+        /* TASK 2: DRAWING */
+        #canvas-area {
+            display: none;
+            text-align: center;
+        }
+
+        canvas {
+            border: 2px dashed #ccc;
+            background: #fafafa;
+            cursor: crosshair;
+        }
+
+        /* TASK 3: THE BUTTON */
+        #escape-area {
+            display: none;
+            height: 200px;
+            position: relative;
+        }
+
+        #runaway-btn {
+            position: absolute;
+            padding: 10px 20px;
+            background: var(--blue);
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .modal-footer {
+            margin-top: 15px;
+            padding-top: 10px;
+            border-top: 1px solid #eee;
+            display: flex;
+            justify-content: flex-end;
+        }
+
+        .verify-btn {
+            background: var(--blue);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            font-weight: bold;
+            cursor: pointer;
+            border-radius: 2px;
+        }
+
+        .hidden { display: none !important; }
+    </style>
+</head>
+<body>
+
+    <!-- Standard Checkbox -->
+    <div id="captcha-widget">
+        <div class="checkbox-container" id="main-checkbox">
+            <div id="spinner"></div>
+        </div>
+        <div class="captcha-text">I'm not a robot</div>
+        <div class="captcha-logo">
+            <img src="https://upload.wikimedia.org/wikipedia/commons/a/ad/RecaptchaLogo.svg" width="30"><br>
+            Privacy - Terms
+        </div>
+    </div>
+
+    <!-- Popup Modal -->
+    <div id="modal">
+        <div class="modal-header">
+            <h2 id="modal-title">Select all squares with</h2>
+            <p id="modal-subtitle">boats</p>
+        </div>
+
+        <!-- Phase 1: Grid -->
+        <div id="grid-phase" class="grid-container">
+            <!-- 9 items generated by JS -->
+        </div>
+
+        <!-- Phase 2: Drawing -->
+        <div id="canvas-phase" id="canvas-area">
+            <p style="text-align:center">Please draw a <b>perfect circle</b> to prove you have a soul.</p>
+            <canvas id="drawingCanvas" width="350" height="200"></canvas>
+        </div>
+
+        <!-- Phase 3: The Runner -->
+        <div id="escape-phase" id="escape-area">
+            <p style="text-align:center">Click the button to confirm you are human.</p>
+            <div style="height:150px; position:relative;">
+                <button id="runaway-btn">CLICK ME</button>
+            </div>
+        </div>
+
+        <div class="modal-footer">
+            <button class="verify-btn" id="verify-btn">VERIFY</button>
+        </div>
+    </div>
+
+    <script>
+        const mainCheckbox = document.getElementById('main-checkbox');
+        const spinner = document.getElementById('spinner');
+        const modal = document.getElementById('modal');
+        const verifyBtn = document.getElementById('verify-btn');
+        const gridPhase = document.getElementById('grid-phase');
+        const canvasPhase = document.getElementById('canvas-phase');
+        const escapePhase = document.getElementById('escape-phase');
+        
+        let currentStep = 1;
+
+        // 1. Initial Checkbox Logic
+        mainCheckbox.addEventListener('click', () => {
+            mainCheckbox.style.borderColor = "transparent";
+            spinner.style.display = "block";
+            
+            setTimeout(() => {
+                modal.style.display = "flex";
+                initGridPhase();
+            }, 1000);
+        });
+
+        // 2. Phase 1: The Grid
+        function initGridPhase() {
+            gridPhase.innerHTML = '';
+            for (let i = 0; i < 9; i++) {
+                const div = document.createElement('div');
+                div.className = 'grid-item';
+                // Using random nature images
+                div.style.backgroundImage = `url(https://picsum.photos/seed/${i + 20}/200)`;
+                div.onclick = () => div.classList.toggle('selected');
+                gridPhase.appendChild(div);
+            }
+        }
+
+        // 3. Phase 2: Drawing Logic
+        function initCanvasPhase() {
+            gridPhase.classList.add('hidden');
+            canvasPhase.style.display = 'block';
+            document.getElementById('modal-title').innerText = "Prove you have a soul";
+            document.getElementById('modal-subtitle').innerText = "Draw a perfect circle";
+            
+            const canvas = document.getElementById('drawingCanvas');
+            const ctx = canvas.getContext('2d');
+            let drawing = false;
+
+            canvas.onmousedown = () => drawing = true;
+            canvas.onmouseup = () => drawing = false;
+            canvas.onmousemove = (e) => {
+                if (!drawing) return;
+                ctx.fillStyle = "black";
+                ctx.beginPath();
+                ctx.arc(e.offsetX, e.offsetY, 2, 0, Math.PI * 2);
+                ctx.fill();
+            };
+        }
+
+        // 4. Phase 3: The Runaway Button
+        function initEscapePhase() {
+            canvasPhase.style.display = 'none';
+            escapePhase.style.display = 'block';
+            document.getElementById('modal-title').innerText = "Final Step";
+            document.getElementById('modal-subtitle').innerText = "Just one simple click";
+            verifyBtn.style.display = 'none';
+
+            const btn = document.getElementById('runaway-btn');
+            btn.addEventListener('mouseover', () => {
+                const x = Math.random() * 250;
+                const y = Math.random() * 100;
+                btn.style.left = x + 'px';
+                btn.style.top = y + 'px';
+            });
+
+            btn.onclick = () => {
+                alert("Impossible. You must be a robot.");
+                location.reload();
+            };
+        }
+
+        // Verification Progression
+        verifyBtn.addEventListener('click', () => {
+            if (currentStep === 1) {
+                // Check if any are selected (in the real game, it doesn't matter, it fails you anyway)
+                const selected = document.querySelectorAll('.selected');
+                if (selected.length < 3) {
+                    alert("Please select more images.");
+                    return;
+                }
+                currentStep = 2;
+                initCanvasPhase();
+            } else if (currentStep === 2) {
+                // "Analyze" the drawing
+                verifyBtn.innerText = "ANALYZING...";
+                setTimeout(() => {
+                    alert("That circle is too imperfect. Only a human could be that messy. But I'm still suspicious.");
+                    currentStep = 3;
+                    initEscapePhase();
+                }, 1500);
+            }
+        });
+
+    </script>
+</body>
+</html>

@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Next Door</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap');
+
+        :root {
+            --bg: #ffffff;
+            --border: #000;
+            --shadow: 8px 8px 0px #000;
+            --rare: #3498db;
+            --legendary: #f1c40f;
+            --cursed: #e74c3c;
+            --common: #bdc3c7;
+        }
+
+        * { box-sizing: border-box; user-select: none; }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #fafafa;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* --- STATS BAR --- */
+        #stats {
+            position: fixed;
+            top: 20px;
+            display: flex;
+            gap: 20px;
+            z-index: 100;
+        }
+
+        .stat-box {
+            background: white;
+            border: 3px solid var(--border);
+            padding: 10px 20px;
+            border-radius: 12px;
+            box-shadow: 4px 4px 0px #000;
+            font-weight: 900;
+            text-transform: uppercase;
+            font-size: 14px;
+        }
+
+        /* --- THE DOOR --- */
+        #stage {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 30px;
+            perspective: 1000px;
+        }
+
+        #door-container {
+            width: 220px;
+            height: 320px;
+            background: #fff;
+            border: 4px solid var(--border);
+            border-radius: 16px;
+            position: relative;
+            box-shadow: var(--shadow);
+            cursor: pointer;
+            transition: transform 0.1s, box-shadow 0.1s;
+        }
+
+        #door-container:hover {
+            transform: scale(1.02) translateY(-5px);
+            box-shadow: 12px 12px 0px #000;
+        }
+
+        #door-handle {
+            position: absolute;
+            right: 20px;
+            top: 50%;
+            width: 25px;
+            height: 25px;
+            background: #000;
+            border-radius: 50%;
+        }
+
+        /* --- OUTCOME POPUP --- */
+        #event-display {
+            text-align: center;
+            max-width: 400px;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        #event-display.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .rarity-tag {
+            display: inline-block;
+            padding: 4px 12px;
+            border: 2px solid #000;
+            border-radius: 20px;
+            font-weight: 900;
+            font-size: 12px;
+            text-transform: uppercase;
+            margin-bottom: 10px;
+        }
+
+        .event-title { font-weight: 900; font-size: 28px; margin: 0; line-height: 1.1; }
+        .event-desc { font-weight: 500; color: #555; margin-top: 10px; font-size: 18px; }
+
+        /* --- ANIMATIONS --- */
+        @keyframes doorOpen {
+            0% { transform: rotateY(0deg); }
+            100% { transform: rotateY(-110deg); }
+        }
+
+        .open-anim {
+            animation: doorOpen 0.4s forwards;
+            transform-origin: left;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-10px); }
+            75% { transform: translateX(10px); }
+        }
+        .shake { animation: shake 0.2s 2; }
+
+        /* --- GAME OVER --- */
+        #overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(231, 76, 60, 0.95);
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            z-index: 1000;
+            text-align: center;
+        }
+
+        #overlay h1 { font-size: 80px; margin: 0; font-weight: 900; }
+    </style>
+</head>
+<body>
+
+    <div id="stats">
+        <div class="stat-box">Doors: <span id="door-count">0</span></div>
+        <div class="stat-box">Luck: <span id="luck-val">1.0x</span></div>
+        <div class="stat-box">Wealth: <span id="wealth-val">$0</span></div>
+    </div>
+
+    <div id="stage">
+        <div id="door-container">
+            <div id="door-handle"></div>
+        </div>
+
+        <div id="event-display">
+            <div id="rarity" class="rarity-tag">Common</div>
+            <h2 id="title" class="event-title">Open the first door</h2>
+            <p id="desc" class="event-desc">Who knows what is waiting?</p>
+        </div>
+    </div>
+
+    <div id="overlay">
+        <h1>YOU DIED</h1>
+        <p id="death-reason" style="font-size: 24px; font-weight: bold;"></p>
+        <button onclick="location.reload()" style="padding: 20px 40px; border: 4px solid #000; background: #fff; color: #000; font-weight: 900; cursor: pointer; margin-top: 30px; border-radius: 12px;">TRY AGAIN</button>
+    </div>
+
+    <script>
+        let doorCount = 0;
+        let luck = 1.0;
+        let wealth = 0;
+        let canOpen = true;
+
+        const EVENTS = [
+            { title: "Loose Change", desc: "You found $5 on the floor.", weight: 50, rarity: "Common", color: "#bdc3c7", effect: () => wealth += 5 },
+            { title: "A Friendly Dog", desc: "He licks your hand. Luck increased.", weight: 30, rarity: "Common", color: "#bdc3c7", effect: () => luck += 0.2 },
+            { title: "The Taxman", desc: "He takes 20% of your money.", weight: 20, rarity: "Common", color: "#bdc3c7", effect: () => wealth = Math.floor(wealth * 0.8) },
+            { title: "Winning Ticket", desc: "A lottery ticket! You win $500.", weight: 5, rarity: "Rare", color: "#3498db", effect: () => wealth += 500 },
+            { title: "Four-Leaf Clover", desc: "Your luck is through the roof.", weight: 5, rarity: "Rare", color: "#3498db", effect: () => luck *= 2 },
+            { title: "The Void", desc: "You stare into it. It stares back.", weight: 10, rarity: "Rare", color: "#3498db", effect: () => {} },
+            { title: "Ancient Relic", desc: "A gold idol worth $5,000.", weight: 1, rarity: "Legendary", color: "#f1c40f", effect: () => wealth += 5000 },
+            { title: "The Reset Button", desc: "Everything is gone. Why?", weight: 2, rarity: "Cursed", color: "#e74c3c", effect: () => { wealth = 0; luck = 1; } },
+            { title: "The Trapdoor", desc: "You fall into spikes.", weight: 3, rarity: "Cursed", color: "#e74c3c", isDeadly: true, reason: "Gravity is a cruel mistress." },
+            { title: "A Bad Omen", desc: "You feel terrible. Luck decreased.", weight: 10, rarity: "Common", color: "#bdc3c7", effect: () => luck = Math.max(0.1, luck - 0.5) },
+            { title: "Mirror World", desc: "Everything looks the same, but it isn't.", weight: 5, rarity: "Rare", color: "#3498db", effect: () => document.body.style.filter = "invert(1)" },
+            { title: "Nuclear Launch", desc: "You pressed the wrong button.", weight: 1, rarity: "Cursed", color: "#e74c3c", isDeadly: true, reason: "You started World War III." }
+        ];
+
+        const door = document.getElementById('door-container');
+        const eventDisplay = document.getElementById('event-display');
+
+        door.addEventListener('click', () => {
+            if (!canOpen) return;
+            openDoor();
+        });
+
+        function openDoor() {
+            canOpen = false;
+            doorCount++;
+            document.getElementById('door-count').innerText = doorCount;
+
+            // Door Animation
+            door.classList.add('open-anim');
+            
+            setTimeout(() => {
+                const event = getRandomEvent();
+                displayEvent(event);
+                
+                if (event.isDeadly) {
+                    gameOver(event.reason);
+                } else {
+                    event.effect();
+                    updateStats();
+                }
+
+                // Reset Door
+                setTimeout(() => {
+                    door.classList.remove('open-anim');
+                    canOpen = true;
+                }, 800);
+
+            }, 400);
+        }
+
+        function getRandomEvent() {
+            // Weighted randomness modified by Luck
+            const totalWeight = EVENTS.reduce((acc, ev) => acc + ev.weight, 0);
+            let random = Math.random() * totalWeight;
+            
+            // Influence: Higher luck skips common events slightly
+            if (luck > 1.5 && Math.random() < 0.3) random = Math.random() * (totalWeight / 2);
+
+            for (let ev of EVENTS) {
+                if (random < ev.weight) return ev;
+                random -= ev.weight;
+            }
+            return EVENTS[0];
+        }
+
+        function displayEvent(ev) {
+            eventDisplay.classList.remove('show');
+            
+            // Force reflow
+            void eventDisplay.offsetWidth;
+
+            const rarityTag = document.getElementById('rarity');
+            rarityTag.innerText = ev.rarity;
+            rarityTag.style.background = ev.color;
+            rarityTag.style.color = (ev.rarity === "Legendary") ? "#000" : "#fff";
+
+            document.getElementById('title').innerText = ev.title;
+            document.getElementById('desc').innerText = ev.desc;
+
+            eventDisplay.classList.add('show');
+            if (ev.rarity === "Cursed") door.classList.add('shake');
+            else door.classList.remove('shake');
+        }
+
+        function updateStats() {
+            document.getElementById('wealth-val').innerText = "$" + wealth.toLocaleString();
+            document.getElementById('luck-val').innerText = luck.toFixed(1) + "x";
+        }
+
+        function gameOver(reason) {
+            setTimeout(() => {
+                document.getElementById('overlay').style.display = 'flex';
+                document.getElementById('death-reason').innerText = reason + ` (Survived ${doorCount} doors)`;
+            }, 500);
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Password Game - Animated Clone</title>
+    <style>
+        :root {
+            --error-bg: #ffefef;
+            --error-border: #ff8080;
+            --error-text: #690000;
+            --success-bg: #f2ffef;
+            --success-border: #80ff8b;
+            --success-text: #004d08;
+            --primary-shadow: 0 4px 0px rgba(0,0,0,1);
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #fbfaef;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 50px 20px;
+            margin: 0;
+            color: #1a1a1a;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 600px;
+        }
+
+        h1 {
+            font-size: 56px;
+            margin-bottom: 40px;
+            text-align: center;
+            letter-spacing: -2px;
+        }
+
+        /* Password Box Styling */
+        .password-box {
+            width: 100%;
+            position: sticky;
+            top: 20px;
+            z-index: 100;
+            background: #fbfaef;
+            padding-bottom: 20px;
+        }
+
+        label {
+            font-weight: 800;
+            font-size: 20px;
+            display: block;
+            margin-bottom: 12px;
+        }
+
+        #password-input {
+            width: 100%;
+            min-height: 120px;
+            padding: 20px;
+            font-size: 28px;
+            border: 3px solid #000;
+            border-radius: 12px;
+            outline: none;
+            box-sizing: border-box;
+            box-shadow: var(--primary-shadow);
+            transition: transform 0.1s ease, box-shadow 0.1s ease;
+            font-family: 'Courier New', Courier, monospace;
+            background: white;
+        }
+
+        #password-input:focus {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 0px rgba(0,0,0,1);
+        }
+
+        .char-count {
+            text-align: right;
+            margin-top: 10px;
+            font-weight: bold;
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        /* Rules Layout */
+        #rules-container {
+            display: flex;
+            flex-direction: column-reverse;
+            gap: 16px;
+            margin-top: 30px;
+        }
+
+        /* Animations */
+        @keyframes slideIn {
+            0% { transform: translateY(30px) scale(0.9); opacity: 0; }
+            100% { transform: translateY(0) scale(1); opacity: 1; }
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
+        }
+
+        @keyframes pop {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.02); }
+            100% { transform: scale(1); }
+        }
+
+        .rule-card {
+            padding: 24px;
+            border-radius: 12px;
+            border: 3px solid #000;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            position: relative;
+            animation: slideIn 0.5s ease forwards;
+            background: white;
+            box-shadow: var(--primary-shadow);
+        }
+
+        .rule-card.fail {
+            background-color: var(--error-bg);
+            border-color: var(--error-border);
+            color: var(--error-text);
+            animation: shake 0.4s ease-in-out;
+        }
+
+        .rule-card.success {
+            background-color: var(--success-bg);
+            border-color: var(--success-border);
+            color: var(--success-text);
+            transform: scale(1);
+        }
+
+        .rule-title {
+            font-weight: 900;
+            font-size: 20px;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            text-transform: uppercase;
+        }
+
+        .rule-title svg {
+            margin-right: 12px;
+            width: 24px;
+            height: 24px;
+        }
+
+        .rule-desc {
+            font-size: 18px;
+            line-height: 1.4;
+        }
+
+        /* Rule Elements */
+        .captcha-img {
+            background: #222;
+            color: #0f0;
+            padding: 8px 15px;
+            letter-spacing: 6px;
+            font-family: 'Courier New', monospace;
+            font-weight: bold;
+            display: inline-block;
+            margin-top: 10px;
+            border-radius: 4px;
+            transform: rotate(-2deg);
+            user-select: none;
+            box-shadow: 2px 2px 0px #000;
+        }
+
+        .sponsor-logos {
+            font-weight: 900;
+            text-decoration: underline;
+        }
+
+        .highlight {
+            background: #fff34d;
+            padding: 0 4px;
+            color: black;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>The Password Game</h1>
+
+        <div class="password-box">
+            <label>Please choose a password</label>
+            <textarea id="password-input" spellcheck="false" placeholder="Type here..."></textarea>
+            <div class="char-count" id="char-count">0 Characters</div>
+        </div>
+
+        <div id="rules-container"></div>
+    </div>
+
+    <script>
+        const passwordInput = document.getElementById('password-input');
+        const rulesContainer = document.getElementById('rules-container');
+        const charCountDisplay = document.getElementById('char-count');
+
+        let unlockedRules = 1;
+        const captchaValue = Math.random().toString(36).substring(2, 7).toUpperCase();
+
+        const RULES = [
+            { id: 1, desc: "Your password must be at least 5 characters.", check: (pw) => pw.length >= 5 },
+            { id: 2, desc: "Your password must include a number.", check: (pw) => /\d/.test(pw) },
+            { id: 3, desc: "Your password must include an uppercase letter.", check: (pw) => /[A-Z]/.test(pw) },
+            { id: 4, desc: "Your password must include a special character.", check: (pw) => /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(pw) },
+            { id: 5, desc: "The digits in your password must add up to <span class='highlight'>25</span>.", check: (pw) => {
+                const digits = pw.match(/\d/g) || [];
+                return digits.reduce((a, b) => a + parseInt(b), 0) === 25;
+            }},
+            { id: 6, desc: "Your password must include a <span class='highlight'>month of the year</span>.", check: (pw) => {
+                const months = ["january", "february", "march", "april", "may", "june", "july", "august", "september", "october", "november", "december"];
+                return months.some(m => pw.toLowerCase().includes(m));
+            }},
+            { id: 7, desc: "Your password must include a <span class='highlight'>Roman numeral</span>.", check: (pw) => /[IVXLCDM]/.test(pw) },
+            { id: 8, desc: "Your password must include one of our sponsors: <br><strong>Pepsi, Starbucks, Shell</strong>", check: (pw) => ["pepsi", "starbucks", "shell"].some(s => pw.toLowerCase().includes(s)) },
+            { id: 9, desc: "The Roman numerals in your password should multiply to <span class='highlight'>35</span>.", check: (pw) => {
+                const romanValues = { 'I': 1, 'V': 5, 'X': 10, 'L': 50, 'C': 100, 'D': 500, 'M': 1000 };
+                const found = pw.match(/[IVXLCDM]+/g) || [];
+                let product = found.length > 0 ? 1 : 0;
+                found.forEach(str => {
+                    let val = 0;
+                    for(let i=0; i<str.length; i++) {
+                        const cur = romanValues[str[i]];
+                        const next = romanValues[str[i+1]];
+                        if (next > cur) { val -= cur; } else { val += cur; }
+                    }
+                    product *= val;
+                });
+                return product === 35;
+            }},
+            { id: 10, desc: `Your password must include this CAPTCHA: <br><div class="captcha-img">${captchaValue}</div>`, check: (pw) => pw.includes(captchaValue) }
+        ];
+
+        // Track the previous state of rules to trigger "pop" animations
+        let previousStatus = [];
+
+        function updateGame() {
+            const pw = passwordInput.value;
+            charCountDisplay.innerText = `${pw.length} Characters`;
+            
+            let allSatisfied = true;
+            for (let i = 0; i < unlockedRules; i++) {
+                if (!RULES[i].check(pw)) allSatisfied = false;
+            }
+
+            if (allSatisfied && unlockedRules < RULES.length) {
+                unlockedRules++;
+                // Sound effect or haptic could go here
+            }
+
+            renderRules(pw);
+        }
+
+        function renderRules(pw) {
+            const currentStatus = RULES.slice(0, unlockedRules).map(r => r.check(pw));
+
+            // Only clear and rebuild if the number of rules changed 
+            // or a status changed to avoid flickering
+            rulesContainer.innerHTML = '';
+            
+            for (let i = 0; i < unlockedRules; i++) {
+                const rule = RULES[i];
+                const isPassed = currentStatus[i];
+                const statusChanged = previousStatus[i] !== isPassed;
+                
+                const card = document.createElement('div');
+                card.className = `rule-card ${isPassed ? 'success' : 'fail'}`;
+                
+                // If it just became successful, add a "pop" animation
+                if (statusChanged && isPassed) {
+                    card.style.animation = 'pop 0.3s ease-out';
+                }
+
+                const icon = isPassed ? 
+                    `<svg viewBox="0 0 24 24" fill="none" stroke="#004d08" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>` : 
+                    `<svg viewBox="0 0 24 24" fill="none" stroke="#690000" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>`;
+
+                card.innerHTML = `
+                    <div class="rule-title">
+                        ${icon} Rule ${rule.id}
+                    </div>
+                    <div class="rule-desc">${rule.desc}</div>
+                `;
+                
+                rulesContainer.appendChild(card);
+            }
+            previousStatus = currentStatus;
+        }
+
+        passwordInput.addEventListener('input', updateGame);
+        renderRules("");
+    </script>
+</body>
+</html>

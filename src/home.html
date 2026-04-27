@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Catagame | Create and Play</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap');
+
+        :root {
+            --bg: #ffffff;
+            --accent: #2d3436;
+            --border: #000000;
+            --card-shadow: 8px 8px 0px #000;
+            --hover-shadow: 12px 12px 0px #000;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, sans-serif;
+            background: var(--bg);
+            color: #111;
+            margin: 0;
+            padding: 0;
+            line-height: 1.5;
+        }
+
+        /* --- Header --- */
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 25px 10%;
+            border-bottom: 3px solid var(--border);
+            background: white;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        header h2 {
+            margin: 0;
+            font-weight: 900;
+            font-size: 28px;
+            letter-spacing: -1px;
+            cursor: pointer;
+        }
+
+        nav a {
+            margin-left: 30px;
+            text-decoration: none;
+            color: #000;
+            font-weight: 700;
+            font-size: 16px;
+            transition: color 0.2s;
+        }
+
+        nav a:hover {
+            color: #ff4757;
+            text-decoration: underline;
+        }
+
+        /* --- Hero Section --- */
+        .hero-section {
+            text-align: center;
+            padding: 80px 20px;
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .hero-section h1 {
+            font-size: 72px;
+            font-weight: 900;
+            margin-bottom: 10px;
+            letter-spacing: -3px;
+            line-height: 1;
+        }
+
+        .hero-section p {
+            font-size: 22px;
+            color: #444;
+            margin-bottom: 40px;
+            font-weight: 500;
+        }
+
+        /* --- Buttons --- */
+        .main-btn {
+            padding: 20px 40px;
+            font-size: 22px;
+            font-weight: 900;
+            background-color: #fff;
+            color: #000;
+            border: 4px solid var(--border);
+            border-radius: 12px;
+            cursor: pointer;
+            box-shadow: var(--card-shadow);
+            transition: all 0.15s;
+            display: inline-block;
+            text-transform: uppercase;
+        }
+
+        .main-btn:hover {
+            transform: translate(-4px, -4px);
+            box-shadow: var(--hover-shadow);
+            background-color: #f1f2f6;
+        }
+
+        .main-btn:active {
+            transform: translate(2px, 2px);
+            box-shadow: 4px 4px 0px #000;
+        }
+
+        /* --- Featured Section --- */
+        .container {
+            max-width: 1100px;
+            margin: 40px auto;
+            padding: 0 20px;
+        }
+
+        .section-title {
+            font-weight: 900;
+            font-size: 32px;
+            margin-bottom: 30px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .featured-card {
+            background: #fff;
+            border: 4px solid var(--border);
+            border-radius: 20px;
+            padding: 0;
+            overflow: hidden;
+            display: flex;
+            margin-bottom: 50px;
+            box-shadow: var(--card-shadow);
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .featured-card:hover {
+            transform: scale(1.01);
+            box-shadow: var(--hover-shadow);
+        }
+
+        .featured-img {
+            width: 50%;
+            background: #dfe6e9;
+            min-height: 300px;
+            border-right: 4px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 100px;
+        }
+
+        .featured-content {
+            padding: 40px;
+            width: 50%;
+        }
+
+        .featured-content h3 { font-size: 36px; margin: 0; font-weight: 900; }
+        .featured-content p { font-size: 18px; color: #666; margin: 15px 0; }
+
+        /* --- Bento Grid --- */
+        .bento-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 30px;
+            margin-bottom: 100px;
+        }
+
+        .game-card {
+            background: white;
+            border: 3px solid var(--border);
+            border-radius: 16px;
+            padding: 20px;
+            text-align: center;
+            box-shadow: var(--card-shadow);
+            transition: all 0.2s;
+            cursor: pointer;
+            text-decoration: none;
+            color: inherit;
+        }
+
+        .game-card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--hover-shadow);
+            background: #fdfdfd;
+        }
+
+        .game-card .icon-box {
+            height: 150px;
+            background: #f1f2f6;
+            border: 3px solid var(--border);
+            border-radius: 12px;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 60px;
+        }
+
+        .game-card h4 {
+            margin: 10px 0 5px 0;
+            font-size: 20px;
+            font-weight: 900;
+        }
+
+        .game-card small {
+            color: #777;
+            font-weight: 600;
+        }
+
+    </style>
+</head>
+<body>
+
+    <header>
+        <h2>Catagame</h2>
+        <nav>
+            <a href="#">Blog</a>
+            <a href="#">My Story</a>
+            <a href="#">Contact</a>
+        </nav>
+    </header>
+
+    <div class="hero-section">
+        <h1>Create and Play.</h1>
+        <p>Explore new experiments, build weird things, and share them with the world.</p>
+        <button class="main-btn" onclick="window.location.href='#'">Start Creating Now</button>
+    </div>
+
+    <div class="container">
+        <div class="section-title"> Featured </div>
+        
+        <div class="featured-card">
+            <div class="featured-img"></div>
+            <div class="featured-content">
+                <h3>The Password Game</h3>
+                <p>Password Game, just try putting a password, nothing to it</p>
+                <div style="font-weight: 800; text-decoration: underline;">Play</div>
+                <script>
+                    document.querySelector('.featured-card').addEventListener('click', function() {
+                        window.location.href = 'games/passwordgame/dywyt.html';
+                    });
+                </script>
+            </div>
+        </div>
+
+        <div class="section-title"> More Games</div>
+        <div class="bento-grid">
+
+            <a href="games/99thday/99thday.html" class="game-card">
+                <div class="icon-box"></div>
+                <h4>Are you a robot?</h4>
+                <small>Survival Challenge</small>
+                <script>
+                    document.querySelector('.game-card').addEventListener('click', function() {
+                        window.location.href = 'games/99thday/99thday.html';
+                    });
+                </script>
+
+            </a>
+
+            <a href="spendatrillionairesmoney/mapsurvallancesytem.html" class="game-card">
+                <div class="icon-box"></div>
+                <h4>Surveillance</h4>
+                <small>Global Map System</small>
+            </a>
+
+            <a href="games/createaperfectcircle/pic.html" class="game-card">
+                <div class="icon-box"></div>
+                <h4>What's behind the door?</h4>
+                <small>What is behind the secret door, only you can find out</small>
+            </a>
+
+        </div>
+    </div>
+
+</body>
+</html>
