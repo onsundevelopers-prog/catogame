@@ -211,7 +211,13 @@
             color: #777;
             font-weight: 600;
         }
-
+        .catobux-display {
+            font-weight: 700;
+            background: #f1f2f6;
+            padding: 10px 20px;
+            border-radius: 12px;
+            border: 3px solid var(--border);
+        }   
     </style>
 </head>
 <body>
@@ -223,6 +229,7 @@
             <a href="#">My Story</a>
             <a href="#">Contact</a>
         </nav>
+        <div class="catobux-display" id="catabux-display">0 Catabux</div>
     </header>
 
     <div class="hero-section">
@@ -235,7 +242,7 @@
         <div class="section-title"> Featured </div>
         
         <div class="featured-card">
-            <div class="featured-img"><img src="assets/Your-paragraph-text.png" alt="Featured Game"></div>
+            <div class="featured-img"><img src="my-react-app/src/assets/Your-paragraph-text.png" alt="Featured Game"></div>
             <div class="featured-content">
                 <h3>The Password Game</h3>
                 <p>Password Game, just try putting a password, nothing to it</p>
@@ -277,6 +284,33 @@
 
         </div>
     </div>
+
+<script>
+// Load Catabux
+let catabux = parseInt(localStorage.getItem("catabux")) || 0;
+document.getElementById("catabux-display").textContent = catabux + " Catabux";
+
+// Start Create Button
+document.getElementById("start-create-btn").addEventListener("click", function() {
+    alert("Start Creating feature coming soon!");
+});
+
+// Featured Game Click
+document.getElementById("featured-game").addEventListener("click", function() {
+    let catabux = parseInt(localStorage.getItem("catabux")) || 0;
+    catabux += 10;
+    localStorage.setItem("catabux", catabux);
+    window.location.href = "games/passwordgame/dywyt.html";
+});
+
+// Robot Game Click
+document.getElementById("robot-game").addEventListener("click", function() {
+    let catabux = parseInt(localStorage.getItem("catabux")) || 0;
+    catabux += 5;
+    localStorage.setItem("catabux", catabux);
+    window.location.href = "games/99thday/99thday.html";
+});
+</script>
 
 </body>
 </html>
