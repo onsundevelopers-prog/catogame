@@ -194,7 +194,72 @@
             { title: "The Trapdoor", desc: "You fall into spikes.", weight: 3, rarity: "Cursed", color: "#e74c3c", isDeadly: true, reason: "Gravity is a cruel mistress." },
             { title: "A Bad Omen", desc: "You feel terrible. Luck decreased.", weight: 10, rarity: "Common", color: "#bdc3c7", effect: () => luck = Math.max(0.1, luck - 0.5) },
             { title: "Mirror World", desc: "Everything looks the same, but it isn't.", weight: 5, rarity: "Rare", color: "#3498db", effect: () => document.body.style.filter = "invert(1)" },
-            { title: "Nuclear Launch", desc: "You pressed the wrong button.", weight: 1, rarity: "Cursed", color: "#e74c3c", isDeadly: true, reason: "You started World War III." }
+            { title: "Nuclear Launch", desc: "You pressed the wrong button.", weight: 1, rarity: "Cursed", color: "#e74c3c", isDeadly: true, reason: "You started World War III." },
+            { title: "Street Performer", desc: "You play a tune and earn tips.", weight: 25, rarity: "Common", color: "#bdc3c7", effect: () => wealth += 15 },
+
+{ title: "Lucky Coin Flip", desc: "Heads! Small luck boost.", weight: 20, rarity: "Common", color: "#bdc3c7", effect: () => luck += 0.1 },
+
+{ title: "Pickpocket", desc: "Someone steals $10 from you.", weight: 15, rarity: "Common", color: "#bdc3c7", effect: () => wealth = Math.max(0, wealth - 10) },
+
+{ title: "Treasure Chest", desc: "You open it and find gold!", weight: 10, rarity: "Rare", color: "#3498db", effect: () => wealth += 200 },
+
+{ title: "Mysterious Potion", desc: "You feel... different.", weight: 8, rarity: "Rare", color: "#3498db", effect: () => luck += (Math.random() > 0.5 ? 1 : -0.5) },
+
+{ title: "Time Skip", desc: "You suddenly feel older and richer.", weight: 6, rarity: "Rare", color: "#3498db", effect: () => wealth += 1000 },
+
+{ title: "Double or Nothing", desc: "Gamble your money...", weight: 7, rarity: "Rare", color: "#3498db", effect: () => {
+    if (Math.random() > 0.5) wealth *= 2;
+    else wealth = Math.floor(wealth / 2);
+}},
+
+{ title: "Golden Rain", desc: "Coins fall from the sky.", weight: 2, rarity: "Legendary", color: "#f1c40f", effect: () => wealth += 2000 },
+
+{ title: "Fortune Spirit", desc: "Your luck skyrockets.", weight: 2, rarity: "Legendary", color: "#f1c40f", effect: () => luck += 5 },
+
+{ title: "Glitch in Reality", desc: "Numbers behave strangely...", weight: 4, rarity: "Rare", color: "#3498db", effect: () => wealth = Math.floor(wealth * (1 + Math.random())) },
+
+{ title: "Black Cat", desc: "It crosses your path. Uh oh.", weight: 15, rarity: "Common", color: "#bdc3c7", effect: () => luck -= 0.3 },
+
+{ title: "Kind Stranger", desc: "They give you $50 for no reason.", weight: 12, rarity: "Common", color: "#bdc3c7", effect: () => wealth += 50 },
+
+{ title: "Hidden Trap", desc: "You trigger a spike trap!", weight: 4, rarity: "Cursed", color: "#e74c3c", isDeadly: true, reason: "You weren't paying attention." },
+
+{ title: "Corrupted Save", desc: "Something feels wrong...", weight: 3, rarity: "Cursed", color: "#e74c3c", effect: () => {
+    wealth = Math.floor(wealth * 0.3);
+    luck = Math.max(0.1, luck - 1);
+}},
+
+{ title: "Wealth Surge", desc: "Your money grows exponentially!", weight: 2, rarity: "Legendary", color: "#f1c40f", effect: () => wealth *= 3 },
+
+{ title: "Paradox Event", desc: "You gain and lose everything.", weight: 2, rarity: "Cursed", color: "#e74c3c", effect: () => {
+    wealth = Math.random() > 0.5 ? wealth * 2 : 0;
+}},
+
+{ title: "Mini Jackpot", desc: "You win a small prize.", weight: 18, rarity: "Common", color: "#bdc3c7", effect: () => wealth += 100 },
+
+{ title: "Energy Boost", desc: "Everything feels easier.", weight: 10, rarity: "Common", color: "#bdc3c7", effect: () => luck += 0.3 },
+
+{ title: "Shadow Figure", desc: "It watches you silently.", weight: 6, rarity: "Rare", color: "#3498db", effect: () => luck -= 1 },
+
+{ title: "Reality Break", desc: "The screen shakes violently.", weight: 3, rarity: "Rare", color: "#3498db", effect: () => {
+    document.body.style.transform = "rotate(1deg)";
+    setTimeout(() => document.body.style.transform = "rotate(0deg)", 500);
+}},
+
+{ title: "Bullseye", desc: "You hit the jackpot!", weight: 1, rarity: "Legendary", color: "#f1c40f", effect: () => {
+    
+}},
+{ 
+  title: "Suspicious Button", 
+  desc: "Press it?", 
+  weight: 5,
+  rarity: "Rare",
+  color: "#3498db",
+  effect: () => {
+    if (Math.random() > 0.5) wealth += 1000;
+    else luck += 0.5;
+  }
+}
         ];
 
         const door = document.getElementById('door-container');
