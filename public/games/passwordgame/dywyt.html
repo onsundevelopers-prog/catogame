@@ -237,6 +237,7 @@
             }},
             { id: 10, desc: `Your password must include this CAPTCHA: <br><div class="captcha-img">${captchaValue}</div>`, check: (pw) => pw.includes(captchaValue) }
         ];
+        
 
         // Track the previous state of rules to trigger "pop" animations
         let previousStatus = [];

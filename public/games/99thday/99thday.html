@@ -123,10 +123,15 @@
         }
 
         /* TASK 3: THE BUTTON */
-        #escape-area {
+        #escape-phase {
             display: none;
             height: 200px;
             position: relative;
+        }
+
+        #final-phase {
+            display: none;
+            padding: 15px;
         }
 
         #runaway-btn {
@@ -138,6 +143,11 @@
             border-radius: 4px;
             cursor: pointer;
             font-weight: bold;
+        }
+
+        #final-input {
+            width: calc(100% - 24px);
+            max-width: 240px;
         }
 
         .modal-footer {
@@ -188,16 +198,25 @@
         </div>
 
         <!-- Phase 2: Drawing -->
-        <div id="canvas-phase" id="canvas-area">
+        <div id="canvas-phase" class="canvas-area">
             <p style="text-align:center">Please draw a <b>perfect circle</b> to prove you have a soul.</p>
             <canvas id="drawingCanvas" width="350" height="200"></canvas>
         </div>
 
-        <!-- Phase 3: The Runner -->
-        <div id="escape-phase" id="escape-area">
+        <!-- Phase 3: The Runaway Button -->
+        <div id="escape-phase" class="escape-area">
             <p style="text-align:center">Click the button to confirm you are human.</p>
             <div style="height:150px; position:relative;">
                 <button id="runaway-btn">CLICK ME</button>
+            </div>
+        </div>
+
+        <!-- Phase 4: Final Text Check -->
+        <div id="final-phase" class="final-area">
+            <p style="text-align:center">Final human check: type the word below.</p>
+            <div style="font-size:24px; font-weight: 900; text-align:center; margin: 15px 0;">HUMAN</div>
+            <div style="text-align:center;">
+                <input id="final-input" type="text" placeholder="Type HUMAN" style="padding: 10px 12px; width: 220px; border: 1px solid #ccc; border-radius: 6px; font-size: 16px;">
             </div>
         </div>
 
@@ -214,27 +233,53 @@
         const gridPhase = document.getElementById('grid-phase');
         const canvasPhase = document.getElementById('canvas-phase');
         const escapePhase = document.getElementById('escape-phase');
+        const finalPhase = document.getElementById('final-phase');
+        const finalInput = document.getElementById('final-input');
         
         let currentStep = 1;
+        let runawayClicks = 0;
+
+        function getCatabux() {
+            return parseInt(localStorage.getItem('catabux')) || 0;
+        }
+
+        function setCatabux(value) {
+            localStorage.setItem('catabux', value);
+        }
+
+        function addCatabux(amount) {
+            const total = getCatabux() + amount;
+            setCatabux(total);
+            return total;
+        }
 
         // 1. Initial Checkbox Logic
         mainCheckbox.addEventListener('click', () => {
-            mainCheckbox.style.borderColor = "transparent";
-            spinner.style.display = "block";
+            mainCheckbox.style.borderColor = 'transparent';
+            spinner.style.display = 'block';
             
             setTimeout(() => {
-                modal.style.display = "flex";
+                modal.style.display = 'flex';
                 initGridPhase();
             }, 1000);
         });
 
         // 2. Phase 1: The Grid
         function initGridPhase() {
+            currentStep = 1;
             gridPhase.innerHTML = '';
+            document.getElementById('modal-title').innerText = 'Select all squares with robots';
+            document.getElementById('modal-subtitle').innerText = 'Tap at least 3 items';
+            gridPhase.classList.remove('hidden');
+            canvasPhase.style.display = 'none';
+            escapePhase.style.display = 'none';
+            finalPhase.style.display = 'none';
+            verifyBtn.style.display = 'inline-block';
+            verifyBtn.innerText = 'VERIFY';
+
             for (let i = 0; i < 9; i++) {
                 const div = document.createElement('div');
                 div.className = 'grid-item';
-                // Using random nature images
                 div.style.backgroundImage = `url(https://picsum.photos/seed/${i + 20}/200)`;
                 div.onclick = () => div.classList.toggle('selected');
                 gridPhase.appendChild(div);
@@ -243,20 +288,25 @@
 
         // 3. Phase 2: Drawing Logic
         function initCanvasPhase() {
+            currentStep = 2;
             gridPhase.classList.add('hidden');
             canvasPhase.style.display = 'block';
-            document.getElementById('modal-title').innerText = "Prove you have a soul";
-            document.getElementById('modal-subtitle').innerText = "Draw a perfect circle";
-            
+            document.getElementById('modal-title').innerText = 'Prove you have a soul';
+            document.getElementById('modal-subtitle').innerText = 'Draw a perfect circle';
+            verifyBtn.innerText = 'ANALYZE';
+            finalPhase.style.display = 'none';
+            runawayClicks = 0;
+
             const canvas = document.getElementById('drawingCanvas');
             const ctx = canvas.getContext('2d');
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
             let drawing = false;
 
             canvas.onmousedown = () => drawing = true;
             canvas.onmouseup = () => drawing = false;
             canvas.onmousemove = (e) => {
                 if (!drawing) return;
-                ctx.fillStyle = "black";
+                ctx.fillStyle = 'black';
                 ctx.beginPath();
                 ctx.arc(e.offsetX, e.offsetY, 2, 0, Math.PI * 2);
                 ctx.fill();
@@ -265,45 +315,72 @@
 
         // 4. Phase 3: The Runaway Button
         function initEscapePhase() {
+            currentStep = 3;
             canvasPhase.style.display = 'none';
             escapePhase.style.display = 'block';
-            document.getElementById('modal-title').innerText = "Final Step";
-            document.getElementById('modal-subtitle').innerText = "Just one simple click";
+            document.getElementById('modal-title').innerText = 'Final Step';
+            document.getElementById('modal-subtitle').innerText = 'Catch the button to prove you are human';
             verifyBtn.style.display = 'none';
+            finalPhase.style.display = 'none';
+            runawayClicks = 0;
 
             const btn = document.getElementById('runaway-btn');
-            btn.addEventListener('mouseover', () => {
-                const x = Math.random() * 250;
-                const y = Math.random() * 100;
+            btn.style.left = '0px';
+            btn.style.top = '0px';
+
+            btn.onmouseover = () => {
+                const x = Math.random() * 230;
+                const y = Math.random() * 120;
                 btn.style.left = x + 'px';
                 btn.style.top = y + 'px';
-            });
+            };
 
             btn.onclick = () => {
-                alert("Impossible. You must be a robot.");
-                location.reload();
+                runawayClicks += 1;
+                if (runawayClicks >= 3) {
+                    initFinalPhase();
+                } else {
+                    alert('Nice catch! One more time.');
+                }
             };
+        }
+
+        function initFinalPhase() {
+            currentStep = 4;
+            escapePhase.style.display = 'none';
+            finalPhase.style.display = 'block';
+            document.getElementById('modal-title').innerText = 'Last Check';
+            document.getElementById('modal-subtitle').innerText = 'Type the word shown above';
+            verifyBtn.style.display = 'inline-block';
+            verifyBtn.innerText = 'SUBMIT';
+            finalInput.value = '';
+            finalInput.focus();
         }
 
         // Verification Progression
         verifyBtn.addEventListener('click', () => {
             if (currentStep === 1) {
-                // Check if any are selected (in the real game, it doesn't matter, it fails you anyway)
                 const selected = document.querySelectorAll('.selected');
                 if (selected.length < 3) {
-                    alert("Please select more images.");
+                    alert('Please select at least 3 images.');
                     return;
                 }
-                currentStep = 2;
                 initCanvasPhase();
             } else if (currentStep === 2) {
-                // "Analyze" the drawing
-                verifyBtn.innerText = "ANALYZING...";
+                verifyBtn.innerText = 'ANALYZING...';
                 setTimeout(() => {
-                    alert("That circle is too imperfect. Only a human could be that messy. But I'm still suspicious.");
-                    currentStep = 3;
+                    alert('Nice drawing! You seem human enough.');
                     initEscapePhase();
-                }, 1500);
+                }, 1200);
+            } else if (currentStep === 4) {
+                if (finalInput.value.trim().toUpperCase() === 'HUMAN') {
+                    const reward = 15;
+                    addCatabux(reward);
+                    alert('Verified! You earned ' + reward + ' Catabux.');
+                    document.body.innerHTML = '<div style="font-family: Arial, sans-serif; padding: 50px; text-align:center;"><h1>Access Granted</h1><p>Great job, human! Your Catabux has been updated.</p></div>';
+                } else {
+                    alert('Type HUMAN exactly to finish the check.');
+                }
             }
         });
 
