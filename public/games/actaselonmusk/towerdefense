@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PIXEL DEFENSE</title>
+    <style>
+        /* Pixel Font */
+        @import url('https://fonts.googleapis.com/css2?family=VT323&display=swap');
+
+        body { 
+            margin: 0; padding: 0; background: #1a1a1a; 
+            font-family: 'VT323', monospace; 
+            display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; 
+        }
+
+        #game-container { 
+            position: relative; border: 8px solid #332115; 
+            box-shadow: 0 0 0 4px #000; image-rendering: pixelated; 
+        }
+
+        canvas { display: block; background: #45ad2f; cursor: crosshair; }
+
+        /* UI Styling */
+        #ui-layer {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            pointer-events: none; padding: 20px; box-sizing: border-box;
+            color: #fff; text-shadow: 2px 2px #000; font-size: 24px;
+        }
+
+        .stats { display: flex; justify-content: space-between; }
+
+        #shop {
+            position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%);
+            display: flex; gap: 10px; pointer-events: auto;
+        }
+
+        .tool {
+            width: 60px; height: 60px; background: #5d4037; border: 4px solid #fff;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            cursor: pointer; position: relative; box-shadow: 4px 4px 0 #000;
+        }
+
+        .tool:hover { background: #795548; transform: translateY(-4px); }
+        .tool.active { border-color: #ffd700; background: #3d2a1d; }
+        .tool small { font-size: 14px; position: absolute; bottom: -20px; color: #ffd700; }
+        .cooldown { position: absolute; bottom: 0; left: 0; width: 100%; background: rgba(0,0,0,0.7); height: 0%; }
+
+        .hidden { display: none; }
+    </style>
+</head>
+<body>
+
+    <div id="game-container">
+        <canvas id="gameCanvas"></canvas>
+        
+        <div id="ui-layer">
+            <div class="stats">
+                <div> GOLD:  <span id="gold">GOLD: 200</span></div>
+                <div> LIVES: <span id="lives">LIVES: 20</span></div>
+                <div>  <span id="wave">WAVE: 1</span></div>
+            </div>
+
+            <div id="shop">
+                <div class="tool active" id="tool-tower" onclick="setTool('tower')">
+                    <small>TOOL PRICE:50G</small>
+                </div>
+                <div class="tool" id="tool-meteor" onclick="setTool('meteor')">
+                    <small>METEOR PRICE:FREE</small>
+                    <div id="cd-meteor" class="cooldown"></div>
+                </div>
+                <div class="tool" id="tool-soldier" onclick="setTool('soldier')">
+                    <small>SOLDIER PRICE:FREE</small>
+                    <div id="cd-soldier" class="cooldown"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        canvas.width = 640; canvas.height = 480;
+        ctx.imageSmoothingEnabled = false;
+
+        // Game State
+        let gold = 200, lives = 20, wave = 1, currentTool = 'tower', frame = 0;
+        let enemies = [], towers = [], projectiles = [], particles = [], decorations = [];
+        let meteorCD = false, soldierCD = false;
+
+        const path = [{x:0, y:240}, {x:200, y:240}, {x:200, y:80}, {x:440, y:80}, {x:440, y:400}, {x:640, y:400}];
+
+        // Generate Decorations so it's not empty
+        for(let i=0; i<40; i++) {
+            let rx = Math.random()*640, ry = Math.random()*480;
+            // Don't place on path
+            if (ry < 200 || ry > 280) decorations.push({x:rx, y:ry, type: Math.random() > 0.5 ? 'tree' : 'rock'});
+        }
+
+        function setTool(t) {
+            currentTool = t;
+            document.querySelectorAll('.tool').forEach(el => el.classList.remove('active'));
+            document.getElementById('tool-'+t).classList.add('active');
+        }
+
+        // --- DRAWING UTILS ---
+        function drawPixelSprite(x, y, size, colors) {
+            let px = size / 4;
+            colors.forEach((c, i) => {
+                if(c === null) return;
+                ctx.fillStyle = c;
+                ctx.fillRect(x + (i%4)*px - size/2, y + Math.floor(i/4)*px - size/2, px, px);
+            });
+        }
+
+        // --- CLASSES ---
+        class Enemy {
+            constructor() {
+                this.x = path[0].x; this.y = path[0].y;
+                this.pathIdx = 0; this.hp = 20 + (wave*10); this.maxHp = this.hp;
+                this.speed = 1 + (wave*0.1); this.bob = 0;
+            }
+            update() {
+                let target = path[this.pathIdx+1];
+                if(!target) { lives--; this.remove = true; return; }
+                let dx = target.x - this.x, dy = target.y - this.y;
+                let dist = Math.hypot(dx, dy);
+                if(dist < 2) this.pathIdx++;
+                else { this.x += (dx/dist)*this.speed; this.y += (dy/dist)*this.speed; }
+                this.bob += 0.2;
+            }
+            draw() {
+                let jump = Math.abs(Math.sin(this.bob)) * 4;
+                drawPixelSprite(this.x, this.y - jump, 20, [
+                    null, '#fff', '#fff', null,
+                    '#fff', '#000', '#000', '#fff',
+                    '#fff', '#fff', '#fff', '#fff',
+                    null, '#888', '#888', null
+                ]);
+                // HP
+                ctx.fillStyle = '#000'; ctx.fillRect(this.x-10, this.y-20, 20, 4);
+                ctx.fillStyle = '#f00'; ctx.fillRect(this.x-10, this.y-20, (this.hp/this.maxHp)*20, 4);
+            }
+        }
+
+        class Tower {
+            constructor(x, y) { this.x = x; this.y = y; this.cd = 0; }
+            update() {
+                if(this.cd > 0) this.cd--;
+                else {
+                    let target = enemies.find(e => Math.hypot(e.x-this.x, e.y-this.y) < 120);
+                    if(target) {
+                        projectiles.push({x:this.x, y:this.y-20, tx:target.x, ty:target.y, target:target, speed:5});
+                        this.cd = 40;
+                    }
+                }
+            }
+            draw() {
+                drawPixelSprite(this.x, this.y, 32, [
+                    '#444', '#666', '#666', '#444',
+                    '#666', '#999', '#999', '#666',
+                    '#666', '#999', '#999', '#666',
+                    '#444', '#444', '#444', '#444'
+                ]);
+            }
+        }
+
+        canvas.onclick = (e) => {
+            const r = canvas.getBoundingClientRect();
+            const x = e.clientX - r.left, y = e.clientY - r.top;
+
+            if(currentTool === 'tower' && gold >= 50) {
+                towers.push(new Tower(x, y)); gold -= 50;
+            } else if (currentTool === 'meteor' && !meteorCD) {
+                triggerMeteor(x, y);
+            } else if (currentTool === 'soldier' && !soldierCD) {
+                triggerSoldier(x, y);
+            }
+        };
+
+        function triggerMeteor(x, y) {
+            meteorCD = true;
+            animateCD('meteor', 5000, () => meteorCD = false);
+            particles.push({x, y, r:0, maxR:60, type:'blast', life:30});
+            enemies.forEach(e => { if(Math.hypot(e.x-x, e.y-y) < 60) e.hp -= 100; });
+        }
+
+        function triggerSoldier(x, y) {
+            soldierCD = true;
+            animateCD('soldier', 8000, () => soldierCD = false);
+            for(let i=0; i<3; i++) {
+                let s = new Enemy(); s.x = x + (i-1)*20; s.y = y; s.speed = 0; s.hp = 200; s.isSoldier = true;
+                enemies.push(s);
+            }
+        }
+
+        function animateCD(id, ms, callback) {
+            const el = document.getElementById('cd-'+id);
+            el.style.height = '100%';
+            let start = Date.now();
+            let int = setInterval(() => {
+                let elapsed = Date.now() - start;
+                el.style.height = (100 - (elapsed/ms)*100) + '%';
+                if(elapsed >= ms) { clearInterval(int); callback(); }
+            }, 50);
+        }
+
+        function loop() {
+            frame++;
+            ctx.fillStyle = '#45ad2f'; ctx.fillRect(0,0,640,480);
+            
+            // Draw Map
+            decorations.forEach(d => {
+                if(d.type === 'tree') drawPixelSprite(d.x, d.y, 16, [null,'#2d5a27','#2d5a27',null,'#2d5a27','#2d5a27','#2d5a27','#2d5a27','#2d5a27','#2d5a27','#2d5a27','#2d5a27',null,'#5d4037','#5d4037',null]);
+                else drawPixelSprite(d.x, d.y, 12, ['#888','#aaa','#aaa','#888','#aaa','#ccc','#ccc','#aaa','#888','#aaa','#aaa','#888','#444','#444','#444','#444']);
+            });
+
+            // Draw Path
+            ctx.fillStyle = '#d2b48c';
+            ctx.beginPath(); ctx.lineWidth = 30; ctx.lineJoin = 'round'; ctx.lineCap = 'round';
+            ctx.moveTo(path[0].x, path[0].y);
+            path.forEach(p => ctx.lineTo(p.x, p.y));
+            ctx.stroke();
+
+            if(frame % 120 === 0) enemies.push(new Enemy());
+
+            enemies.forEach((e, i) => {
+                e.update(); e.draw();
+                if(e.hp <= 0) { if(!e.isSoldier) gold += 15; enemies.splice(i,1); }
+                if(e.remove) enemies.splice(i,1);
+            });
+
+            towers.forEach(t => { t.update(); t.draw(); });
+
+            projectiles.forEach((p, i) => {
+                let dx = p.tx - p.x, dy = p.ty - p.y;
+                let d = Math.hypot(dx, dy);
+                if(d < 5) { if(p.target) p.target.hp -= 10; projectiles.splice(i,1); }
+                else { p.x += (dx/d)*p.speed; p.y += (dy/d)*p.speed; }
+                ctx.fillStyle = '#ff0'; ctx.fillRect(p.x-2, p.y-2, 4, 4);
+            });
+
+            particles.forEach((p, i) => {
+                ctx.beginPath(); ctx.strokeStyle = '#f60'; ctx.lineWidth = 4;
+                p.r += 2; ctx.arc(p.x, p.y, p.r, 0, Math.PI*2); ctx.stroke();
+                p.life--; if(p.life <= 0) particles.splice(i,1);
+            });
+
+            document.getElementById('gold').innerText = gold;
+            document.getElementById('lives').innerText = lives;
+            if(lives <= 0) { alert("GAME OVER"); location.reload(); }
+
+            requestAnimationFrame(loop);
+        }
+
+        loop();
+    </script>
+</body>
+</html>
