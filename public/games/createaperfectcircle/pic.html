@@ -246,9 +246,7 @@
     setTimeout(() => document.body.style.transform = "rotate(0deg)", 500);
 }},
 
-{ title: "Bullseye", desc: "You hit the jackpot!", weight: 1, rarity: "Legendary", color: "#f1c40f", effect: () => {
-    
-}},
+{ title: "Bullseye", desc: "You hit the jackpot! $10,000!", weight: 1, rarity: "Legendary", color: "#f1c40f", effect: () => { wealth += 10000; } },
 { 
   title: "Suspicious Button", 
   desc: "Press it?", 
@@ -275,7 +273,6 @@
             doorCount++;
             document.getElementById('door-count').innerText = doorCount;
 
-            // Door Animation
             door.classList.add('open-anim');
             
             setTimeout(() => {
@@ -285,11 +282,10 @@
                 if (event.isDeadly) {
                     gameOver(event.reason);
                 } else {
-                    event.effect();
+                    if (typeof event.effect === 'function') event.effect();
                     updateStats();
                 }
 
-                // Reset Door
                 setTimeout(() => {
                     door.classList.remove('open-anim');
                     canOpen = true;
@@ -299,16 +295,17 @@
         }
 
         function getRandomEvent() {
-            // Weighted randomness modified by Luck
             const totalWeight = EVENTS.reduce((acc, ev) => acc + ev.weight, 0);
             let random = Math.random() * totalWeight;
             
-            // Influence: Higher luck skips common events slightly
-            if (luck > 1.5 && Math.random() < 0.3) random = Math.random() * (totalWeight / 2);
+            // Higher luck biases toward better events
+            if (luck > 1.5 && Math.random() < 0.3) {
+                random = Math.random() * (totalWeight * 0.5);
+            }
 
             for (let ev of EVENTS) {
-                if (random < ev.weight) return ev;
                 random -= ev.weight;
+                if (random <= 0) return ev;
             }
             return EVENTS[0];
         }

@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>CHAOS LAB: Minimal Edition</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/matter-js/0.19.0/matter.min.js"></script>
+    <style>
+        body {
+            margin: 0; padding: 0; overflow: hidden;
+            background-color: #111;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            color: #eee;
+        }
+
+        #canvas-container {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            z-index: 0;
+        }
+
+        #canvas-container canvas {
+            display: block;
+        }
+
+        #ui {
+            position: fixed; top: 20px; left: 20px;
+            pointer-events: none; z-index: 10;
+        }
+
+        .stats { font-size: 20px; font-weight: bold; letter-spacing: 1px; }
+        .hint { font-size: 12px; color: #888; margin-top: 5px; }
+
+        .toolbar {
+            position: fixed; bottom: 20px; left: 50%;
+            transform: translateX(-50%);
+            display: flex; gap: 10px; pointer-events: auto;
+            z-index: 10;
+        }
+
+        button {
+            background: #222; border: 1px solid #444; color: white;
+            padding: 10px 15px; cursor: pointer; transition: 0.2s;
+            text-transform: uppercase; font-size: 11px;
+        }
+
+        button:hover { background: #333; border-color: #ff4500; }
+        
+        #slow-mo {
+            position: fixed; top: 20px; right: 20px;
+            background: #ff4500; color: black; padding: 5px 10px;
+            display: none; font-weight: bold; z-index: 10;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="canvas-container"></div>
+
+    <div id="ui">
+        <div class="stats">SCORE: <span id="score">0</span></div>
+        <div class="hint">[1-4] Spawn | [S] Toggle Ragdoll | [SPACE] Slow-Mo | [CLICK GUN] Shoot</div>
+    </div>
+
+    <div id="slow-mo">SLOW-MO ACTIVE</div>
+
+    <div class="toolbar">
+        <button onclick="spawnStickman()">[1] Stickman</button>
+        <button onclick="spawnTNT()">[2] TNT</button>
+        <button onclick="spawnGun()">[3] Pistol</button>
+        <button onclick="spawnBox()">[4] Crate</button>
+        <button onclick="reset()" style="color: #ff4500;">Reset</button>
+    </div>
+
+    <script>
+        const { Engine, Render, Runner, Bodies, Composite, Constraint, MouseConstraint, Mouse, Vector, Body, Events } = Matter;
+
+        // --- CORE CONFIG ---
+        const engine = Engine.create();
+        const world = engine.world;
+        engine.positionIterations = 10; // Sharper physics
+        engine.velocityIterations = 10;
+
+        const render = Render.create({
+            element: document.getElementById('canvas-container'),
+            engine: engine,
+            options: {
+                width: window.innerWidth, height: window.innerHeight,
+                wireframes: false, background: '#111'
+            }
+        });
+
+        // --- GAME STATE ---
+        let score = 0;
+        let bloodParticles = [];
+        let stickmen = [];
+        let isStanding = true;
+
+        // --- PHYSICS OBJECTS ---
+        const ground = Bodies.rectangle(window.innerWidth/2, window.innerHeight + 25, window.innerWidth, 50, { isStatic: true, render: { fillStyle: '#222' } });
+        Composite.add(world, [ground]);
+
+        // --- STICKMAN (Ragdoll + Stand Logic) ---
+        function spawnStickman() {
+            const x = Math.random() * window.innerWidth;
+            const y = window.innerHeight - 150;
+            const group = Body.nextGroup(true);
+            
+            const head = Bodies.circle(x, y-50, 12, { collisionFilter: { group }, render: { fillStyle: '#fff' } });
+            const torso = Bodies.rectangle(x, y-10, 18, 40, { collisionFilter: { group }, render: { fillStyle: '#fff' } });
+            const armL = Bodies.rectangle(x-15, y-10, 8, 30, { collisionFilter: { group }, render: { fillStyle: '#fff' } });
+            const armR = Bodies.rectangle(x+15, y-10, 8, 30, { collisionFilter: { group }, render: { fillStyle: '#fff' } });
+            const legL = Bodies.rectangle(x-7, y+30, 8, 35, { collisionFilter: { group }, render: { fillStyle: '#fff' } });
+            const legR = Bodies.rectangle(x+7, y+30, 8, 35, { collisionFilter: { group }, render: { fillStyle: '#fff' } });
+
+            const joints = [
+                Constraint.create({ bodyA: head, bodyB: torso, pointA: {x:0, y:12}, pointB: {x:0, y:-20}, stiffness: 0.5, length: 2 }),
+                Constraint.create({ bodyA: torso, bodyB: armL, pointA: {x:-10, y:-15}, pointB: {x:0, y:-12}, stiffness: 0.5 }),
+                Constraint.create({ bodyA: torso, bodyB: armR, pointA: {x:10, y:-15}, pointB: {x:0, y:-12}, stiffness: 0.5 }),
+                Constraint.create({ bodyA: torso, bodyB: legL, pointA: {x:-5, y:20}, pointB: {x:0, y:-15}, stiffness: 0.5 }),
+                Constraint.create({ bodyA: torso, bodyB: legR, pointA: {x:5, y:20}, pointB: {x:0, y:-15}, stiffness: 0.5 })
+            ];
+
+            const man = { head, torso, joints, type: 'stickman' };
+            stickmen.push(man);
+            Composite.add(world, [head, torso, armL, armR, legL, legR, ...joints]);
+        }
+
+        // --- GUNS (Compound Bodies) ---
+        function spawnGun() {
+            const x = Math.random() * window.innerWidth;
+            const barrel = Bodies.rectangle(x, 100, 40, 12, { render: { fillStyle: '#555' } });
+            const grip = Bodies.rectangle(x-15, 110, 12, 25, { render: { fillStyle: '#444' } });
+            
+            const gun = Body.create({
+                parts: [barrel, grip],
+                label: 'gun'
+            });
+            Composite.add(world, gun);
+        }
+
+        function shoot(gun) {
+            const angle = gun.angle;
+            const force = 0.05;
+            const bullet = Bodies.circle(gun.position.x + Math.cos(angle)*30, gun.position.y + Math.sin(angle)*30, 4, {
+                render: { fillStyle: '#ffeb3b' },
+                label: 'bullet',
+                frictionAir: 0
+            });
+            Composite.add(world, bullet);
+            Body.setVelocity(bullet, { x: Math.cos(angle) * 25, y: Math.sin(angle) * 25 });
+        }
+
+        // --- EFFECTS ---
+        function spawnBlood(x, y, count = 5) {
+            for(let i=0; i<count; i++) {
+                const p = Bodies.circle(x, y, Math.random()*2+1, {
+                    render: { fillStyle: '#900' },
+                    collisionFilter: { mask: 1 }, // Only collide with world
+                    friction: 0.05
+                });
+                Body.setVelocity(p, { x: (Math.random()-0.5)*10, y: (Math.random()-0.5)*10 });
+                bloodParticles.push({ body: p, life: 100 });
+                Composite.add(world, p);
+            }
+        }
+
+        function spawnTNT() {
+            const tnt = Bodies.rectangle(Math.random()*window.innerWidth, 50, 30, 30, {
+                label: 'tnt', render: { fillStyle: '#f44336' }
+            });
+            Composite.add(world, tnt);
+        }
+
+        function spawnBox() {
+            Composite.add(world, Bodies.rectangle(Math.random()*window.innerWidth, 50, 40, 40, { render: { fillStyle: '#5d4037' } }));
+        }
+
+        // --- ENGINE LOOP ---
+        Events.on(engine, 'beforeUpdate', () => {
+            // Unragdoll Logic (Active Balancing)
+            if (isStanding) {
+                stickmen.forEach(man => {
+                    // Pull head upright
+                    const force = 0.001 * man.head.mass;
+                    Body.applyForce(man.head, man.head.position, { x: 0, y: -force });
+                    // Helper to keep torso from spinning
+                    Body.setAngle(man.torso, man.torso.angle * 0.9);
+                    man.joints.forEach(j => j.stiffness = 0.4);
+                });
+            } else {
+                stickmen.forEach(man => {
+                    man.joints.forEach(j => j.stiffness = 0.05); // Make floppy
+                });
+            }
+
+            // Blood life cycle
+            bloodParticles.forEach((p, i) => {
+                p.life -= 0.5;
+                if(p.life <= 0) {
+                    Composite.remove(world, p.body);
+                    bloodParticles.splice(i, 1);
+                }
+            });
+        });
+
+        Events.on(engine, 'collisionStart', (event) => {
+            event.pairs.forEach(pair => {
+                if (pair.bodyA.label === 'bullet' || pair.bodyB.label === 'bullet') {
+                    const bullet = pair.bodyA.label === 'bullet' ? pair.bodyA : pair.bodyB;
+                    const other = pair.bodyA.label === 'bullet' ? pair.bodyB : pair.bodyA;
+                    spawnBlood(bullet.position.x, bullet.position.y, 10);
+                    Composite.remove(world, bullet);
+                    score += 50;
+                    document.getElementById('score').innerText = score;
+                }
+                if (pair.bodyA.label === 'tnt' || pair.bodyB.label === 'tnt') {
+                    const tnt = pair.bodyA.label === 'tnt' ? pair.bodyA : pair.bodyB;
+                    setTimeout(() => {
+                        const bodies = Composite.allBodies(world);
+                        bodies.forEach(b => {
+                            const d = Vector.magnitude(Vector.sub(b.position, tnt.position));
+                            if(d < 250 && !b.isStatic) {
+                                Body.applyForce(b, b.position, Vector.mult(Vector.normalise(Vector.sub(b.position, tnt.position)), 0.1 * b.mass));
+                                if(d < 100) spawnBlood(b.position.x, b.position.y, 15);
+                            }
+                        });
+                        Composite.remove(world, tnt);
+                    }, 50);
+                }
+            });
+        });
+
+        // --- INTERACTION ---
+        const mouse = Mouse.create(render.canvas);
+        const mouseConstraint = MouseConstraint.create(engine, {
+            mouse, constraint: { stiffness: 0.1, render: { visible: false } }
+        });
+        Composite.add(world, mouseConstraint);
+
+        window.addEventListener('mousedown', () => {
+            if (mouseConstraint.body && mouseConstraint.body.label === 'gun') {
+                shoot(mouseConstraint.body);
+            }
+        });
+
+        window.addEventListener('keydown', (e) => {
+            if(e.code === 'Digit1') spawnStickman();
+            if(e.code === 'Digit2') spawnTNT();
+            if(e.code === 'Digit3') spawnGun();
+            if(e.code === 'Digit4') spawnBox();
+            if(e.code === 'Space') {
+                engine.timing.timeScale = 0.2;
+                document.getElementById('slow-mo').style.display = 'block';
+            }
+            if(e.code === 'KeyS') isStanding = !isStanding;
+        });
+
+        window.addEventListener('keyup', (e) => {
+            if(e.code === 'Space') {
+                engine.timing.timeScale = 1;
+                document.getElementById('slow-mo').style.display = 'none';
+            }
+        });
+
+        function reset() { location.reload(); }
+
+        // Start
+        Render.run(render);
+        Runner.run(Runner.create(), engine);
+        spawnStickman();
+    </script>
+</body>
+</html>
