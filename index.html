@@ -132,6 +132,8 @@
             padding: 0;
             overflow: hidden;
             display: flex;
+            align-items: stretch;
+            height: 300px;
             margin-bottom: 50px;
             box-shadow: var(--card-shadow);
             cursor: pointer;
@@ -147,14 +149,9 @@
             width: 50%;
             background: #dfe6e9;
             height: 300px;
-            min-height: 300px;
-            max-height: 300px;
             border-right: 4px solid var(--border);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 100px;
             overflow: hidden;
+            flex-shrink: 0;
         }
 
         .featured-img img {
