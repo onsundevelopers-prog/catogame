@@ -220,6 +220,39 @@
             </div>
         </div>
 
+        <!-- Phase 5: Math Challenge -->
+        <div id="math-phase" style="display:none; padding:10px;">
+            <p style="text-align:center">Humans can do math. Solve this:</p>
+            <div id="math-question" style="font-size:28px; font-weight:900; text-align:center; margin:15px 0;"></div>
+            <div style="text-align:center;">
+                <input id="math-input" type="number" placeholder="Your answer" style="padding:10px 12px; width:160px; border:1px solid #ccc; border-radius:6px; font-size:18px; text-align:center;">
+            </div>
+        </div>
+
+        <!-- Phase 6: Reaction Test -->
+        <div id="reaction-phase" style="display:none; padding:10px; text-align:center;">
+            <p>Click the green box as fast as you can!</p>
+            <div id="reaction-box" style="width:80px; height:80px; background:#ccc; border-radius:8px; margin:20px auto; cursor:pointer; transition: background 0.2s;"></div>
+            <div id="reaction-msg" style="font-size:14px; color:#555; min-height:20px;"></div>
+        </div>
+
+        <!-- Phase 7: Sequence Memory -->
+        <div id="sequence-phase" style="display:none; padding:10px; text-align:center;">
+            <p>Remember the sequence, then repeat it!</p>
+            <div id="seq-display" style="font-size:32px; font-weight:900; letter-spacing:8px; margin:10px 0; min-height:40px;"></div>
+            <div id="seq-input-area" style="display:none;">
+                <input id="seq-input" type="text" placeholder="Type the sequence" style="padding:10px; width:200px; border:1px solid #ccc; border-radius:6px; font-size:18px; text-align:center; letter-spacing:4px;">
+            </div>
+        </div>
+
+        <!-- Phase 8: Emoji Decode -->
+        <div id="emoji-phase" style="display:none; padding:10px; text-align:center;">
+            <p>Decode the emoji phrase and type the answer:</p>
+            <div id="emoji-question" style="font-size:36px; margin:15px 0;"></div>
+            <div id="emoji-hint" style="font-size:13px; color:#888; margin-bottom:10px;"></div>
+            <input id="emoji-input" type="text" placeholder="Your answer" style="padding:10px 12px; width:220px; border:1px solid #ccc; border-radius:6px; font-size:16px; text-align:center;">
+        </div>
+
         <div class="modal-footer">
             <button class="verify-btn" id="verify-btn">VERIFY</button>
         </div>
@@ -234,48 +267,73 @@
         const canvasPhase = document.getElementById('canvas-phase');
         const escapePhase = document.getElementById('escape-phase');
         const finalPhase = document.getElementById('final-phase');
+        const mathPhase = document.getElementById('math-phase');
+        const reactionPhase = document.getElementById('reaction-phase');
+        const sequencePhase = document.getElementById('sequence-phase');
+        const emojiPhase = document.getElementById('emoji-phase');
         const finalInput = document.getElementById('final-input');
         
         let currentStep = 1;
         let runawayClicks = 0;
 
-        function getCatabux() {
-            return parseInt(localStorage.getItem('catabux')) || 0;
-        }
+        // Math challenge state
+        let mathAnswer = 0;
 
-        function setCatabux(value) {
-            localStorage.setItem('catabux', value);
-        }
+        // Reaction test state
+        let reactionReady = false;
+        let reactionPassed = false;
+        let reactionTimeout = null;
 
-        function addCatabux(amount) {
-            const total = getCatabux() + amount;
-            setCatabux(total);
-            return total;
+        // Sequence state
+        const SEQ_CHARS = 'ABCDEFGHJKLMNPQRSTUVWXYZ';
+        let seqTarget = '';
+        let seqShowing = false;
+
+        // Emoji decode state
+        const EMOJI_PUZZLES = [
+            { emoji: '🌊🏄', hint: 'Sport on water', answer: 'surfing' },
+            { emoji: '🌙⭐🌌', hint: 'What you see at night', answer: 'stars' },
+            { emoji: '🍕🍕🍕', hint: 'Italian food', answer: 'pizza' },
+            { emoji: '🐱💻', hint: 'Internet meme animal', answer: 'cat' },
+            { emoji: '🌧️🌈', hint: 'After the rain', answer: 'rainbow' },
+        ];
+        let currentEmoji = null;
+
+        function getCatabux() { return parseInt(localStorage.getItem('catabux')) || 0; }
+        function setCatabux(value) { localStorage.setItem('catabux', value); }
+        function addCatabux(amount) { const total = getCatabux() + amount; setCatabux(total); return total; }
+
+        function hideAllPhases() {
+            gridPhase.classList.add('hidden');
+            canvasPhase.style.display = 'none';
+            escapePhase.style.display = 'none';
+            finalPhase.style.display = 'none';
+            mathPhase.style.display = 'none';
+            reactionPhase.style.display = 'none';
+            sequencePhase.style.display = 'none';
+            emojiPhase.style.display = 'none';
+            verifyBtn.style.display = 'inline-block';
+            verifyBtn.innerText = 'VERIFY';
         }
 
         // 1. Initial Checkbox Logic
         mainCheckbox.addEventListener('click', () => {
             mainCheckbox.style.borderColor = 'transparent';
             spinner.style.display = 'block';
-            
             setTimeout(() => {
                 modal.style.display = 'flex';
                 initGridPhase();
             }, 1000);
         });
 
-        // 2. Phase 1: The Grid
+        // Phase 1: The Grid
         function initGridPhase() {
             currentStep = 1;
+            hideAllPhases();
             gridPhase.innerHTML = '';
+            gridPhase.classList.remove('hidden');
             document.getElementById('modal-title').innerText = 'Select all squares with robots';
             document.getElementById('modal-subtitle').innerText = 'Tap at least 3 items';
-            gridPhase.classList.remove('hidden');
-            canvasPhase.style.display = 'none';
-            escapePhase.style.display = 'none';
-            finalPhase.style.display = 'none';
-            verifyBtn.style.display = 'inline-block';
-            verifyBtn.innerText = 'VERIFY';
 
             for (let i = 0; i < 9; i++) {
                 const div = document.createElement('div');
@@ -286,16 +344,14 @@
             }
         }
 
-        // 3. Phase 2: Drawing Logic
+        // Phase 2: Drawing
         function initCanvasPhase() {
             currentStep = 2;
-            gridPhase.classList.add('hidden');
+            hideAllPhases();
             canvasPhase.style.display = 'block';
             document.getElementById('modal-title').innerText = 'Prove you have a soul';
             document.getElementById('modal-subtitle').innerText = 'Draw a perfect circle';
             verifyBtn.innerText = 'ANALYZE';
-            finalPhase.style.display = 'none';
-            runawayClicks = 0;
 
             const canvas = document.getElementById('drawingCanvas');
             const ctx = canvas.getContext('2d');
@@ -313,15 +369,14 @@
             };
         }
 
-        // 4. Phase 3: The Runaway Button
+        // Phase 3: Runaway Button
         function initEscapePhase() {
             currentStep = 3;
-            canvasPhase.style.display = 'none';
+            hideAllPhases();
             escapePhase.style.display = 'block';
             document.getElementById('modal-title').innerText = 'Final Step';
             document.getElementById('modal-subtitle').innerText = 'Catch the button to prove you are human';
             verifyBtn.style.display = 'none';
-            finalPhase.style.display = 'none';
             runawayClicks = 0;
 
             const btn = document.getElementById('runaway-btn');
@@ -340,46 +395,187 @@
                 if (runawayClicks >= 3) {
                     initFinalPhase();
                 } else {
-                    alert('Nice catch! One more time.');
+                    alert('Nice catch! ' + (3 - runawayClicks) + ' more time(s).');
                 }
             };
         }
 
+        // Phase 4: Type HUMAN
         function initFinalPhase() {
             currentStep = 4;
-            escapePhase.style.display = 'none';
+            hideAllPhases();
             finalPhase.style.display = 'block';
             document.getElementById('modal-title').innerText = 'Last Check';
             document.getElementById('modal-subtitle').innerText = 'Type the word shown above';
-            verifyBtn.style.display = 'inline-block';
             verifyBtn.innerText = 'SUBMIT';
             finalInput.value = '';
             finalInput.focus();
+        }
+
+        // Phase 5: Math Challenge
+        function initMathPhase() {
+            currentStep = 5;
+            hideAllPhases();
+            mathPhase.style.display = 'block';
+            document.getElementById('modal-title').innerText = 'Brain Check';
+            document.getElementById('modal-subtitle').innerText = 'Robots are bad at math (apparently)';
+            verifyBtn.innerText = 'SUBMIT';
+
+            const a = Math.floor(Math.random() * 20) + 5;
+            const b = Math.floor(Math.random() * 20) + 5;
+            const ops = [
+                { sym: '+', fn: (x, y) => x + y },
+                { sym: '×', fn: (x, y) => x * y },
+                { sym: '−', fn: (x, y) => x - y },
+            ];
+            const op = ops[Math.floor(Math.random() * ops.length)];
+            mathAnswer = op.fn(a, b);
+            document.getElementById('math-question').innerText = `${a} ${op.sym} ${b} = ?`;
+            document.getElementById('math-input').value = '';
+            document.getElementById('math-input').focus();
+        }
+
+        // Phase 6: Reaction Test
+        function initReactionPhase() {
+            currentStep = 6;
+            hideAllPhases();
+            reactionPhase.style.display = 'block';
+            document.getElementById('modal-title').innerText = 'Reaction Test';
+            document.getElementById('modal-subtitle').innerText = 'Only humans have reflexes';
+            verifyBtn.style.display = 'none';
+            reactionReady = false;
+            reactionPassed = false;
+
+            const box = document.getElementById('reaction-box');
+            const msg = document.getElementById('reaction-msg');
+            box.style.background = '#ccc';
+            msg.innerText = 'Wait for green...';
+
+            const delay = 1500 + Math.random() * 2500;
+            reactionTimeout = setTimeout(() => {
+                box.style.background = '#4caf50';
+                msg.innerText = 'CLICK NOW!';
+                reactionReady = true;
+            }, delay);
+
+            box.onclick = () => {
+                if (!reactionReady) {
+                    clearTimeout(reactionTimeout);
+                    msg.innerText = 'Too early! Restarting...';
+                    box.style.background = '#f44336';
+                    setTimeout(() => initReactionPhase(), 1500);
+                } else {
+                    box.style.background = '#2196f3';
+                    msg.innerText = '✅ Fast enough! Proceeding...';
+                    reactionPassed = true;
+                    setTimeout(() => initSequencePhase(), 1200);
+                }
+            };
+        }
+
+        // Phase 7: Sequence Memory
+        function initSequencePhase() {
+            currentStep = 7;
+            hideAllPhases();
+            sequencePhase.style.display = 'block';
+            document.getElementById('modal-title').innerText = 'Memory Test';
+            document.getElementById('modal-subtitle').innerText = 'Remember the sequence';
+            verifyBtn.style.display = 'none';
+
+            const len = 5;
+            seqTarget = Array.from({length: len}, () => SEQ_CHARS[Math.floor(Math.random() * SEQ_CHARS.length)]).join('');
+            const display = document.getElementById('seq-display');
+            const inputArea = document.getElementById('seq-input-area');
+            const seqInput = document.getElementById('seq-input');
+
+            display.innerText = seqTarget;
+            inputArea.style.display = 'none';
+            seqInput.value = '';
+
+            setTimeout(() => {
+                display.innerText = '?????';
+                inputArea.style.display = 'block';
+                seqInput.focus();
+                verifyBtn.style.display = 'inline-block';
+                verifyBtn.innerText = 'SUBMIT';
+            }, 3000);
+        }
+
+        // Phase 8: Emoji Decode
+        function initEmojiPhase() {
+            currentStep = 8;
+            hideAllPhases();
+            emojiPhase.style.display = 'block';
+            document.getElementById('modal-title').innerText = 'Emoji Decoder';
+            document.getElementById('modal-subtitle').innerText = 'Robots can\'t understand feelings';
+            verifyBtn.innerText = 'SUBMIT';
+
+            currentEmoji = EMOJI_PUZZLES[Math.floor(Math.random() * EMOJI_PUZZLES.length)];
+            document.getElementById('emoji-question').innerText = currentEmoji.emoji;
+            document.getElementById('emoji-hint').innerText = 'Hint: ' + currentEmoji.hint;
+            document.getElementById('emoji-input').value = '';
+            document.getElementById('emoji-input').focus();
         }
 
         // Verification Progression
         verifyBtn.addEventListener('click', () => {
             if (currentStep === 1) {
                 const selected = document.querySelectorAll('.selected');
-                if (selected.length < 3) {
-                    alert('Please select at least 3 images.');
-                    return;
-                }
+                if (selected.length < 3) { alert('Please select at least 3 images.'); return; }
                 initCanvasPhase();
+
             } else if (currentStep === 2) {
                 verifyBtn.innerText = 'ANALYZING...';
                 setTimeout(() => {
                     alert('Nice drawing! You seem human enough.');
                     initEscapePhase();
                 }, 1200);
+
             } else if (currentStep === 4) {
                 if (finalInput.value.trim().toUpperCase() === 'HUMAN') {
+                    initMathPhase();
+                } else {
+                    alert('Type HUMAN exactly to continue.');
+                }
+
+            } else if (currentStep === 5) {
+                const userAns = parseInt(document.getElementById('math-input').value);
+                if (userAns === mathAnswer) {
+                    alert('Correct! A robot would have used a calculator.');
+                    initReactionPhase();
+                } else {
+                    alert(`Wrong! The answer was ${mathAnswer}. Try again.`);
+                    initMathPhase();
+                }
+
+            } else if (currentStep === 7) {
+                const userSeq = document.getElementById('seq-input').value.trim().toUpperCase();
+                if (userSeq === seqTarget) {
+                    alert('Perfect memory! Very human of you.');
+                    initEmojiPhase();
+                } else {
+                    alert(`Wrong! The sequence was ${seqTarget}. Try again.`);
+                    initSequencePhase();
+                }
+
+            } else if (currentStep === 8) {
+                const userEmoji = document.getElementById('emoji-input').value.trim().toLowerCase();
+                if (userEmoji === currentEmoji.answer) {
                     const reward = 15;
                     addCatabux(reward);
-                    alert('Verified! You earned ' + reward + ' Catabux.');
-                    document.body.innerHTML = '<div style="font-family: Arial, sans-serif; padding: 50px; text-align:center;"><h1>Access Granted</h1><p>Great job, human! Your Catabux has been updated.</p></div>';
+                    document.body.innerHTML = `
+                        <div style="font-family: Arial, sans-serif; padding: 50px; text-align:center; background:#f0f2f5; height:100vh; display:flex; flex-direction:column; align-items:center; justify-content:center;">
+                            <div style="background:white; border-radius:12px; padding:40px; box-shadow:0 4px 20px rgba(0,0,0,0.1); max-width:400px;">
+                                <div style="font-size:60px;">✅</div>
+                                <h1 style="color:#4a90e2;">Access Granted</h1>
+                                <p style="color:#555;">You passed all 8 challenges. Definitely human.</p>
+                                <p style="font-weight:bold; font-size:18px;">+${reward} Catabux earned!</p>
+                                <a href="../../home.html" style="display:inline-block; margin-top:20px; padding:12px 24px; background:#4a90e2; color:white; border-radius:6px; text-decoration:none; font-weight:bold;">Back to Home</a>
+                            </div>
+                        </div>`;
                 } else {
-                    alert('Type HUMAN exactly to finish the check.');
+                    alert(`Not quite! The answer was "${currentEmoji.answer}". Try again.`);
+                    initEmojiPhase();
                 }
             }
         });
