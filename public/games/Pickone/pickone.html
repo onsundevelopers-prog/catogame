@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Pick One</title>
+  <style>
+    body {
+  font-family: Arial;
+  text-align: center;
+  background: #111;
+  color: white;
+}
+
+h1 {
+  margin-top: 20px;
+}
+
+.desc {
+  color: #aaa;
+}
+
+#events {
+  margin-top: 20px;
+}
+
+button {
+  display: block;
+  margin: 10px auto;
+  padding: 12px;
+  width: 60%;
+  background: #222;
+  color: white;
+  border: 1px solid #444;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+button:hover {
+  background: #333;
+}
+
+#result {
+  margin-top: 20px;
+  font-size: 18px;
+}
+
+#nextBtn {
+  margin-top: 20px;
+  background: #00c853;
+}
+  </style>
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+<h1>Pick One</h1>
+<p class="desc">
+You must erase ONE event from history.<br>
+See how many people agree with you.
+</p>
+
+<h2 id="year">Loading...</h2>
+
+<div id="events"></div>
+
+<p id="result"></p>
+
+<button id="nextBtn" onclick="startGame()" style="display:none;">
+  Next Year
+</button>
+
+
+<script>
+let data = [];
+
+async function loadData() {
+    const res = await fetch('data.json');
+    const json = await res.json();
+    data = json.years;
+
+    startGame();
+}
+
+function startGame() {
+    document.getElementById("result").innerText = "";
+    document.getElementById("nextBtn").style.display = "none";
+
+    const randomYear = data[Math.floor(Math.random() * data.length)];
+
+    document.getElementById("year").innerText =
+        "Year: " + randomYear.year;
+
+    const container = document.getElementById("events");
+    container.innerHTML = "";
+
+    randomYear.events.forEach(eventText => {
+        const btn = document.createElement("button");
+        btn.innerText = eventText;
+
+        btn.onclick = () => pickEvent(eventText, btn);
+
+        container.appendChild(btn);
+    });
+}
+
+function pickEvent(eventText, clickedBtn) {
+    // Disable all buttons
+    document.querySelectorAll("#events button").forEach(b => {
+        b.disabled = true;
+        b.style.opacity = "0.5";
+    });
+
+    // Highlight selected
+    clickedBtn.style.background = "#c62828";
+
+    // Fake % system (feels real)
+    const percent = Math.floor(Math.random() * 60) + 20;
+
+    setTimeout(() => {
+        document.getElementById("result").innerText =
+            `You erased:\n"${eventText}"\n\n${percent}% of people agree with you`;
+
+        document.getElementById("nextBtn").style.display = "block";
+    }, 800);
+}
+
+loadData();
+</script>
+</body>
+</html>

@@ -239,7 +239,56 @@
             { title: "Unexpected Clutch",       desc: "You somehow save the situation.",                    weight: 8,  rarity: "Rare",      color: "#3498db", effect: () => { wealth += 120; } },
             { title: "Accidental Genius",       desc: "You solve something by accident.",                   weight: 8,  rarity: "Rare",      color: "#3498db", effect: () => { wealth += 150; } },
             { title: "Speedrun Energy",         desc: "You suddenly play faster for no reason.",            weight: 10, rarity: "Common",    color: "#bdc3c7", effect: () => { wealth += 20; } },
-        ];
+            { title: "Late Night Energy", desc: "You feel weirdly productive.", weight: 12, rarity: "Common", color: "#bdc3c7", effect: () => { luck += 0.2; } },
+{ title: "Lost Wallet", desc: "You drop some cash.", weight: 14, rarity: "Common", color: "#bdc3c7", effect: () => { wealth = Math.max(0, wealth - 25); } },
+{ title: "Random Compliment", desc: "Confidence boost.", weight: 15, rarity: "Common", color: "#bdc3c7", effect: () => { luck += 0.3; } },
+{ title: "Cold Shower Thought", desc: "You gain clarity.", weight: 10, rarity: "Common", color: "#bdc3c7", effect: () => { luck += 0.4; } },
+{ title: "Missed Opportunity", desc: "You were so close.", weight: 12, rarity: "Common", color: "#bdc3c7", effect: () => { luck -= 0.2; } },
+
+{ title: "Glitch Step", desc: "You teleport slightly.", weight: 8, rarity: "Rare", color: "#3498db", effect: () => { wealth += 60; } },
+{ title: "Aura Spike", desc: "People notice you.", weight: 7, rarity: "Rare", color: "#3498db", effect: () => { luck += 1; } },
+{ title: "Shadow Lag", desc: "Your shadow moves late.", weight: 6, rarity: "Rare", color: "#3498db", effect: () => { luck -= 0.3; } },
+{ title: "Coin Rain Lite", desc: "Small money boost.", weight: 9, rarity: "Rare", color: "#3498db", effect: () => { wealth += 150; } },
+{ title: "Focus Mode", desc: "Everything sharpens.", weight: 8, rarity: "Rare", color: "#3498db", effect: () => { luck += 0.8; } },
+
+{ title: "Bank Error", desc: "You receive extra money.", weight: 3, rarity: "Rare", color: "#3498db", effect: () => { wealth += 800; } },
+{ title: "Weird Echo", desc: "Your actions repeat.", weight: 6, rarity: "Rare", color: "#3498db", effect: () => {} },
+{ title: "Phone Drop", desc: "Small panic moment.", weight: 13, rarity: "Common", color: "#bdc3c7", effect: () => { luck -= 0.1; } },
+
+{ title: "Lucky Streak", desc: "Everything goes right.", weight: 4, rarity: "Rare", color: "#3498db", effect: () => { luck += 2; } },
+{ title: "Mini Curse", desc: "Something feels off.", weight: 10, rarity: "Common", color: "#bdc3c7", effect: () => { luck -= 0.2; } },
+
+{ title: "Reality Flip", desc: "Left becomes right.", weight: 3, rarity: "Rare", color: "#3498db", effect: () => { luck *= -1; } },
+{ title: "Bonus Check", desc: "Extra income!", weight: 6, rarity: "Rare", color: "#3498db", effect: () => { wealth += 300; } },
+
+{ title: "Invisible Win", desc: "You win silently.", weight: 7, rarity: "Rare", color: "#3498db", effect: () => { wealth += 120; } },
+{ title: "Small Misfortune", desc: "Tiny setback.", weight: 14, rarity: "Common", color: "#bdc3c7", effect: () => { wealth -= 5; } },
+
+{ title: "Sleep Boost", desc: "You feel refreshed.", weight: 11, rarity: "Common", color: "#bdc3c7", effect: () => { luck += 0.2; } },
+{ title: "Lag Spike", desc: "Reality freezes briefly.", weight: 9, rarity: "Rare", color: "#3498db", effect: () => { luck -= 0.4; } },
+
+{ title: "Big Tip", desc: "Unexpected cash.", weight: 5, rarity: "Rare", color: "#3498db", effect: () => { wealth += 400; } },
+{ title: "Clumsy Moment", desc: "You trip slightly.", weight: 12, rarity: "Common", color: "#bdc3c7", effect: () => { luck -= 0.1; } },
+
+{ title: "Focus Loss", desc: "You lose track.", weight: 15, rarity: "Common", color: "#bdc3c7", effect: () => {} },
+
+{ title: "Hyper Mode", desc: "Speed + efficiency.", weight: 6, rarity: "Rare", color: "#3498db", effect: () => { wealth += 200; } },
+
+{ title: "Jackpot Echo", desc: "A mini jackpot.", weight: 2, rarity: "Legendary", color: "#f1c40f", effect: () => { wealth += 3000; } },
+{ title: "Luck Overflow", desc: "Luck explodes.", weight: 2, rarity: "Legendary", color: "#f1c40f", effect: () => { luck += 4; } },
+
+{ title: "Reality Collapse", desc: "Everything fades.", weight: 1, rarity: "Cursed", color: "#e74c3c", effect: () => { wealth = 0; luck = 0.5; } },
+{ title: "Fatal Slip", desc: "You fall badly.", weight: 1, rarity: "Cursed", color: "#e74c3c", isDeadly: true, reason: "Unlucky step." },
+
+{ title: "Time Boost", desc: "You gain progress.", weight: 4, rarity: "Rare", color: "#3498db", effect: () => { wealth += 500; } },
+{ title: "Energy Crash", desc: "You feel drained.", weight: 11, rarity: "Common", color: "#bdc3c7", effect: () => { luck -= 0.3; } },
+
+{ title: "Side Quest Complete", desc: "Reward gained.", weight: 8, rarity: "Rare", color: "#3498db", effect: () => { wealth += 250; } },
+{ title: "Hidden Bonus", desc: "You found extra.", weight: 7, rarity: "Rare", color: "#3498db", effect: () => { wealth += 180; } },
+
+{ title: "Confidence Spike", desc: "You feel unstoppable.", weight: 9, rarity: "Rare", color: "#3498db", effect: () => { luck += 1.2; } },
+{ title: "Awkward Moment", desc: "That was weird.", weight: 13, rarity: "Common", color: "#bdc3c7", effect: () => { luck -= 0.1; } }
+        ]; 
 
         const door = document.getElementById('door-container');
         const eventDisplay = document.getElementById('event-display');
