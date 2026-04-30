@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Start Creating | Catagame</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap');
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #f0f2f5;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 40px 20px;
+        }
+
+        h1 {
+            font-size: clamp(28px, 6vw, 48px);
+            font-weight: 900;
+            letter-spacing: -2px;
+            margin-bottom: 8px;
+            text-align: center;
+        }
+
+        .subtitle {
+            color: #666;
+            font-size: clamp(14px, 3vw, 18px);
+            margin-bottom: 40px;
+            text-align: center;
+        }
+
+        .form-card {
+            background: white;
+            border: 3px solid #000;
+            border-radius: 16px;
+            padding: clamp(20px, 5vw, 40px);
+            width: 100%;
+            max-width: 600px;
+            box-shadow: 8px 8px 0px #000;
+        }
+
+        .field {
+            margin-bottom: 20px;
+        }
+
+        .field label {
+            display: block;
+            font-weight: 700;
+            font-size: 14px;
+            margin-bottom: 6px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .field input,
+        .field textarea {
+            width: 100%;
+            padding: 12px 14px;
+            border: 2px solid #000;
+            border-radius: 8px;
+            font-size: 16px;
+            font-family: 'Inter', sans-serif;
+            outline: none;
+            transition: box-shadow 0.15s;
+            -webkit-appearance: none;
+            appearance: none;
+        }
+
+        .field input:focus,
+        .field textarea:focus {
+            box-shadow: 4px 4px 0px #000;
+        }
+
+        .field textarea {
+            resize: vertical;
+            min-height: 120px;
+        }
+
+        .char-count {
+            font-size: 12px;
+            color: #888;
+            text-align: right;
+            margin-top: 4px;
+        }
+
+        .char-count.warn { color: #e67e22; }
+        .char-count.error { color: #e74c3c; }
+
+        .btn-row {
+            display: flex;
+            gap: 12px;
+            margin-top: 24px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            flex: 1;
+            min-width: 120px;
+            padding: 14px 20px;
+            font-size: 16px;
+            font-weight: 900;
+            border: 3px solid #000;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.15s;
+            text-transform: uppercase;
+            touch-action: manipulation;
+        }
+
+        .btn-primary {
+            background: #000;
+            color: #fff;
+            box-shadow: 4px 4px 0px #555;
+        }
+
+        .btn-primary:hover, .btn-primary:active {
+            transform: translate(-2px, -2px);
+            box-shadow: 6px 6px 0px #555;
+        }
+
+        .btn-danger {
+            background: #fff;
+            color: #e74c3c;
+            border-color: #e74c3c;
+            box-shadow: 4px 4px 0px #e74c3c;
+        }
+
+        .btn-danger:hover, .btn-danger:active {
+            background: #e74c3c;
+            color: #fff;
+        }
+
+        /* Task list */
+        .task-section {
+            margin-top: 32px;
+        }
+
+        .task-section h2 {
+            font-size: 20px;
+            font-weight: 900;
+            margin-bottom: 12px;
+        }
+
+        .task-input-row {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 16px;
+        }
+
+        .task-input-row input {
+            flex: 1;
+            padding: 12px 14px;
+            border: 2px solid #000;
+            border-radius: 8px;
+            font-size: 16px;
+            font-family: 'Inter', sans-serif;
+            outline: none;
+            -webkit-appearance: none;
+            appearance: none;
+        }
+
+        .task-input-row button {
+            padding: 12px 18px;
+            background: #000;
+            color: #fff;
+            border: 2px solid #000;
+            border-radius: 8px;
+            font-weight: 900;
+            cursor: pointer;
+            font-size: 16px;
+            touch-action: manipulation;
+            white-space: nowrap;
+        }
+
+        #todo-list {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        #todo-list li {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 14px;
+            background: #f8f8f8;
+            border: 2px solid #000;
+            border-radius: 8px;
+            gap: 10px;
+        }
+
+        #todo-list li .task-text {
+            flex: 1;
+            cursor: pointer;
+            font-size: 15px;
+            word-break: break-word;
+        }
+
+        #todo-list li .task-text.completed {
+            text-decoration: line-through;
+            color: #aaa;
+        }
+
+        #todo-list li .delete-btn {
+            background: none;
+            border: 2px solid #e74c3c;
+            color: #e74c3c;
+            border-radius: 6px;
+            padding: 4px 10px;
+            cursor: pointer;
+            font-weight: 700;
+            font-size: 13px;
+            flex-shrink: 0;
+            touch-action: manipulation;
+        }
+
+        .success-msg {
+            display: none;
+            margin-top: 16px;
+            padding: 14px;
+            background: #eafaf1;
+            border: 2px solid #27ae60;
+            border-radius: 8px;
+            color: #1e8449;
+            font-weight: 700;
+            text-align: center;
+        }
+
+        /* Mobile tweaks */
+        @media (max-width: 480px) {
+            body { padding: 20px 12px; }
+            .form-card { border-radius: 12px; }
+            .btn-row { flex-direction: column; }
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Start Creating</h1>
+    <p class="subtitle">Share your idea and we'll help you build it.</p>
+
+    <div class="form-card">
+        <div class="field">
+            <label for="name-input">Your Name</label>
+            <input id="name-input" type="text" placeholder="e.g. Alex" autocomplete="name">
+        </div>
+
+        <div class="field">
+            <label for="email-input">Email</label>
+            <input id="email-input" type="email" placeholder="you@example.com" autocomplete="email">
+        </div>
+
+        <div class="field">
+            <label for="idea-input">Your Idea</label>
+            <textarea id="idea-input" placeholder="Describe your idea (100–1500 characters)..." maxlength="1500"></textarea>
+            <div class="char-count" id="idea-count">0 / 1500</div>
+        </div>
+
+        <div class="field">
+            <label for="desc-input">Description</label>
+            <input id="desc-input" type="text" placeholder="Short description">
+        </div>
+
+        <div class="btn-row">
+            <button class="btn btn-primary" id="submit-btn">Submit Idea</button>
+            <button class="btn btn-danger" id="clear-btn">Clear Form</button>
+        </div>
+
+        <div class="success-msg" id="success-msg">✅ Idea submitted! Thanks for sharing.</div>
+
+        <!-- Task / Notes list -->
+        <div class="task-section">
+            <h2>Notes</h2>
+            <div class="task-input-row">
+                <input id="todo-input" type="text" placeholder="Add a note..." maxlength="200">
+                <button id="add-btn">Add</button>
+            </div>
+            <ul id="todo-list"></ul>
+        </div>
+    </div>
+
+    <script>
+        // --- Idea textarea char counter ---
+        const ideaInput = document.getElementById('idea-input');
+        const ideaCount = document.getElementById('idea-count');
+
+        ideaInput.addEventListener('input', () => {
+            const len = ideaInput.value.length;
+            ideaCount.textContent = len + ' / 1500';
+            ideaCount.className = 'char-count' + (len > 1400 ? ' error' : len > 1000 ? ' warn' : '');
+        });
+
+        // --- Form submit ---
+        document.getElementById('submit-btn').addEventListener('click', () => {
+            const name = document.getElementById('name-input').value.trim();
+            const email = document.getElementById('email-input').value.trim();
+            const idea = ideaInput.value.trim();
+
+            if (!name) { alert('Please enter your name.'); return; }
+            if (!email || !email.includes('@')) { alert('Please enter a valid email.'); return; }
+            if (idea.length < 100) { alert('Your idea must be at least 100 characters.'); return; }
+            if (idea.length > 1500) { alert('Your idea must be at most 1500 characters.'); return; }
+
+            document.getElementById('success-msg').style.display = 'block';
+        });
+
+        // --- Clear form ---
+        document.getElementById('clear-btn').addEventListener('click', () => {
+            document.getElementById('name-input').value = '';
+            document.getElementById('email-input').value = '';
+            ideaInput.value = '';
+            ideaCount.textContent = '0 / 1500';
+            ideaCount.className = 'char-count';
+            document.getElementById('desc-input').value = '';
+            document.getElementById('success-msg').style.display = 'none';
+        });
+
+        // --- Task list ---
+        const todoInput = document.getElementById('todo-input');
+        const addBtn = document.getElementById('add-btn');
+        const todoList = document.getElementById('todo-list');
+
+        function addTask() {
+            const text = todoInput.value.trim();
+            if (!text) { alert('Please enter a note.'); return; }
+
+            const li = document.createElement('li');
+            li.innerHTML = `
+                <span class="task-text">${text}</span>
+                <button class="delete-btn">Delete</button>
+            `;
+
+            li.querySelector('.task-text').addEventListener('click', function () {
+                this.classList.toggle('completed');
+            });
+
+            li.querySelector('.delete-btn').addEventListener('click', function () {
+                li.remove();
+            });
+
+            todoList.appendChild(li);
+            todoInput.value = '';
+        }
+
+        addBtn.addEventListener('click', addTask);
+        todoInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') addTask(); });
+    </script>
+</body>
+</html>
