@@ -2,130 +2,224 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Pick One</title>
   <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap');
+
+    :root {
+      --border: #30211a;
+      --shadow: 6px 6px 0px #291b14;
+      --hover-shadow: 10px 10px 0px #291b14;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
     body {
-  font-family: Arial;
-  text-align: center;
-  background: #111;
-  color: white;
-}
+      font-family: 'Inter', cursive, sans-serif;
+      text-align: center;
+      background: burlywood;
+      color: #1a0f0a;
+      min-height: 100vh;
+      padding: 30px 20px 60px;
+    }
 
-h1 {
-  margin-top: 20px;
-}
+    h1 {
+      font-size: clamp(32px, 7vw, 56px);
+      font-weight: 900;
+      letter-spacing: -2px;
+      margin-bottom: 8px;
+    }
 
-.desc {
-  color: #aaa;
-}
+    .desc {
+      font-size: clamp(14px, 3vw, 18px);
+      color: #5c3a28;
+      margin-bottom: 30px;
+      font-weight: 500;
+    }
 
-#events {
-  margin-top: 20px;
-}
+    #year {
+      font-size: clamp(20px, 4vw, 28px);
+      font-weight: 900;
+      margin: 20px 0 16px;
+      background: white;
+      display: inline-block;
+      padding: 8px 24px;
+      border: 3px solid var(--border);
+      border-radius: 12px;
+      box-shadow: var(--shadow);
+    }
 
-button {
-  display: block;
-  margin: 10px auto;
-  padding: 12px;
-  width: 60%;
-  background: #222;
-  color: white;
-  border: 1px solid #444;
-  cursor: pointer;
-  transition: 0.2s;
-}
+    #events {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 14px;
+      margin-top: 20px;
+    }
 
-button:hover {
-  background: #333;
-}
+    #events button {
+      width: min(90%, 560px);
+      padding: 18px 24px;
+      background: white;
+      border: 3px solid var(--border);
+      border-radius: 14px;
+      box-shadow: var(--shadow);
+      font-size: clamp(14px, 2.5vw, 17px);
+      font-family: 'Inter', sans-serif;
+      font-weight: 700;
+      color: #1a0f0a;
+      cursor: pointer;
+      transition: all 0.15s;
+      text-align: left;
+    }
 
-#result {
-  margin-top: 20px;
-  font-size: 18px;
-}
+    #events button:hover:not(:disabled) {
+      transform: translate(-3px, -3px);
+      box-shadow: var(--hover-shadow);
+      background: #fff8f0;
+    }
 
-#nextBtn {
-  margin-top: 20px;
-  background: #00c853;
-}
+    #events button:disabled {
+      cursor: default;
+    }
+
+    #events button.selected {
+      background: #c62828;
+      color: white;
+      border-color: #7b1111;
+      box-shadow: 4px 4px 0px #7b1111;
+      transform: none;
+    }
+
+    #result {
+      margin-top: 28px;
+      font-size: clamp(16px, 3vw, 20px);
+      font-weight: 700;
+      white-space: pre-line;
+      background: white;
+      display: inline-block;
+      padding: 16px 28px;
+      border: 3px solid var(--border);
+      border-radius: 14px;
+      box-shadow: var(--shadow);
+      max-width: 560px;
+      width: 90%;
+    }
+
+    #nextBtn {
+      margin-top: 20px;
+      padding: 16px 40px;
+      background: #2e7d32;
+      color: white;
+      border: 3px solid #1b5e20;
+      border-radius: 12px;
+      font-size: 17px;
+      font-weight: 900;
+      cursor: pointer;
+      box-shadow: 5px 5px 0px #1b5e20;
+      transition: all 0.15s;
+      font-family: 'Inter', sans-serif;
+    }
+
+    #nextBtn:hover {
+      transform: translate(-2px, -2px);
+      box-shadow: 7px 7px 0px #1b5e20;
+    }
+
+    .back-link {
+      display: inline-block;
+      margin-bottom: 20px;
+      font-weight: 700;
+      color: #30211a;
+      text-decoration: none;
+      font-size: 14px;
+      border-bottom: 2px solid #30211a;
+    }
   </style>
-  <link rel="stylesheet" href="style.css">
 </head>
-
 <body>
 
-<h1>Pick One</h1>
-<p class="desc">
-You must erase ONE event from history.<br>
-See how many people agree with you.
-</p>
+  <a class="back-link" href="../../index.html">← Back to Catagame</a>
 
-<h2 id="year">Loading...</h2>
+  <h1>Pick One</h1>
+  <p class="desc">
+    You must erase ONE event from history.<br>
+    See how many people agree with you.
+  </p>
 
-<div id="events"></div>
+  <h2 id="year">Loading...</h2>
 
-<p id="result"></p>
+  <div id="events"></div>
 
-<button id="nextBtn" onclick="startGame()" style="display:none;">
-  Next Year
-</button>
+  <p id="result" style="display:none;"></p>
 
+  <button id="nextBtn" onclick="startGame()" style="display:none;">
+    Next Year →
+  </button>
 
-<script>
-let data = [];
+  <script>
+    let data = [];
 
-async function loadData() {
-    const res = await fetch('data.json');
-    const json = await res.json();
-    data = json.years;
+    async function loadData() {
+      try {
+        const res = await fetch('/games/Pickone/data.json');
+        if (!res.ok) throw new Error('not ok');
+        const json = await res.json();
+        data = json.years;
+      } catch {
+        // fallback: try relative path (works when opened directly)
+        try {
+          const res = await fetch('data.json');
+          const json = await res.json();
+          data = json.years;
+        } catch (e) {
+          document.getElementById('year').innerText = 'Failed to load data';
+          return;
+        }
+      }
+      startGame();
+    }
 
-    startGame();
-}
+    function startGame() {
+      document.getElementById('result').style.display = 'none';
+      document.getElementById('result').innerText = '';
+      document.getElementById('nextBtn').style.display = 'none';
 
-function startGame() {
-    document.getElementById("result").innerText = "";
-    document.getElementById("nextBtn").style.display = "none";
+      const randomYear = data[Math.floor(Math.random() * data.length)];
+      document.getElementById('year').innerText = '📅 ' + randomYear.year;
 
-    const randomYear = data[Math.floor(Math.random() * data.length)];
+      const container = document.getElementById('events');
+      container.innerHTML = '';
 
-    document.getElementById("year").innerText =
-        "Year: " + randomYear.year;
-
-    const container = document.getElementById("events");
-    container.innerHTML = "";
-
-    randomYear.events.forEach(eventText => {
-        const btn = document.createElement("button");
+      randomYear.events.forEach(eventText => {
+        const btn = document.createElement('button');
         btn.innerText = eventText;
-
         btn.onclick = () => pickEvent(eventText, btn);
-
         container.appendChild(btn);
-    });
-}
+      });
+    }
 
-function pickEvent(eventText, clickedBtn) {
-    // Disable all buttons
-    document.querySelectorAll("#events button").forEach(b => {
+    function pickEvent(eventText, clickedBtn) {
+      document.querySelectorAll('#events button').forEach(b => {
         b.disabled = true;
-        b.style.opacity = "0.5";
-    });
+        b.style.opacity = '0.45';
+      });
 
-    // Highlight selected
-    clickedBtn.style.background = "#c62828";
+      clickedBtn.style.opacity = '1';
+      clickedBtn.classList.add('selected');
 
-    // Fake % system (feels real)
-    const percent = Math.floor(Math.random() * 60) + 20;
+      const percent = Math.floor(Math.random() * 55) + 20;
 
-    setTimeout(() => {
-        document.getElementById("result").innerText =
-            `You erased:\n"${eventText}"\n\n${percent}% of people agree with you`;
+      setTimeout(() => {
+        const result = document.getElementById('result');
+        result.style.display = 'inline-block';
+        result.innerText = `You erased:\n"${eventText}"\n\n${percent}% of people agree with you.`;
+        document.getElementById('nextBtn').style.display = 'inline-block';
+      }, 700);
+    }
 
-        document.getElementById("nextBtn").style.display = "block";
-    }, 800);
-}
-
-loadData();
-</script>
+    loadData();
+  </script>
 </body>
 </html>

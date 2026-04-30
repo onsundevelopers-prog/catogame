@@ -225,7 +225,7 @@
     <header>
         <h2>Catagame</h2>
         <nav>
-            <a href="#" id="b">Blog</a>
+            <a href="games/myblog.html" id="b">Blog</a>
             <a href="#" id="p">Shop</a>
             <a href="#" id="c">Contact</a>
         </nav>
@@ -286,6 +286,12 @@
                 <h4>the sandbox game.</h4>
                 <small>its basically just a ragdoll game</small>
             </a>
+
+            <a href="games/Pickone/pickone.html" class="game-card">
+                <div class="icon-box">🗓️</div>
+                <h4>Pick One</h4>
+                <small>Erase one event from history</small>
+            </a>
         </div>
     </div>
 
@@ -304,7 +310,7 @@ document.getElementById("featured-game").addEventListener("click", function() {
 
 document.getElementById('b').addEventListener('click', function(e) {
     e.preventDefault();
-    alert('Blog coming soon!');
+    window.location.href = 'games/myblog.html';
 });
 
 document.getElementById('p').addEventListener('click', function(e) {
