@@ -11,10 +11,6 @@
             --bg: #ffffff;
             --border: #000;
             --shadow: 8px 8px 0px #000;
-            --rare: #3498db;
-            --legendary: #f1c40f;
-            --cursed: #e74c3c;
-            --common: #bdc3c7;
         }
 
         * { box-sizing: border-box; user-select: none; }
@@ -31,7 +27,6 @@
             overflow: hidden;
         }
 
-        /* --- STATS BAR --- */
         #stats {
             position: fixed;
             top: 20px;
@@ -51,7 +46,6 @@
             font-size: 14px;
         }
 
-        /* --- THE DOOR --- */
         #stage {
             display: flex;
             flex-direction: column;
@@ -87,7 +81,6 @@
             border-radius: 50%;
         }
 
-        /* --- OUTCOME POPUP --- */
         #event-display {
             text-align: center;
             max-width: 400px;
@@ -115,7 +108,6 @@
         .event-title { font-weight: 900; font-size: 28px; margin: 0; line-height: 1.1; }
         .event-desc { font-weight: 500; color: #555; margin-top: 10px; font-size: 18px; }
 
-        /* --- ANIMATIONS --- */
         @keyframes doorOpen {
             0% { transform: rotateY(0deg); }
             100% { transform: rotateY(-110deg); }
@@ -133,7 +125,6 @@
         }
         .shake { animation: shake 0.2s 2; }
 
-        /* --- GAME OVER --- */
         #overlay {
             position: fixed;
             inset: 0;
@@ -162,7 +153,6 @@
         <div id="door-container">
             <div id="door-handle"></div>
         </div>
-
         <div id="event-display">
             <div id="rarity" class="rarity-tag">Common</div>
             <h2 id="title" class="event-title">Open the first door</h2>
@@ -183,116 +173,74 @@
         let canOpen = true;
 
         const EVENTS = [
-            // --- ORIGINAL EVENTS ---
-            { title: "Loose Change", desc: "You found $5 on the floor.", weight: 50, rarity: "Common", color: "#bdc3c7", effect: () => wealth += 5 },
-            { title: "A Friendly Dog", desc: "He licks your hand. Luck increased.", weight: 30, rarity: "Common", color: "#bdc3c7", effect: () => luck += 0.2 },
-            { title: "The Taxman", desc: "He takes 20% of your money.", weight: 20, rarity: "Common", color: "#bdc3c7", effect: () => wealth = Math.floor(wealth * 0.8) },
-            { title: "Winning Ticket", desc: "A lottery ticket! You win $500.", weight: 5, rarity: "Rare", color: "#3498db", effect: () => wealth += 500 },
-            { title: "Four-Leaf Clover", desc: "Your luck is through the roof.", weight: 5, rarity: "Rare", color: "#3498db", effect: () => luck *= 2 },
-            { title: "The Void", desc: "You stare into it. It stares back.", weight: 10, rarity: "Rare", color: "#3498db", effect: () => {} },
-            { title: "Ancient Relic", desc: "A gold idol worth $5,000.", weight: 1, rarity: "Legendary", color: "#f1c40f", effect: () => wealth += 5000 },
-            { title: "The Reset Button", desc: "Everything is gone. Why?", weight: 2, rarity: "Cursed", color: "#e74c3c", effect: () => { wealth = 0; luck = 1; } },
-            { title: "The Trapdoor", desc: "You fall into spikes.", weight: 1, rarity: "Cursed", color: "#e74c3c", isDeadly: true, reason: "Gravity is a cruel mistress." },
-            { title: "A Bad Omen", desc: "You feel terrible. Luck decreased.", weight: 10, rarity: "Common", color: "#bdc3c7", effect: () => luck = Math.max(0.1, luck - 0.5) },
-            { title: "Mirror World", desc: "Everything looks the same, but it isn't.", weight: 5, rarity: "Rare", color: "#3498db", effect: () => document.body.style.filter = "invert(1)" },
-            { title: "Nuclear Launch", desc: "You pressed the wrong button.", weight: 1, rarity: "Cursed", color: "#e74c3c", isDeadly: true, reason: "You started World War III." },
-            { title: "Street Performer", desc: "You play a tune and earn tips.", weight: 25, rarity: "Common", color: "#bdc3c7", effect: () => wealth += 15 },
-
-            // --- BRAINROT EVENTS ---
-            { title: "TikTok Scroll Trap", desc: "You opened TikTok for 5 minutes... it's now 2 hours.", weight: 18, rarity: "Common", color: "#bdc3c7", effect: () => luck += 0.2 },
-            { title: "Brainrot Episode", desc: "You start speaking in memes uncontrollably.", weight: 14, rarity: "Common", color: "#bdc3c7", effect: () => luck -= 0.1 },
-            { title: "Sigma Aura", desc: "You walk away from drama in slow motion.", weight: 10, rarity: "Rare", color: "#3498db", effect: () => luck += 1 },
-            { title: "NPC Dialogue Error", desc: "You repeat the same sentence twice.", weight: 12, rarity: "Common", color: "#bdc3c7", effect: () => {} },
-            { title: "Low Battery Anxiety", desc: "You feel stressed for no reason.", weight: 15, rarity: "Common", color: "#bdc3c7", effect: () => luck -= 0.2 },
-            { title: "Perfect Timing", desc: "You open the game at EXACTLY the right moment.", weight: 8, rarity: "Rare", color: "#3498db", effect: () => wealth += 120 },
-            { title: "WiFi Disconnect", desc: "Reality lags for a second.", weight: 9, rarity: "Rare", color: "#3498db", effect: () => luck -= 0.3 },
-            { title: "Main Character Moment", desc: "Cinematic lighting appears for no reason.", weight: 7, rarity: "Rare", color: "#3498db", effect: () => luck += 1.5 },
-            { title: "Unread Messages Panic", desc: "You ignore everything important instantly.", weight: 16, rarity: "Common", color: "#bdc3c7", effect: () => luck -= 0.1 },
-            { title: "Backrooms Glitch", desc: "You feel like you're being watched by carpet.", weight: 6, rarity: "Rare", color: "#3498db", effect: () => {} },
-            { title: "Discord Ping Flashbang", desc: "Someone mentions your name online.", weight: 13, rarity: "Common", color: "#bdc3c7", effect: () => luck += 0.2 },
-            { title: "Roblox Childhood Memory", desc: "You suddenly remember obby rage quitting.", weight: 11, rarity: "Common", color: "#bdc3c7", effect: () => luck += 0.1 },
-            { title: "Unskippable Ad Moment", desc: "You are forced to wait... forever.", weight: 10, rarity: "Common", color: "#bdc3c7", effect: () => luck -= 0.1 },
-            { title: "Infinite Rewatch Loop", desc: "You keep repeating the same thing for no reason.", weight: 8, rarity: "Rare", color: "#3498db", effect: () => wealth += 20 },
-            { title: "Aura Farming Success", desc: "You accidentally impress everyone around you.", weight: 7, rarity: "Rare", color: "#3498db", effect: () => wealth += 80 },
-            { title: "Forgot Why You Opened Game", desc: "You stare at the screen confused.", weight: 20, rarity: "Common", color: "#bdc3c7", effect: () => {} },
-            { title: "Speedrunner Instinct", desc: "You suddenly do everything faster.", weight: 9, rarity: "Rare", color: "#3498db", effect: () => wealth += 50 },
-            { title: "Glitch Laugh", desc: "You laugh at something not funny.", weight: 12, rarity: "Common", color: "#bdc3c7", effect: () => luck += 0.1 },
-            { title: "Infinite Loading Screen", desc: "Nothing is happening... but it's intense.", weight: 5, rarity: "Rare", color: "#3498db", effect: () => luck -= 0.5 },
-            { title: "Side Quest Appears", desc: "Random task shows up in your life.", weight: 14, rarity: "Common", color: "#bdc3c7", effect: () => wealth += 10 },
-
-            // --- CLASSIC EVENTS ---
-            { title: "Lucky Coin Flip", desc: "Heads! Small luck boost.", weight: 20, rarity: "Common", color: "#bdc3c7", effect: () => luck += 0.1 },
-            { title: "Pickpocket", desc: "Someone steals $10 from you.", weight: 15, rarity: "Common", color: "#bdc3c7", effect: () => wealth = Math.max(0, wealth - 10) },
-            { title: "Treasure Chest", desc: "You open it and find gold!", weight: 10, rarity: "Rare", color: "#3498db", effect: () => wealth += 200 },
-            { title: "Mysterious Potion", desc: "You feel... different.", weight: 8, rarity: "Rare", color: "#3498db", effect: () => luck += (Math.random() > 0.5 ? 1 : -0.5) },
-            { title: "Time Skip", desc: "You suddenly feel older and richer.", weight: 6, rarity: "Rare", color: "#3498db", effect: () => wealth += 1000 },
-            { title: "Double or Nothing", desc: "Gamble your money...", weight: 7, rarity: "Rare", color: "#3498db", effect: () => {
-                if (Math.random() > 0.5) wealth *= 2;
-                else wealth = Math.floor(wealth / 2);
-            }},
-            { title: "Golden Rain", desc: "Coins fall from the sky.", weight: 2, rarity: "Legendary", color: "#f1c40f", effect: () => wealth += 2000 },
-            { title: "Fortune Spirit", desc: "Your luck skyrockets.", weight: 2, rarity: "Legendary", color: "#f1c40f", effect: () => luck += 5 },
-            { title: "Glitch in Reality", desc: "Numbers behave strangely...", weight: 4, rarity: "Rare", color: "#3498db", effect: () => wealth = Math.floor(wealth * (1 + Math.random())) },
-            { title: "Black Cat", desc: "It crosses your path. Uh oh.", weight: 15, rarity: "Common", color: "#bdc3c7", effect: () => luck -= 0.3 },
-            { title: "Kind Stranger", desc: "They give you $50 for no reason.", weight: 12, rarity: "Common", color: "#bdc3c7", effect: () => wealth += 50 },
-            { title: "Hidden Trap", desc: "You trigger a spike trap!", weight: 1, rarity: "Cursed", color: "#e74c3c", isDeadly: true, reason: "You weren't paying attention." },
-            { title: "Corrupted Save", desc: "Something feels wrong...", weight: 3, rarity: "Cursed", color: "#e74c3c", effect: () => {
-                wealth = Math.floor(wealth * 0.3);
-                luck = Math.max(0.1, luck - 1);
-            }},
-            { title: "Wealth Surge", desc: "Your money grows exponentially!", weight: 2, rarity: "Legendary", color: "#f1c40f", effect: () => wealth *= 3 },
-            { title: "Paradox Event", desc: "You gain and lose everything.", weight: 2, rarity: "Cursed", color: "#e74c3c", effect: () => {
-                wealth = Math.random() > 0.5 ? wealth * 2 : 0;
-            }},
-            { title: "Mini Jackpot", desc: "You win a small prize.", weight: 18, rarity: "Common", color: "#bdc3c7", effect: () => wealth += 100 },
-            { title: "Energy Boost", desc: "Everything feels easier.", weight: 10, rarity: "Common", color: "#bdc3c7", effect: () => luck += 0.3 },
-            { title: "Shadow Figure", desc: "It watches you silently.", weight: 6, rarity: "Rare", color: "#3498db", effect: () => luck -= 1 },
-            { title: "Reality Break", desc: "The screen shakes violently.", weight: 3, rarity: "Rare", color: "#3498db", effect: () => {
-                document.body.style.transform = "rotate(1deg)";
-                setTimeout(() => document.body.style.transform = "rotate(0deg)", 500);
-            }},
-            { title: "Bullseye", desc: "You hit the jackpot! $10,000!", weight: 1, rarity: "Legendary", color: "#f1c40f", effect: () => { wealth += 10000; } },
-            { title: "Suspicious Button", desc: "You press it. Something happens.", weight: 5, rarity: "Rare", color: "#3498db", effect: () => {
-                if (Math.random() > 0.5) wealth += 1000;
-                else luck += 0.5;
-            }},
-
-            // --- FILLER EVENTS ---
-            { title: "Blink Moment", desc: "Nothing happens. Suspicious.", weight: 10, rarity: "Common", color: "#bdc3c7", effect: () => {} },
-            { title: "Skill Issue", desc: "You fail in a way that feels personal.", weight: 11, rarity: "Common", color: "#bdc3c7", effect: () => luck -= 0.1 },
-            { title: "Accidental Win", desc: "You win without knowing how.", weight: 9, rarity: "Rare", color: "#3498db", effect: () => wealth += 100 },
-            { title: "Cursor Stare", desc: "Your cursor feels judged.", weight: 10, rarity: "Common", color: "#bdc3c7", effect: () => {} },
-            { title: "Gravity Doubt", desc: "Physics hesitates for a moment.", weight: 8, rarity: "Rare", color: "#3498db", effect: () => luck += 0.5 },
-            { title: "NPC Freeze", desc: "You stop moving like a loading screen.", weight: 12, rarity: "Common", color: "#bdc3c7", effect: () => {} },
-            { title: "Wrong Button", desc: "You press the worst possible option.", weight: 12, rarity: "Common", color: "#bdc3c7", effect: () => luck -= 0.2 },
-            { title: "Dramatic Lighting", desc: "Lighting becomes dramatic for no reason.", weight: 7, rarity: "Rare", color: "#3498db", effect: () => luck += 1 },
-            { title: "Brain Buffer", desc: "You forget what you were doing instantly.", weight: 13, rarity: "Common", color: "#bdc3c7", effect: () => {} },
-            { title: "Almost Event", desc: "Something ALMOST happened.", weight: 10, rarity: "Common", color: "#bdc3c7", effect: () => {} },
-            { title: "Chat Laughs", desc: "People are laughing at something you didn't notice.", weight: 10, rarity: "Common", color: "#bdc3c7", effect: () => luck -= 0.1 },
-            { title: "Speed Panic", desc: "Everything feels slightly too fast.", weight: 11, rarity: "Common", color: "#bdc3c7", effect: () => {} },
-            { title: "Lag Spike", desc: "Reality freezes for 0.5 seconds.", weight: 9, rarity: "Rare", color: "#3498db", effect: () => {} },
-            { title: "Unnecessary Confidence", desc: "You feel like a pro for no reason.", weight: 12, rarity: "Common", color: "#bdc3c7", effect: () => luck += 0.2 },
-            { title: "Micro Regret", desc: "That small decision mattered too much.", weight: 12, rarity: "Common", color: "#bdc3c7", effect: () => luck -= 0.1 },
-            { title: "Unexpected Clutch", desc: "You somehow save the situation.", weight: 8, rarity: "Rare", color: "#3498db", effect: () => wealth += 120 },
-            { title: "Fake Pattern", desc: "You think you see a system. You don't.", weight: 11, rarity: "Common", color: "#bdc3c7", effect: () => {} },
-            { title: "Accidental Genius", desc: "You solve something by accident.", weight: 8, rarity: "Rare", color: "#3498db", effect: () => wealth += 150 },
-            { title: "Speedrun Energy", desc: "You suddenly play faster for no reason.", weight: 10, rarity: "Common", color: "#bdc3c7", effect: () => wealth += 20 },
+            { title: "Loose Change",           desc: "You found $5 on the floor.",                          weight: 50, rarity: "Common",    color: "#bdc3c7", effect: () => { wealth += 5; } },
+            { title: "A Friendly Dog",          desc: "He licks your hand. Luck increased.",                weight: 30, rarity: "Common",    color: "#bdc3c7", effect: () => { luck += 0.2; } },
+            { title: "The Taxman",              desc: "He takes 20% of your money.",                        weight: 20, rarity: "Common",    color: "#bdc3c7", effect: () => { wealth = Math.floor(wealth * 0.8); } },
+            { title: "Winning Ticket",          desc: "A lottery ticket! You win $500.",                    weight: 5,  rarity: "Rare",      color: "#3498db", effect: () => { wealth += 500; } },
+            { title: "Four-Leaf Clover",        desc: "Your luck is through the roof.",                     weight: 5,  rarity: "Rare",      color: "#3498db", effect: () => { luck *= 2; } },
+            { title: "The Void",                desc: "You stare into it. It stares back.",                 weight: 10, rarity: "Rare",      color: "#3498db", effect: () => {} },
+            { title: "Ancient Relic",           desc: "A gold idol worth $5,000.",                          weight: 1,  rarity: "Legendary", color: "#f1c40f", effect: () => { wealth += 5000; } },
+            { title: "The Reset Button",        desc: "Everything is gone. Why?",                           weight: 2,  rarity: "Cursed",    color: "#e74c3c", effect: () => { wealth = 0; luck = 1; } },
+            { title: "The Trapdoor",            desc: "You fall into spikes.",                              weight: 1,  rarity: "Cursed",    color: "#e74c3c", isDeadly: true, reason: "Gravity is a cruel mistress." },
+            { title: "A Bad Omen",              desc: "You feel terrible. Luck decreased.",                 weight: 10, rarity: "Common",    color: "#bdc3c7", effect: () => { luck = Math.max(0.1, luck - 0.5); } },
+            { title: "Mirror World",            desc: "Everything looks the same, but it isn't.",           weight: 5,  rarity: "Rare",      color: "#3498db", effect: () => { document.body.style.filter = "invert(1)"; } },
+            { title: "Nuclear Launch",          desc: "You pressed the wrong button.",                      weight: 1,  rarity: "Cursed",    color: "#e74c3c", isDeadly: true, reason: "You started World War III." },
+            { title: "Street Performer",        desc: "You play a tune and earn tips.",                     weight: 25, rarity: "Common",    color: "#bdc3c7", effect: () => { wealth += 15; } },
+            { title: "TikTok Scroll Trap",      desc: "You opened TikTok for 5 minutes... it's now 2 hours.", weight: 18, rarity: "Common", color: "#bdc3c7", effect: () => { luck += 0.2; } },
+            { title: "Brainrot Episode",        desc: "You start speaking in memes uncontrollably.",        weight: 14, rarity: "Common",    color: "#bdc3c7", effect: () => { luck -= 0.1; } },
+            { title: "Sigma Aura",              desc: "You walk away from drama in slow motion.",           weight: 10, rarity: "Rare",      color: "#3498db", effect: () => { luck += 1; } },
+            { title: "NPC Dialogue Error",      desc: "You repeat the same sentence twice.",                weight: 12, rarity: "Common",    color: "#bdc3c7", effect: () => {} },
+            { title: "Low Battery Anxiety",     desc: "You feel stressed for no reason.",                   weight: 15, rarity: "Common",    color: "#bdc3c7", effect: () => { luck -= 0.2; } },
+            { title: "Perfect Timing",          desc: "You open the game at EXACTLY the right moment.",    weight: 8,  rarity: "Rare",      color: "#3498db", effect: () => { wealth += 120; } },
+            { title: "WiFi Disconnect",         desc: "Reality lags for a second.",                         weight: 9,  rarity: "Rare",      color: "#3498db", effect: () => { luck -= 0.3; } },
+            { title: "Main Character Moment",   desc: "Cinematic lighting appears for no reason.",          weight: 7,  rarity: "Rare",      color: "#3498db", effect: () => { luck += 1.5; } },
+            { title: "Unread Messages Panic",   desc: "You ignore everything important instantly.",         weight: 16, rarity: "Common",    color: "#bdc3c7", effect: () => { luck -= 0.1; } },
+            { title: "Backrooms Glitch",        desc: "You feel like you're being watched by carpet.",      weight: 6,  rarity: "Rare",      color: "#3498db", effect: () => {} },
+            { title: "Discord Ping Flashbang",  desc: "Someone mentions your name online.",                 weight: 13, rarity: "Common",    color: "#bdc3c7", effect: () => { luck += 0.2; } },
+            { title: "Roblox Childhood Memory", desc: "You suddenly remember obby rage quitting.",          weight: 11, rarity: "Common",    color: "#bdc3c7", effect: () => { luck += 0.1; } },
+            { title: "Unskippable Ad",          desc: "You are forced to wait... forever.",                 weight: 10, rarity: "Common",    color: "#bdc3c7", effect: () => { luck -= 0.1; } },
+            { title: "Infinite Rewatch Loop",   desc: "You keep repeating the same thing for no reason.",  weight: 8,  rarity: "Rare",      color: "#3498db", effect: () => { wealth += 20; } },
+            { title: "Aura Farming Success",    desc: "You accidentally impress everyone around you.",      weight: 7,  rarity: "Rare",      color: "#3498db", effect: () => { wealth += 80; } },
+            { title: "Forgot Why You Opened",   desc: "You stare at the screen confused.",                  weight: 20, rarity: "Common",    color: "#bdc3c7", effect: () => {} },
+            { title: "Speedrunner Instinct",    desc: "You suddenly do everything faster.",                 weight: 9,  rarity: "Rare",      color: "#3498db", effect: () => { wealth += 50; } },
+            { title: "Glitch Laugh",            desc: "You laugh at something not funny.",                  weight: 12, rarity: "Common",    color: "#bdc3c7", effect: () => { luck += 0.1; } },
+            { title: "Infinite Loading Screen", desc: "Nothing is happening... but it's intense.",          weight: 5,  rarity: "Rare",      color: "#3498db", effect: () => { luck -= 0.5; } },
+            { title: "Side Quest Appears",      desc: "Random task shows up in your life.",                 weight: 14, rarity: "Common",    color: "#bdc3c7", effect: () => { wealth += 10; } },
+            { title: "Lucky Coin Flip",         desc: "Heads! Small luck boost.",                           weight: 20, rarity: "Common",    color: "#bdc3c7", effect: () => { luck += 0.1; } },
+            { title: "Pickpocket",              desc: "Someone steals $10 from you.",                       weight: 15, rarity: "Common",    color: "#bdc3c7", effect: () => { wealth = Math.max(0, wealth - 10); } },
+            { title: "Treasure Chest",          desc: "You open it and find gold!",                         weight: 10, rarity: "Rare",      color: "#3498db", effect: () => { wealth += 200; } },
+            { title: "Mysterious Potion",       desc: "You feel... different.",                             weight: 8,  rarity: "Rare",      color: "#3498db", effect: () => { luck += Math.random() > 0.5 ? 1 : -0.5; } },
+            { title: "Time Skip",               desc: "You suddenly feel older and richer.",                weight: 6,  rarity: "Rare",      color: "#3498db", effect: () => { wealth += 1000; } },
+            { title: "Double or Nothing",       desc: "Gamble your money...",                               weight: 7,  rarity: "Rare",      color: "#3498db", effect: () => { wealth = Math.random() > 0.5 ? wealth * 2 : Math.floor(wealth / 2); } },
+            { title: "Golden Rain",             desc: "Coins fall from the sky.",                           weight: 2,  rarity: "Legendary", color: "#f1c40f", effect: () => { wealth += 2000; } },
+            { title: "Fortune Spirit",          desc: "Your luck skyrockets.",                              weight: 2,  rarity: "Legendary", color: "#f1c40f", effect: () => { luck += 5; } },
+            { title: "Glitch in Reality",       desc: "Numbers behave strangely...",                        weight: 4,  rarity: "Rare",      color: "#3498db", effect: () => { wealth = Math.floor(wealth * (1 + Math.random())); } },
+            { title: "Black Cat",               desc: "It crosses your path. Uh oh.",                       weight: 15, rarity: "Common",    color: "#bdc3c7", effect: () => { luck -= 0.3; } },
+            { title: "Kind Stranger",           desc: "They give you $50 for no reason.",                   weight: 12, rarity: "Common",    color: "#bdc3c7", effect: () => { wealth += 50; } },
+            { title: "Hidden Trap",             desc: "You trigger a spike trap!",                          weight: 1,  rarity: "Cursed",    color: "#e74c3c", isDeadly: true, reason: "You weren't paying attention." },
+            { title: "Corrupted Save",          desc: "Something feels wrong...",                           weight: 3,  rarity: "Cursed",    color: "#e74c3c", effect: () => { wealth = Math.floor(wealth * 0.3); luck = Math.max(0.1, luck - 1); } },
+            { title: "Wealth Surge",            desc: "Your money grows exponentially!",                    weight: 2,  rarity: "Legendary", color: "#f1c40f", effect: () => { wealth *= 3; } },
+            { title: "Paradox Event",           desc: "You gain and lose everything.",                      weight: 2,  rarity: "Cursed",    color: "#e74c3c", effect: () => { wealth = Math.random() > 0.5 ? wealth * 2 : 0; } },
+            { title: "Mini Jackpot",            desc: "You win a small prize.",                             weight: 18, rarity: "Common",    color: "#bdc3c7", effect: () => { wealth += 100; } },
+            { title: "Energy Boost",            desc: "Everything feels easier.",                           weight: 10, rarity: "Common",    color: "#bdc3c7", effect: () => { luck += 0.3; } },
+            { title: "Shadow Figure",           desc: "It watches you silently.",                           weight: 6,  rarity: "Rare",      color: "#3498db", effect: () => { luck -= 1; } },
+            { title: "Reality Break",           desc: "The screen shakes violently.",                       weight: 3,  rarity: "Rare",      color: "#3498db", effect: () => { document.body.style.transform = "rotate(1deg)"; setTimeout(() => { document.body.style.transform = ""; }, 500); } },
+            { title: "Bullseye",                desc: "You hit the jackpot! $10,000!",                      weight: 1,  rarity: "Legendary", color: "#f1c40f", effect: () => { wealth += 10000; } },
+            { title: "Suspicious Button",       desc: "You press it. Something happens.",                   weight: 5,  rarity: "Rare",      color: "#3498db", effect: () => { if (Math.random() > 0.5) wealth += 1000; else luck += 0.5; } },
+            { title: "Blink Moment",            desc: "Nothing happens. Suspicious.",                       weight: 10, rarity: "Common",    color: "#bdc3c7", effect: () => {} },
+            { title: "Skill Issue",             desc: "You fail in a way that feels personal.",             weight: 11, rarity: "Common",    color: "#bdc3c7", effect: () => { luck -= 0.1; } },
+            { title: "Accidental Win",          desc: "You win without knowing how.",                       weight: 9,  rarity: "Rare",      color: "#3498db", effect: () => { wealth += 100; } },
+            { title: "Gravity Doubt",           desc: "Physics hesitates for a moment.",                    weight: 8,  rarity: "Rare",      color: "#3498db", effect: () => { luck += 0.5; } },
+            { title: "Wrong Button",            desc: "You press the worst possible option.",               weight: 12, rarity: "Common",    color: "#bdc3c7", effect: () => { luck -= 0.2; } },
+            { title: "Dramatic Lighting",       desc: "Lighting becomes dramatic for no reason.",           weight: 7,  rarity: "Rare",      color: "#3498db", effect: () => { luck += 1; } },
+            { title: "Chat Laughs",             desc: "People are laughing at something you didn't notice.", weight: 10, rarity: "Common",   color: "#bdc3c7", effect: () => { luck -= 0.1; } },
+            { title: "Unnecessary Confidence",  desc: "You feel like a pro for no reason.",                 weight: 12, rarity: "Common",    color: "#bdc3c7", effect: () => { luck += 0.2; } },
+            { title: "Micro Regret",            desc: "That small decision mattered too much.",             weight: 12, rarity: "Common",    color: "#bdc3c7", effect: () => { luck -= 0.1; } },
+            { title: "Unexpected Clutch",       desc: "You somehow save the situation.",                    weight: 8,  rarity: "Rare",      color: "#3498db", effect: () => { wealth += 120; } },
+            { title: "Accidental Genius",       desc: "You solve something by accident.",                   weight: 8,  rarity: "Rare",      color: "#3498db", effect: () => { wealth += 150; } },
+            { title: "Speedrun Energy",         desc: "You suddenly play faster for no reason.",            weight: 10, rarity: "Common",    color: "#bdc3c7", effect: () => { wealth += 20; } },
         ];
 
-        // Add filler events up to 200 total
-        for (let i = EVENTS.length + 1; i <= 200; i++) {
-            EVENTS.push({
-                title: `Event ${i}`,
-                desc: i % 5 === 0 ? "Something weird almost happened." :
-                      i % 3 === 0 ? "You feel slightly off." :
-                      "Nothing important happens, but it feels like it did.",
-                weight: 8 + (i % 5),
-                rarity: i % 20 === 0 ? "Rare" : "Common",
-                color: i % 20 === 0 ? "#3498db" : "#bdc3c7",
-                effect: () => {}
-            });
-        }
-
         const door = document.getElementById('door-container');
         const eventDisplay = document.getElementById('event-display');
 
@@ -305,7 +253,6 @@
             canOpen = false;
             doorCount++;
             document.getElementById('door-count').innerText = doorCount;
-
             door.classList.add('open-anim');
 
             setTimeout(() => {
@@ -348,416 +295,7 @@
             const rarityTag = document.getElementById('rarity');
             rarityTag.innerText = ev.rarity;
             rarityTag.style.background = ev.color;
-            rarityTag.style.color = (ev.rarity === "Legendary") ? "#000" : "#fff";
-
-            document.getElementById('title').innerText = ev.title;
-            document.getElementById('desc').innerText = ev.desc;
-
-            eventDisplay.classList.add('show');
-            if (ev.rarity === "Cursed") door.classList.add('shake');
-            else door.classList.remove('shake');
-        }
-
-        function updateStats() {
-            document.getElementById('wealth-val').innerText = "$" + wealth.toLocaleString();
-            document.getElementById('luck-val').innerText = luck.toFixed(1) + "x";
-        }
-
-        function gameOver(reason) {
-            setTimeout(() => {
-                document.getElementById('overlay').style.display = 'flex';
-                document.getElementById('death-reason').innerText = reason + ` (Survived ${doorCount} doors)`;
-            }, 500);
-        }
-    </script>
-</body>
-</html>
-            { title: "A Friendly Dog", desc: "He licks your hand. Luck increased.", weight: 30, rarity: "Common", color: "#bdc3c7", effect: () => luck += 0.2 },
-            { title: "The Taxman", desc: "He takes 20% of your money.", weight: 20, rarity: "Common", color: "#bdc3c7", effect: () => wealth = Math.floor(wealth * 0.8) },
-            { title: "Winning Ticket", desc: "A lottery ticket! You win $500.", weight: 5, rarity: "Rare", color: "#3498db", effect: () => wealth += 500 },
-            { title: "Four-Leaf Clover", desc: "Your luck is through the roof.", weight: 5, rarity: "Rare", color: "#3498db", effect: () => luck *= 2 },
-            { title: "The Void", desc: "You stare into it. It stares back.", weight: 10, rarity: "Rare", color: "#3498db", effect: () => {} },
-            { title: "Ancient Relic", desc: "A gold idol worth $5,000.", weight: 1, rarity: "Legendary", color: "#f1c40f", effect: () => wealth += 5000 },
-            { title: "The Reset Button", desc: "Everything is gone. Why?", weight: 2, rarity: "Cursed", color: "#e74c3c", effect: () => { wealth = 0; luck = 1; } },
-            { title: "The Trapdoor", desc: "You fall into spikes.", weight: 3, rarity: "Cursed", color: "#e74c3c", isDeadly: true, reason: "Gravity is a cruel mistress." },
-            { title: "A Bad Omen", desc: "You feel terrible. Luck decreased.", weight: 10, rarity: "Common", color: "#bdc3c7", effect: () => luck = Math.max(0.1, luck - 0.5) },
-            { title: "Mirror World", desc: "Everything looks the same, but it isn't.", weight: 5, rarity: "Rare", color: "#3498db", effect: () => document.body.style.filter = "invert(1)" },
-            { title: "Nuclear Launch", desc: "You pressed the wrong button.", weight: 1, rarity: "Cursed", color: "#e74c3c", isDeadly: true, reason: "You started World War III." },
-            { title: "Street Performer", desc: "You play a tune and earn tips.", weight: 25, rarity: "Common", color: "#bdc3c7", effect: () => wealth += 15 },
-             { title: "TikTok Scroll Trap", desc: "You opened TikTok for 5 minutes... it's now 2 hours.", weight: 18, rarity: "Common", color: "#bdc3c7", effect: () => luck += 0.2 },
-
-{ title: "Brainrot Episode", desc: "You start speaking in memes uncontrollably.", weight: 14, rarity: "Common", color: "#bdc3c7", effect: () => luck -= 0.1 },
-
-{ title: "Sigma Aura", desc: "You walk away from drama in slow motion.", weight: 10, rarity: "Rare", color: "#3498db", effect: () => luck += 1 },
-
-{ title: "NPC Dialogue Error", desc: "You repeat the same sentence twice.", weight: 12, rarity: "Common", color: "#bdc3c7", effect: () => {} },
-
-{ title: "Low Battery Anxiety", desc: "You feel stressed for no reason.", weight: 15, rarity: "Common", color: "#bdc3c7", effect: () => luck -= 0.2 },
-
-{ title: "Perfect Timing", desc: "You open the game at EXACTLY the right moment.", weight: 8, rarity: "Rare", color: "#3498db", effect: () => wealth += 120 },
-
-{ title: "WiFi Disconnect", desc: "Reality lags for a second.", weight: 9, rarity: "Rare", color: "#3498db", effect: () => luck -= 0.3 },
-
-{ title: "Main Character Moment", desc: "Cinematic lighting appears for no reason.", weight: 7, rarity: "Rare", color: "#3498db", effect: () => luck += 1.5 },
-
-{ title: "Unread Messages Panic", desc: "You ignore everything important instantly.", weight: 16, rarity: "Common", color: "#bdc3c7", effect: () => luck -= 0.1 },
-
-{ title: "Backrooms Glitch", desc: "You feel like you're being watched by carpet.", weight: 6, rarity: "Rare", color: "#3498db", effect: () => {} },
-
-{ title: "Discord Ping Flashbang", desc: "Someone mentions your name online.", weight: 13, rarity: "Common", color: "#bdc3c7", effect: () => luck += 0.2 },
-
-{ title: "Roblox Childhood Memory", desc: "You suddenly remember obby rage quitting.", weight: 11, rarity: "Common", color: "#bdc3c7", effect: () => luck += 0.1 },
-
-{ title: "Unskippable Ad Moment", desc: "You are forced to wait... forever.", weight: 10, rarity: "Common", color: "#bdc3c7", effect: () => luck -= 0.1 },
-
-{ title: "Infinite Rewatch Loop", desc: "You keep repeating the same thing for no reason.", weight: 8, rarity: "Rare", color: "#3498db", effect: () => wealth += 20 },
-
-{ title: "Aura Farming Success", desc: "You accidentally impress everyone around you.", weight: 7, rarity: "Rare", color: "#3498db", effect: () => wealth += 80 },
-
-{ title: "Forgot Why You Opened Game", desc: "You stare at the screen confused.", weight: 20, rarity: "Common", color: "#bdc3c7", effect: () => {} },
-
-{ title: "Speedrunner Instinct", desc: "You suddenly do everything faster.", weight: 9, rarity: "Rare", color: "#3498db", effect: () => wealth += 50 },
-
-{ title: "Glitch Laugh", desc: "You laugh at something not funny.", weight: 12, rarity: "Common", color: "#bdc3c7", effect: () => luck += 0.1 },
-
-{ title: "Infinite Loading Screen", desc: "Nothing is happening... but it's intense.", weight: 5, rarity: "Rare", color: "#3498db", effect: () => luck -= 0.5 },
-
-{ title: "Side Quest Appears", desc: "Random task shows up in your life.", weight: 14, rarity: "Common", color: "#bdc3c7", effect: () => wealth += 10 }
-{ title: "Lucky Coin Flip", desc: "Heads! Small luck boost.", weight: 20, rarity: "Common", color: "#bdc3c7", effect: () => luck += 0.1 },
-
-{ title: "Pickpocket", desc: "Someone steals $10 from you.", weight: 15, rarity: "Common", color: "#bdc3c7", effect: () => wealth = Math.max(0, wealth - 10) },
-
-{ title: "Treasure Chest", desc: "You open it and find gold!", weight: 10, rarity: "Rare", color: "#3498db", effect: () => wealth += 200 },
-
-{ title: "Mysterious Potion", desc: "You feel... different.", weight: 8, rarity: "Rare", color: "#3498db", effect: () => luck += (Math.random() > 0.5 ? 1 : -0.5) },
-
-{ title: "Time Skip", desc: "You suddenly feel older and richer.", weight: 6, rarity: "Rare", color: "#3498db", effect: () => wealth += 1000 },
-
-{ title: "Double or Nothing", desc: "Gamble your money...", weight: 7, rarity: "Rare", color: "#3498db", effect: () => {
-    if (Math.random() > 0.5) wealth *= 2;
-    else wealth = Math.floor(wealth / 2);
-}},
-
-{ title: "Golden Rain", desc: "Coins fall from the sky.", weight: 2, rarity: "Legendary", color: "#f1c40f", effect: () => wealth += 2000 },
-
-{ title: "Fortune Spirit", desc: "Your luck skyrockets.", weight: 2, rarity: "Legendary", color: "#f1c40f", effect: () => luck += 5 },
-
-{ title: "Glitch in Reality", desc: "Numbers behave strangely...", weight: 4, rarity: "Rare", color: "#3498db", effect: () => wealth = Math.floor(wealth * (1 + Math.random())) },
-
-{ title: "Black Cat", desc: "It crosses your path. Uh oh.", weight: 15, rarity: "Common", color: "#bdc3c7", effect: () => luck -= 0.3 },
-
-{ title: "Kind Stranger", desc: "They give you $50 for no reason.", weight: 12, rarity: "Common", color: "#bdc3c7", effect: () => wealth += 50 },
-
-{ title: "Hidden Trap", desc: "You trigger a spike trap!", weight: 4, rarity: "Cursed", color: "#e74c3c", isDeadly: true, reason: "You weren't paying attention." },
-
-{ title: "Corrupted Save", desc: "Something feels wrong...", weight: 3, rarity: "Cursed", color: "#e74c3c", effect: () => {
-    wealth = Math.floor(wealth * 0.3);
-    luck = Math.max(0.1, luck - 1);
-}},
-
-{ title: "Wealth Surge", desc: "Your money grows exponentially!", weight: 2, rarity: "Legendary", color: "#f1c40f", effect: () => wealth *= 3 },
-
-{ title: "Paradox Event", desc: "You gain and lose everything.", weight: 2, rarity: "Cursed", color: "#e74c3c", effect: () => {
-    wealth = Math.random() > 0.5 ? wealth * 2 : 0;
-}},
-
-{ title: "Mini Jackpot", desc: "You win a small prize.", weight: 18, rarity: "Common", color: "#bdc3c7", effect: () => wealth += 100 },
-
-{ title: "Energy Boost", desc: "Everything feels easier.", weight: 10, rarity: "Common", color: "#bdc3c7", effect: () => luck += 0.3 },
-
-{ title: "Shadow Figure", desc: "It watches you silently.", weight: 6, rarity: "Rare", color: "#3498db", effect: () => luck -= 1 },
-
-{ title: "Reality Break", desc: "The screen shakes violently.", weight: 3, rarity: "Rare", color: "#3498db", effect: () => {
-    document.body.style.transform = "rotate(1deg)";
-    setTimeout(() => document.body.style.transform = "rotate(0deg)", 500);
-}},
-
-{ title: "Bullseye", desc: "You hit the jackpot! $10,000!", weight: 1, rarity: "Legendary", color: "#f1c40f", effect: () => { wealth += 10000; } },
-{ 
-  title: "Suspicious Button", 
-  desc: "Press it?", 
-  weight: 5,
-  rarity: "Rare",
-  color: "#3498db",
-  effect: () => {
-    if (Math.random() > 0.5) wealth += 1000;
-    else luck += 0.5;
-  }
-}
-{ title: "Blink Moment 1", desc: "Nothing happens. Suspicious.", weight: 10, rarity: "Common", color: "#bdc3c7", effect: () => {} },
-{ title: "Skill Issue 2", desc: "You fail in a way that feels personal.", weight: 11, rarity: "Common", color: "#bdc3c7", effect: () => luck -= 0.1 },
-{ title: "Accidental Win 3", desc: "You win without knowing how.", weight: 9, rarity: "Rare", color: "#3498db", effect: () => wealth += 100 },
-{ title: "Cursor Stare 4", desc: "Your cursor feels judged.", weight: 10, rarity: "Common", color: "#bdc3c7", effect: () => {} },
-{ title: "Gravity Doubt 5", desc: "Physics hesitates for a moment.", weight: 8, rarity: "Rare", color: "#3498db", effect: () => luck += 0.5 },
-{ title: "NPC Freeze 6", desc: "You stop moving like a loading screen.", weight: 12, rarity: "Common", color: "#bdc3c7", effect: () => {} },
-{ title: "Wrong Button 7", desc: "You press the worst possible option.", weight: 12, rarity: "Common", color: "#bdc3c7", effect: () => luck -= 0.2 },
-{ title: "Main Character 8", desc: "Lighting becomes dramatic for no reason.", weight: 7, rarity: "Rare", color: "#3498db", effect: () => luck += 1 },
-{ title: "Brain Buffer 9", desc: "You forget what you were doing instantly.", weight: 13, rarity: "Common", color: "#bdc3c7", effect: () => {} },
-{ title: "Almost Event 10", desc: "Something ALMOST happened.", weight: 10, rarity: "Common", color: "#bdc3c7", effect: () => {} },
-
-{ title: "Chat Laughs 11", desc: "People are laughing at something you didn’t notice.", weight: 10, rarity: "Common", color: "#bdc3c7", effect: () => luck -= 0.1 },
-{ title: "Speed Panic 12", desc: "Everything feels slightly too fast.", weight: 11, rarity: "Common", color: "#bdc3c7", effect: () => {} },
-{ title: "Lag Spike 13", desc: "Reality freezes for 0.5 seconds.", weight: 9, rarity: "Rare", color: "#3498db", effect: () => {} },
-{ title: "Unnecessary Confidence 14", desc: "You feel like a pro for no reason.", weight: 12, rarity: "Common", color: "#bdc3c7", effect: () => luck += 0.2 },
-{ title: "Suspicious Pause 15", desc: "The game hesitates before continuing.", weight: 10, rarity: "Common", color: "#bdc3c7", effect: () => {} },
-
-{ title: "Micro Regret 16", desc: "That small decision mattered too much.", weight: 12, rarity: "Common", color: "#bdc3c7", effect: () => luck -= 0.1 },
-{ title: "Unexpected Clutch 17", desc: "You somehow save the situation.", weight: 8, rarity: "Rare", color: "#3498db", effect: () => wealth += 120 },
-{ title: "Reality Skip 18", desc: "Time feels like it jumped.", weight: 9, rarity: "Rare", color: "#3498db", effect: () => {} },
-{ title: "Cursor Judgment 19", desc: "Your cursor feels disappointed.", weight: 10, rarity: "Common", color: "#bdc3c7", effect: () => {} },
-{ title: "Fake Pattern 20", desc: "You think you see a system. You don’t.", weight: 11, rarity: "Common", color: "#bdc3c7", effect: () => {} },
-
-{ title: "Blink Moment 21", desc: "Nothing again. Suspicious again.", weight: 10, rarity: "Common", color: "#bdc3c7", effect: () => {} },
-{ title: "Skill Issue 22", desc: "The game politely says it’s your fault.", weight: 11, rarity: "Common", color: "#bdc3c7", effect: () => luck -= 0.1 },
-{ title: "Accidental Genius 23", desc: "You solve something by accident.", weight: 8, rarity: "Rare", color: "#3498db", effect: () => wealth += 150 },
-{ title: "Silent Judgment 24", desc: "Everything feels like it’s watching you.", weight: 10, rarity: "Common", color: "#bdc3c7", effect: () => {} },
-{ title: "Gravity Glitch 25", desc: "You feel slightly lighter than normal.", weight: 9, rarity: "Rare", color: "#3498db", effect: () => luck += 0.5 },
-
-{ title: "Brain Reset 26", desc: "Thought deleted successfully.", weight: 12, rarity: "Common", color: "#bdc3c7", effect: () => {} },
-{ title: "Main Character 27", desc: "A fake cinematic zoom happens.", weight: 7, rarity: "Rare", color: "#3498db", effect: () => luck += 1 },
-{ title: "Wrong Input 28", desc: "You do the opposite of what you meant.", weight: 12, rarity: "Common", color: "#bdc3c7", effect: () => luck -= 0.2 },
-{ title: "Speedrun Energy 29", desc: "You suddenly play faster for no reason.", weight: 10, rarity: "Common", color: "#bdc3c7", effect: () => wealth += 20 },
-{ title: "Almost Win 30", desc: "Victory was right there.", weight: 11, rarity: "Common", color: "#bdc3c7", effect: () => {} },
-
-// --- (pattern continues similarly up to 200) ---
-// =========================
-// CORE STATE
-// =========================
-
-let wealth = 0;
-let luck = 1;
-let tension = 0;
-
-let flags = {
-    triggered67: false
-};
-
-// =========================
-// LIVE EVENT CHECKER
-// =========================
-
-function updateGame() {
-    checkLiveEvents();
-    clampValues();
-}
-
-// Call this AFTER every change to wealth/luck
-function checkLiveEvents() {
-    check67Explosion();
-}
-
-// =========================
-// 67 LIVE EXPLOSION EVENT
-// =========================
-
-function check67Explosion() {
-    if (flags.triggered67) return;
-
-    if (wealth === 67) {
-        flags.triggered67 = true;
-        trigger67Explosion();
-    }
-}
-
-function trigger67Explosion() {
-    console.log("💥 67 EXPLOSION ACTIVATED");
-
-    // visual effect (simple Neal.fun-style distortion)
-    document.body.style.transform = "scale(1.05) rotate(1deg)";
-    document.body.style.filter = "hue-rotate(67deg) contrast(1.4)";
-
-    // reward chaos
-    wealth += 670;
-    luck += 6.7;
-    tension = 0;
-
-    // funny “moment”
-    showPopup("💥 67 EVENT!", "Reality briefly broke.");
-
-    setTimeout(() => {
-        document.body.style.transform = "";
-        document.body.style.filter = "";
-    }, 700);
-}
-
-// =========================
-// OPTIONAL: NEAR-67 WARNING (adds hype)
-// =========================
-
-function check67Hint() {
-    if (flags.triggered67) return;
-
-    if (wealth >= 60 && wealth <= 66) {
-        console.log("Something about 67 feels close...");
-        tension += 5;
-    }
-}
-
-// =========================
-// EVENT SYSTEM (optional random layer)
-// =========================
-
-const events = [
-    {
-        title: "Blink Moment",
-        desc: "Nothing happens.",
-        weight: 10,
-        effect: () => {}
-    },
-    {
-        title: "Skill Issue",
-        desc: "You fail slightly.",
-        weight: 12,
-        effect: () => luck -= 0.1
-    },
-    {
-        title: "Accidental Win",
-        desc: "You gain money for no reason.",
-        weight: 8,
-        effect: () => wealth += 20
-    }
-];
-
-function triggerRandomEvent() {
-    let total = events.reduce((a, b) => a + b.weight, 0);
-    let r = Math.random() * total;
-
-    for (let e of events) {
-        if (r < e.weight) {
-            e.effect();
-            console.log(e.title + ":", e.desc);
-            break;
-        }
-        r -= e.weight;
-    }
-
-    updateGame();
-}
-
-// =========================
-// UTILITY SYSTEM
-// =========================
-
-function clampValues() {
-    luck = Math.max(0, luck);
-    wealth = Math.max(0, wealth);
-}
-
-// simple popup (replace with your UI)
-function showPopup(title, desc) {
-    const div = document.createElement("div");
-    div.innerHTML = `<b>${title}</b><br>${desc}`;
-    div.style.position = "fixed";
-    div.style.top = "20px";
-    div.style.left = "50%";
-    div.style.transform = "translateX(-50%)";
-    div.style.background = "#111";
-    div.style.color = "white";
-    div.style.padding = "10px 20px";
-    div.style.borderRadius = "10px";
-    div.style.fontFamily = "sans-serif";
-    div.style.zIndex = 9999;
-
-    document.body.appendChild(div);
-
-    setTimeout(() => div.remove(), 1200);
-}
-
-// =========================
-// EXAMPLE USAGE
-// =========================
-
-// simulate gaining money
-function addMoney(amount) {
-    wealth += amount;
-
-    check67Hint();   // optional suspense
-    updateGame();    // IMPORTANT
-}
-
-// simulate gameplay loop
-setInterval(() => {
-    if (Math.random() < 0.4) {
-        triggerRandomEvent();
-    }
-}, 3000);
-];
-
-// continuation pattern filler (so you actually get 200 entries)
-for (let i = 31; i <= 200; i++) {
-  events.push({
-    title: `Event ${i}`,
-    desc: i % 5 === 0 ? "Something weird almost happened." :
-          i % 3 === 0 ? "You feel slightly off." :
-          "Nothing important happens, but it feels like it did.",
-    weight: 8 + (i % 5),
-    rarity: i % 20 === 0 ? "Rare" : "Common",
-    color: i % 20 === 0 ? "#3498db" : "#bdc3c7",
-    effect: () => {}
-  });
-}
-         
-
-        const door = document.getElementById('door-container');
-        const eventDisplay = document.getElementById('event-display');
-
-        door.addEventListener('click', () => {
-            if (!canOpen) return;
-            openDoor();
-        });
-
-        function openDoor() {
-            canOpen = false;
-            doorCount++;
-            document.getElementById('door-count').innerText = doorCount;
-
-            door.classList.add('open-anim');
-            
-            setTimeout(() => {
-                const event = getRandomEvent();
-                displayEvent(event);
-                
-                if (event.isDeadly) {
-                    gameOver(event.reason);
-                } else {
-                    if (typeof event.effect === 'function') event.effect();
-                    updateStats();
-                }
-
-                setTimeout(() => {
-                    door.classList.remove('open-anim');
-                    canOpen = true;
-                }, 800);
-
-            }, 400);
-        }
-
-        function getRandomEvent() {
-            const totalWeight = EVENTS.reduce((acc, ev) => acc + ev.weight, 0);
-            let random = Math.random() * totalWeight;
-            
-            // Higher luck biases toward better events
-            if (luck > 1.5 && Math.random() < 0.3) {
-                random = Math.random() * (totalWeight * 0.5);
-            }
-
-            for (let ev of EVENTS) {
-                random -= ev.weight;
-                if (random <= 0) return ev;
-            }
-            return EVENTS[0];
-        }
-
-        function displayEvent(ev) {
-            eventDisplay.classList.remove('show');
-            
-            // Force reflow
-            void eventDisplay.offsetWidth;
-
-            const rarityTag = document.getElementById('rarity');
-            rarityTag.innerText = ev.rarity;
-            rarityTag.style.background = ev.color;
-            rarityTag.style.color = (ev.rarity === "Legendary") ? "#000" : "#fff";
+            rarityTag.style.color = ev.rarity === "Legendary" ? "#000" : "#fff";
 
             document.getElementById('title').innerText = ev.title;
             document.getElementById('desc').innerText = ev.desc;
