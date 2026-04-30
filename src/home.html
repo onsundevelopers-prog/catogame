@@ -9,15 +9,15 @@
 
         :root {
             --bg: #ffffff;
-            --accent: #2d3436;
-            --border: #000000;
-            --card-shadow: 8px 8px 0px #000;
-            --hover-shadow: 12px 12px 0px #000;
+            --accent: #DEB887;
+            --border: #30211a;
+            --card-shadow: 8px 8px 0px #291b14;
+            --hover-shadow: 12px 12px 0px #291b14;
         }
 
         body {
-            font-family: 'Inter', -apple-system, sans-serif;
-            background: var(--bg);
+            font-family: 'new-spirit', -apple-system, sans-serif;
+            background: burlywood;
             color: #111;
             margin: 0;
             padding: 0;
@@ -225,9 +225,9 @@
     <header>
         <h2>Catagame</h2>
         <nav>
-            <a href="#">Blog</a>
-            <a href="#">My Story</a>
-            <a href="#">Contact</a>
+            <a href="#" id="b">Blog</a>
+            <a href="#" id="p">Shop</a>
+            <a href="#" id="c">Contact</a>
         </nav>
         <div class="catobux-display" id="catabux-display">0 Catabux</div>
     </header>
@@ -300,6 +300,21 @@ document.getElementById("featured-game").addEventListener("click", function() {
     catabux += 10;
     localStorage.setItem("catabux", catabux);
     window.location.href = "games/passwordgame/dywyt.html";
+});
+
+document.getElementById('b').addEventListener('click', function(e) {
+    e.preventDefault();
+    alert('Blog coming soon!');
+});
+
+document.getElementById('p').addEventListener('click', function(e) {
+    e.preventDefault();
+    alert('Shop coming soon!');
+});
+
+document.getElementById('c').addEventListener('click', function(e) {
+    e.preventDefault();
+    alert('Contact coming soon!');
 });
 </script>
 
