@@ -5,23 +5,28 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Catagame | Create and Play</title>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Inter:wght@400;600;700&display=swap');
 
         :root {
-            --bg: #ffffff;
+            --bg: #fdf3e7;
+            --card-bg: #fffaf4;
             --accent: #feeacf;
             --border: #4d3529;
-            --card-shadow: 8px 8px 0px #291b14;
-            --hover-shadow: 12px 12px 0px #291b14;
+            --text: #2c1a0e;
+            --muted: #7a5c47;
+            --card-shadow: 6px 6px 0px #291b14;
+            --hover-shadow: 10px 10px 0px #291b14;
         }
+
+        * { box-sizing: border-box; }
 
         body {
             font-family: 'Inter', -apple-system, sans-serif;
-            background: #fdf3e7;
-            color: #111;
+            background: var(--bg);
+            color: var(--text);
             margin: 0;
             padding: 0;
-            line-height: 1.5;
+            line-height: 1.6;
         }
 
         /* --- Header --- */
@@ -29,127 +34,173 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 25px 10%;
+            padding: 18px 8%;
             border-bottom: 3px solid var(--border);
-            background: white;
+            background: var(--card-bg);
             position: sticky;
             top: 0;
             z-index: 1000;
         }
 
-        header h2 {
-            margin: 0;
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-family: 'Playfair Display', serif;
             font-weight: 900;
-            font-size: 28px;
-            letter-spacing: -1px;
+            font-size: 26px;
+            letter-spacing: -0.5px;
+            color: var(--border);
             cursor: pointer;
+            text-decoration: none;
+        }
+
+        .logo img {
+            width: 32px;
+            height: 32px;
+            filter: invert(18%) sepia(40%) saturate(600%) hue-rotate(340deg);
         }
 
         nav a {
-            margin-left: 30px;
+            margin-left: 28px;
             text-decoration: none;
-            color: #000;
-            font-weight: 700;
-            font-size: 16px;
+            color: var(--muted);
+            font-weight: 600;
+            font-size: 15px;
             transition: color 0.2s;
         }
 
-        nav a:hover {
-            color: #ff4757;
-            text-decoration: underline;
+        nav a:hover { color: var(--border); }
+
+        .catabux {
+            font-weight: 700;
+            background: var(--accent);
+            padding: 8px 16px;
+            border-radius: 20px;
+            border: 2px solid var(--border);
+            font-size: 14px;
+            color: var(--border);
         }
 
-        /* --- Hero Section --- */
+        /* --- Hero --- */
         .hero-section {
             text-align: center;
-            padding: 80px 20px;
-            max-width: 900px;
+            padding: 90px 20px 70px;
+            max-width: 800px;
             margin: 0 auto;
         }
 
+        .hero-eyebrow {
+            font-size: 13px;
+            font-weight: 700;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            color: var(--muted);
+            margin-bottom: 16px;
+        }
+
         .hero-section h1 {
-            font-size: 72px;
+            font-family: 'Playfair Display', serif;
+            font-size: clamp(48px, 8vw, 80px);
             font-weight: 900;
-            margin-bottom: 10px;
-            letter-spacing: -3px;
-            line-height: 1;
+            margin: 0 0 16px;
+            line-height: 1.05;
+            color: var(--border);
         }
 
         .hero-section p {
-            font-size: 22px;
-            color: #444;
-            margin-bottom: 40px;
-            font-weight: 500;
+            font-size: 18px;
+            color: var(--muted);
+            margin-bottom: 36px;
+            font-weight: 400;
+            max-width: 520px;
+            margin-left: auto;
+            margin-right: auto;
         }
 
-        /* --- Buttons --- */
         .main-btn {
-            padding: 20px 40px;
-            font-size: 22px;
-            font-weight: 900;
-            background-color: #fff;
-            color: #000;
-            border: 4px solid var(--border);
-            border-radius: 12px;
+            padding: 16px 36px;
+            font-size: 16px;
+            font-weight: 700;
+            background: var(--border);
+            color: #fff;
+            border: 3px solid var(--border);
+            border-radius: 50px;
             cursor: pointer;
             box-shadow: var(--card-shadow);
             transition: all 0.15s;
             display: inline-block;
-            text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
 
         .main-btn:hover {
-            transform: translate(-4px, -4px);
+            transform: translate(-3px, -3px);
             box-shadow: var(--hover-shadow);
-            background-color: #f1f2f6;
+            background: #3a2318;
         }
 
         .main-btn:active {
             transform: translate(2px, 2px);
-            box-shadow: 4px 4px 0px #000;
+            box-shadow: 3px 3px 0px #291b14;
         }
 
-        /* --- Featured Section --- */
-        .container {
+        /* --- Divider --- */
+        .divider {
+            display: flex;
+            align-items: center;
+            gap: 16px;
             max-width: 1100px;
-            margin: 40px auto;
+            margin: 0 auto 28px;
             padding: 0 20px;
         }
 
-        .section-title {
-            font-weight: 900;
-            font-size: 32px;
-            margin-bottom: 30px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
+        .divider-line {
+            flex: 1;
+            height: 2px;
+            background: var(--border);
+            opacity: 0.2;
         }
 
+        .section-title {
+            font-family: 'Playfair Display', serif;
+            font-weight: 700;
+            font-size: 22px;
+            color: var(--muted);
+            white-space: nowrap;
+        }
+
+        /* --- Container --- */
+        .container {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 0 20px 80px;
+        }
+
+        /* --- Featured Card --- */
         .featured-card {
-            background: #fff;
-            border: 4px solid var(--border);
+            background: var(--card-bg);
+            border: 3px solid var(--border);
             border-radius: 20px;
-            padding: 0;
             overflow: hidden;
             display: flex;
             align-items: stretch;
             height: 300px;
-            margin-bottom: 50px;
+            margin-bottom: 60px;
             box-shadow: var(--card-shadow);
             cursor: pointer;
-            transition: 0.2s;
+            transition: all 0.2s;
         }
 
         .featured-card:hover {
-            transform: scale(1.01);
+            transform: translate(-3px, -3px);
             box-shadow: var(--hover-shadow);
         }
 
         .featured-img {
-            width: 50%;
-            background: #dfe6e9;
+            width: 45%;
+            background: var(--accent);
             height: 300px;
-            border-right: 4px solid var(--border);
+            border-right: 3px solid var(--border);
             overflow: hidden;
             flex-shrink: 0;
         }
@@ -162,23 +213,53 @@
         }
 
         .featured-content {
-            padding: 40px;
-            width: 50%;
+            padding: 36px 40px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
         }
 
-        .featured-content h3 { font-size: 36px; margin: 0; font-weight: 900; }
-        .featured-content p { font-size: 18px; color: #666; margin: 15px 0; }
+        .featured-tag {
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            color: var(--muted);
+            margin-bottom: 10px;
+        }
+
+        .featured-content h3 {
+            font-family: 'Playfair Display', serif;
+            font-size: 30px;
+            margin: 0 0 10px;
+            font-weight: 900;
+            color: var(--border);
+            line-height: 1.2;
+        }
+
+        .featured-content p {
+            font-size: 15px;
+            color: var(--muted);
+            margin: 0 0 20px;
+        }
+
+        .play-link {
+            font-weight: 700;
+            font-size: 14px;
+            color: var(--border);
+            text-decoration: underline;
+            letter-spacing: 0.5px;
+        }
 
         /* --- Bento Grid --- */
         .bento-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-            gap: 30px;
-            margin-bottom: 100px;
+            grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+            gap: 24px;
         }
 
         .game-card {
-            background: white;
+            background: var(--card-bg);
             border: 3px solid var(--border);
             border-radius: 16px;
             padding: 20px;
@@ -188,24 +269,23 @@
             cursor: pointer;
             text-decoration: none;
             color: inherit;
+            display: block;
         }
 
         .game-card:hover {
-            transform: translateY(-5px);
+            transform: translate(-3px, -3px);
             box-shadow: var(--hover-shadow);
-            background: #fdfdfd;
         }
 
         .game-card .icon-box {
-            height: 150px;
-            background: #f1f2f6;
-            border: 3px solid var(--border);
+            height: 140px;
+            background: var(--accent);
+            border: 2px solid var(--border);
             border-radius: 12px;
-            margin-bottom: 15px;
+            margin-bottom: 14px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 60px;
             overflow: hidden;
         }
 
@@ -216,95 +296,57 @@
         }
 
         .game-card h4 {
-            margin: 10px 0 5px 0;
-            font-size: 20px;
-            font-weight: 900;
+            margin: 8px 0 4px;
+            font-size: 17px;
+            font-weight: 700;
+            color: var(--border);
         }
 
         .game-card small {
-            color: #777;
-            font-weight: 600;
+            color: var(--muted);
+            font-size: 13px;
+            font-weight: 500;
         }
 
-        /* --- Mobile Responsive --- */
-        .catabux {
-            border: 1px solid black;
-            padding: 5px 15px;
-            border-radius: 10px;
-            font-weight: bold;
-            background: #f1f2f6;
-            margin-left: 20px;
+        /* --- Footer --- */
+        footer {
+            text-align: center;
+            padding: 30px 20px;
+            border-top: 2px solid var(--border);
+            color: var(--muted);
+            font-size: 13px;
+            opacity: 0.7;
         }
 
+        /* --- Mobile --- */
         @media (max-width: 768px) {
-            header {
-                padding: 16px 5%;
-                flex-wrap: wrap;
-                gap: 10px;
-            }
-
-            header h2 { font-size: 22px; }
-
+            header { padding: 14px 5%; flex-wrap: wrap; gap: 10px; }
             nav { display: none; }
-
-            .hero-section {
-                padding: 50px 20px;
-            }
-
-            .hero-section h1 {
-                font-size: 42px;
-                letter-spacing: -2px;
-            }
-
-            .hero-section p { font-size: 16px; }
-
-            .main-btn {
-                padding: 14px 28px;
-                font-size: 16px;
-            }
-
-            .featured-card {
-                flex-direction: column;
-                height: auto;
-            }
-
-            .featured-img {
-                width: 100%;
-                height: 200px;
-                border-right: none;
-                border-bottom: 4px solid var(--border);
-            }
-
-            .featured-content {
-                width: 100%;
-                padding: 24px;
-            }
-
-            .featured-content h3 { font-size: 24px; }
-
-            .bento-grid {
-                grid-template-columns: 1fr 1fr;
-                gap: 16px;
-            }
-
+            .hero-section { padding: 60px 20px 50px; }
+            .featured-card { flex-direction: column; height: auto; }
+            .featured-img { width: 100%; height: 180px; border-right: none; border-bottom: 3px solid var(--border); }
+            .featured-content { padding: 24px; }
+            .featured-content h3 { font-size: 22px; }
+            .bento-grid { grid-template-columns: 1fr 1fr; gap: 14px; }
             .game-card { padding: 14px; }
-            .game-card .icon-box { height: 110px; }
-            .game-card h4 { font-size: 15px; }
+            .game-card .icon-box { height: 100px; }
+            .game-card h4 { font-size: 14px; }
         }
 
         @media (max-width: 480px) {
             .bento-grid { grid-template-columns: 1fr; }
-            .hero-section h1 { font-size: 36px; }
         }
-
     </style>
 </head>
 <body>
 
     <header>
-        <h2>Catagame</h2>
+        <a class="logo" href="#">
+            <img src="assets/coffee-icon-svgrepo-com.svg" alt="coffee">
+            Catagame
+        </a>
         <nav>
-            <a href="#">Blog</a>
+            <a href="games/myblog.html">Blog</a>
             <a href="#">My Story</a>
             <a href="#">Contact</a>
         </nav>
@@ -312,26 +354,38 @@
     </header>
 
     <div class="hero-section">
+        <div class="hero-eyebrow">☕ grab a coffee and play</div>
         <h1>Create and Play.</h1>
-        <p>Explore new experiments, build weird things, and share them with the world.</p>
-        <button id="start-create-btn" class="main-btn" onclick="window.location.href='#'">Start Creating Now</button>
+        <p>Explore weird experiments, build strange things, and share them with the world.</p>
+        <button id="start-create-btn" class="main-btn">Start Creating</button>
+    </div>
+
+    <div class="divider">
+        <div class="divider-line"></div>
+        <div class="section-title">Featured</div>
+        <div class="divider-line"></div>
     </div>
 
     <div class="container">
-        <div class="section-title"> Featured </div>
-        
         <div id="featured-game" class="featured-card">
-            <div class="featured-img"><img src="assets/PasswordGame.png" alt="Featured Game" style="width:100%;height:100%;object-fit:cover;display:block;"></div>
+            <div class="featured-img">
+                <img src="assets/PasswordGame.png" alt="Password Game">
+            </div>
             <div class="featured-content">
+                <div class="featured-tag">⭐ Editor's Pick</div>
                 <h3>The Password Game</h3>
-                <p>Password Game, just try putting a password, nothing to it</p>
-                <div style="font-weight: 800; text-decoration: underline;">Play</div>
+                <p>Try putting in a password. It's harder than it looks.</p>
+                <span class="play-link">Play now →</span>
             </div>
         </div>
 
-        <div class="section-title"> More Games</div>
-        <div class="bento-grid">
+        <div class="divider" style="margin-bottom: 28px;">
+            <div class="divider-line"></div>
+            <div class="section-title">More Games</div>
+            <div class="divider-line"></div>
+        </div>
 
+        <div class="bento-grid">
             <a href="games/99thday/99thday.html" class="game-card">
                 <div class="icon-box"><img src="assets/I'm-not-a-robot.png" alt="Are you a robot?"></div>
                 <h4>Are you a robot?</h4>
@@ -347,53 +401,44 @@
             <a href="games/createaperfectcircle/pic.html" class="game-card">
                 <div class="icon-box"></div>
                 <h4>What's behind the door?</h4>
-                <small>What is behind the secret door, only you can find out</small>
+                <small>Only you can find out</small>
             </a>
 
             <a href="games/actaselonmusk/towerdefense.html" class="game-card">
                 <div class="icon-box"></div>
                 <h4>Tower Defense</h4>
-                <small>Defend your tower from incoming threats!</small>
+                <small>Defend your tower</small>
             </a>
 
             <a href="games/sandbox/sandbox.html" class="game-card">
                 <div class="icon-box"></div>
-                <h4>The Sandbox Game</h4>
-                <small>It's basically just a ragdoll game</small>
+                <h4>The Sandbox</h4>
+                <small>Basically a ragdoll game</small>
             </a>
 
             <a href="games/Pickone/pickone.html" class="game-card">
+                <div class="icon-box"></div>
                 <h4>Pick One</h4>
                 <small>Erase one event from history</small>
             </a>
         </div>
     </div>
 
+    <footer>☕ Catagame — made with curiosity</footer>
+
     <script>
         const catabuxKey = 'catabux';
+        function getCatabux() { return parseInt(localStorage.getItem(catabuxKey)) || 0; }
+        function setCatabux(v) { localStorage.setItem(catabuxKey, v); updateDisplay(); }
+        function updateDisplay() { document.getElementById('catabux-display').textContent = getCatabux() + ' Catabux'; }
+        updateDisplay();
 
-        function getCatabux() {
-            return parseInt(localStorage.getItem(catabuxKey)) || 0;
-        }
-
-        function setCatabux(value) {
-            localStorage.setItem(catabuxKey, value);
-            updateCatabuxDisplay();
-        }
-
-        function updateCatabuxDisplay() {
-            document.getElementById('catabux-display').textContent = getCatabux() + ' Catabux';
-        }
-
-        updateCatabuxDisplay();
-
-        document.getElementById('start-create-btn').addEventListener('click', function() {
+        document.getElementById('start-create-btn').addEventListener('click', () => {
             window.location.href = 'src/startcreating.html';
         });
 
-        document.getElementById('featured-game').addEventListener('click', function() {
-            const newCatabux = getCatabux() + 10;
-            setCatabux(newCatabux);
+        document.getElementById('featured-game').addEventListener('click', () => {
+            setCatabux(getCatabux() + 10);
             window.location.href = 'games/passwordgame/dywyt.html';
         });
     </script>
