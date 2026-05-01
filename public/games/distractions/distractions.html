@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LOGIC BREAK // TOTAL BRAINROT</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;900&family=Space+Mono:wght@700&display=swap');
+
+        * { box-sizing: border-box; user-select: none; }
+        body {
+            margin: 0; padding: 0;
+            font-family: 'Inter', sans-serif;
+            background: #fff; color: #000;
+            height: 100vh; overflow: hidden;
+            display: flex; align-items: center; justify-content: center;
+            transition: background-color 0.1s;
+        }
+
+        #bg-stats {
+            position: fixed; inset: 0;
+            display: flex; flex-direction: column;
+            align-items: center; justify-content: center;
+            z-index: 0; pointer-events: none;
+            opacity: 0.08;
+        }
+        #bg-target { font-size: 30vw; font-weight: 900; line-height: 0.8; }
+        #bg-score { font-size: 15vw; font-weight: 900; }
+
+        #shorts-container {
+            position: fixed; left: 20px; top: 50%;
+            transform: translateY(-50%);
+            width: 200px; height: 350px;
+            border: 4px solid #000; border-radius: 20px;
+            background: #000; overflow: hidden; z-index: 10;
+            display: none;
+        }
+        .track { width: 100%; height: 100%; background: linear-gradient(#4facfe, #00f2fe); position: relative; }
+        .runner { position: absolute; bottom: 30px; left: 40px; width: 25px; height: 40px; background: #ff4757; animation: runnerJump 0.3s infinite alternate; border: 2px solid #000; }
+        .block { position: absolute; bottom: 30px; right: -50px; width: 30px; height: 30px; background: #000; animation: blockMove 0.8s linear infinite; }
+        @keyframes runnerJump { from { bottom: 30px; } to { bottom: 80px; } }
+        @keyframes blockMove { from { right: -50px; } to { right: 250px; } }
+
+        #game-ui {
+            position: relative; z-index: 100;
+            width: 100%; max-width: 420px;
+            text-align: center; background: rgba(255, 255, 255, 0.9);
+            padding: 40px; border: 3px solid #000;
+            box-shadow: 15px 15px 0px #000;
+        }
+
+        #question-area { min-height: 150px; display: flex; flex-direction: column; justify-content: center; }
+        #question { font-size: 36px; font-family: 'Space Mono', monospace; font-weight: 900; margin: 0; }
+        #hint { font-size: 11px; font-weight: 900; text-transform: uppercase; color: #888; margin-top: 10px; letter-spacing: 1px; }
+
+        .options { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 30px; }
+        .btn {
+            padding: 20px; background: #fff; border: 2px solid #000;
+            font-weight: 900; cursor: pointer; font-family: inherit;
+            font-size: 18px; transition: 0.05s;
+        }
+        .btn:hover { background: #000; color: #fff; transform: scale(1.05); }
+
+        #wrong-overlay {
+            position: fixed; inset: 0; background: #ff4d4d;
+            display: none; align-items: center; justify-content: center;
+            z-index: 1000; color: #fff; font-size: 8vw; font-weight: 900;
+        }
+        canvas { position: fixed; inset: 0; pointer-events: none; z-index: 50; }
+        #flashbang { position: fixed; inset: 0; background: #fff; display: none; z-index: 500; }
+        
+        .floating-img { position: fixed; width: 100px; z-index: 60; pointer-events: none; }
+    </style>
+</head>
+<body>
+
+    <div id="bg-stats">
+        <div id="bg-score">0</div>
+        <div id="bg-target">100</div>
+    </div>
+
+    <div id="shorts-container">
+        <div class="track">
+            <div class="runner"></div>
+            <div class="block"></div>
+        </div>
+        <div style="position:absolute; top:10px; right:10px; color:#fff; font-weight:900; font-size:12px;">LIVE</div>
+    </div>
+
+    <div id="wrong-overlay">yo bro how did you get that wrong?</div>
+    <canvas id="chaos-canvas"></canvas>
+    <div id="flashbang"></div>
+
+    <div id="game-ui">
+        <div id="question-area">
+            <div id="question">Logic Break</div>
+            <div id="hint">Reach 100 to beat the game</div>
+        </div>
+        <div class="options" id="options">
+            <button class="btn" style="grid-column: span 2" onclick="startGame()">INITIATE CHAOS</button>
+        </div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('chaos-canvas');
+        const ctx = canvas.getContext('2d');
+        const questionEl = document.getElementById('question');
+        const hintEl = document.getElementById('hint');
+        const optionsEl = document.getElementById('options');
+        const scoreBg = document.getElementById('bg-score');
+
+        let score = 0, currentAns = null, active = false;
+        let floatingItems = [];
+
+        const sounds = {
+            vine: new Audio('https://www.myinstants.com/media/sounds/vine-boom.mp3'),
+            what: new Audio('https://www.myinstants.com/media/sounds/67-94-video-converter-mp3.mp3'),
+            fah: new Audio('https://www.myinstants.com/media/sounds/fugg.mp3'),
+            pipe: new Audio('https://www.myinstants.com/media/sounds/metal-pipe-clang.mp3'),
+            bruh: new Audio('https://www.myinstants.com/media/sounds/bruh.mp3'),
+            scream: new Audio('https://www.myinstants.com/media/sounds/perfect-scream.mp3'),
+            fart: new Audio('https://www.myinstants.com/media/sounds/reverb-fart.mp3'),
+            wow: new Audio('https://www.myinstants.com/media/sounds/anime-wow-sound-effect.mp3'),
+            yippee: new Audio('https://www.myinstants.com/media/sounds/tbh-creature-yippee-sound-effect.mp3'),
+            huh: new Audio('https://www.myinstants.com/media/sounds/huh-sound-effect.mp3'),
+            sixseven: new Audio('https://www.myinstants.com/en/instant/67-kid-47332/?utm_source=copy&utm_medium=share'),
+            butyoudidnt: new Audio("https://www.myinstants.com/en/instant/you-didnt-have-to-cut-me-off-41720/?utm_source=copy&utm_medium=share"),
+            fahhhhh: new Audio("https://www.myinstants.com/en/instant/ive-got-this-faaaaaaaaahhhhh-66795/?utm_source=copy&utm_medium=share"),
+            applepay: new Audio("https://www.myinstants.com/en/instant/apple-pay-45496/?utm_source=copy&utm_medium=share"),
+            babylaughing: new Audio("https://www.myinstants.com/en/instant/baby-laughing-meme-56428/?utm_source=copy&utm_medium=share")
+        };
+
+        function play(id) {
+            const s = sounds[id];
+            if(s) { s.currentTime = 0; s.play().catch(() => {}); }
+        }
+
+        function startGame() {
+            active = true;
+            document.getElementById('shorts-container').style.display = 'block';
+            next();
+            
+            setInterval(() => {
+                if(!active) return;
+                triggerRandomChaos();
+            }, 1000);
+
+            requestAnimationFrame(render);
+        }
+
+        function next() {
+            optionsEl.innerHTML = '';
+            const modes = ['multiply', 'stroop', 'pattern', 'logic'];
+            const mode = modes[Math.floor(Math.random() * modes.length)];
+
+            if (mode === 'multiply') {
+                const a = Math.floor(Math.random() * 10) + 2;
+                const b = Math.floor(Math.random() * 10) + 2;
+                questionEl.innerText = `${a} × ${b}`;
+                questionEl.style.color = "#000";
+                hintEl.innerText = "Multiplication Core";
+                setupButtons(a * b, 'num');
+            } 
+            else if (mode === 'stroop') {
+                const names = ['RED', 'BLUE', 'GREEN', 'PURPLE', 'ORANGE'];
+                const hex = ['#ff4757', '#3742fa', '#2ed573', '#a55eea', '#ffa502'];
+                const tIdx = Math.floor(Math.random()*5), cIdx = Math.floor(Math.random()*5);
+                questionEl.innerText = names[tIdx];
+                questionEl.style.color = hex[cIdx];
+                hintEl.innerText = "PICK THE COLOR OF THE TEXT";
+                setupButtons(hex[cIdx], 'color', hex);
+            }
+            else if (mode === 'pattern') {
+                const start = Math.floor(Math.random() * 20), step = Math.floor(Math.random() * 5) + 1;
+                questionEl.innerText = `${start}, ${start+step}, ${start+step*2}, ?`;
+                questionEl.style.color = "#000";
+                hintEl.innerText = "Sequence Detection";
+                setupButtons(start+step*3, 'num');
+            }
+            else {
+                const dirs = ['UP', 'DOWN', 'LEFT', 'RIGHT'];
+                const icons = ['↑', '↓', '←', '→'];
+                const r = Math.floor(Math.random() * 4);
+                questionEl.innerText = dirs[r];
+                questionEl.style.color = "#000";
+                hintEl.innerText = "Directional Override";
+                setupButtons(icons[r], 'text', icons);
+            }
+        }
+
+        function setupButtons(correct, type, pool = []) {
+            let choices = [correct];
+            while(choices.length < 4) {
+                let f = (type === 'num') ? correct + (Math.floor(Math.random()*10)-5) : pool[Math.floor(Math.random()*pool.length)];
+                if(!choices.includes(f) && f !== undefined) choices.push(f);
+            }
+            choices.sort(() => Math.random() - 0.5).forEach(val => {
+                const b = document.createElement('button');
+                b.className = 'btn';
+                if(type === 'color') { b.style.background = val; b.innerText = ""; }
+                else b.innerText = val;
+                b.onclick = () => {
+                    if(val == correct) handleCorrect();
+                    else handleWrong();
+                };
+                optionsEl.appendChild(b);
+            });
+        }
+
+        function handleCorrect() {
+            score++;
+            scoreBg.innerText = score;
+            play('vine');
+            triggerRandomChaos();
+            if(score >= 100) { alert("ASCENDED"); location.reload(); }
+            next();
+        }
+
+        function handleWrong() {
+            play('what');
+            setTimeout(() => play('fah'), 300);
+            document.getElementById('wrong-overlay').style.display = 'flex';
+            score = Math.max(0, score - 5);
+            scoreBg.innerText = score;
+            setTimeout(() => {
+                document.getElementById('wrong-overlay').style.display = 'none';
+                next();
+            }, 800);
+        }
+
+        function triggerRandomChaos() {
+            const keys = Object.keys(sounds);
+            play(keys[Math.floor(Math.random() * keys.length)]);
+
+            const r = Math.random();
+            if(r < 0.2) {
+                document.getElementById('flashbang').style.display = 'block';
+                setTimeout(() => document.getElementById('flashbang').style.display = 'none', 50);
+            } else if(r < 0.4) {
+                document.body.style.filter = "invert(1)";
+                setTimeout(() => document.body.style.filter = "none", 150);
+            }
+
+            floatingText(["SKIBIDI", "GYATT", "RIZZ", "OHIO", "FEHH", "WHAT?!", "L RIZZ", "SIGMA", "67", "I GOT THIS"]);
+        }
+
+        function floatingText(words) {
+            floatingItems.push({
+                t: words[Math.floor(Math.random() * words.length)],
+                x: Math.random() * window.innerWidth,
+                y: window.innerHeight + 100,
+                v: -(5 + Math.random() * 15),
+                s: 30 + Math.random() * 120,
+                o: 1
+            });
+        }
+
+        function render() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            ctx.clearRect(0,0, canvas.width, canvas.height);
+
+            floatingItems.forEach((m, i) => {
+                ctx.globalAlpha = m.o;
+                ctx.font = `900 ${m.s}px Inter`;
+                ctx.fillStyle = `hsl(${Date.now() % 360}, 70%, 50%)`;
+                ctx.fillText(m.t, m.x, m.y);
+                m.y += m.v;
+                m.o -= 0.005;
+                if(m.y < -200 || m.o <= 0) floatingItems.splice(i, 1);
+            });
+
+            if (score > 5) {
+                const intensity = (score / 3);
+                document.getElementById('game-ui').style.transform = `translate(${(Math.random()-0.5)*intensity}px, ${(Math.random()-0.5)*intensity}px)`;
+            }
+
+            requestAnimationFrame(render);
+        }
+    </script>
+</body>
+</html>
