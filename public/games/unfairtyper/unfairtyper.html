@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Unfair Typer</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Mono&display=swap');
+
+        * { box-sizing: border-box; }
+        
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Inter', sans-serif;
+            background: #ffffff;
+            color: #111;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            overflow: hidden;
+            transition: all 0.5s ease;
+        }
+
+        /* Minimalist Stats Header */
+        #header {
+            position: fixed;
+            top: 50px;
+            display: flex;
+            gap: 60px;
+            color: #999;
+            font-size: 14px;
+            font-weight: 500;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+
+        .val { color: #111; font-weight: 600; }
+
+        /* Centered Typing Container */
+        #game-container {
+            width: 80%;
+            max-width: 850px;
+            position: relative;
+            z-index: 10;
+        }
+
+        #text-display {
+            font-family: 'Space Mono', monospace;
+            font-size: 30px;
+            line-height: 1.6;
+            color: #e0e0e0;
+            white-space: pre-wrap;
+            text-align: left;
+        }
+
+        .char { position: relative; display: inline-block; transition: all 0.2s; }
+        .correct { color: #111; }
+        .incorrect { color: #ff4757; background: #fff1f2; }
+        .current { border-left: 2px solid #000; margin-left: -2px; }
+
+        /* --- THE CHAOS ELEMENTS --- */
+        .falling { animation: fall 3s forwards ease-in; pointer-events: none; }
+        @keyframes fall { to { transform: translateY(100vh) rotate(45deg); opacity: 0; } }
+
+        .shake { animation: shake 0.1s infinite; }
+        @keyframes shake { 0% {transform:translate(1px,1px)} 50% {transform:translate(-1px,-2px)} 100% {transform:translate(1px,-1px)} }
+
+        .popup {
+            position: absolute; background: white; border: 1px solid #000;
+            padding: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            border-radius: 8px; z-index: 1000; width: 280px; pointer-events: auto;
+            font-size: 13px;
+        }
+
+        /* Results Screen */
+        #overlay {
+            position: fixed; inset: 0; background: #fff; z-index: 2000;
+            display: none; flex-direction: column; align-items: center; justify-content: center;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="header">
+        <div>WPM <span id="wpm-val" class="val">0</span></div>
+        <div>ACCURACY <span id="acc-val" class="val">100%</span></div>
+        <div>CHAOS <span id="chaos-val" class="val">0%</span></div>
+    </div>
+
+    <div id="game-container">
+        <div id="text-display"></div>
+    </div>
+
+    <div id="overlay">
+        <h1 style="font-size: 60px; font-weight: 900; margin: 0;">DONE.</h1>
+        <p id="final-stats" style="font-size: 20px; color: #666;"></p>
+        <button onclick="location.reload()" style="padding: 15px 30px; border: 1px solid #000; background: #000; color: #fff; font-weight: 600; cursor: pointer; border-radius: 5px; margin-top: 20px;">Try Again</button>
+    </div>
+
+    <script>
+        const targetText = "Success is not final, failure is not fatal: it is the courage to continue that counts. Your typing speed is currently being analyzed for gravitational stability.";
+        const display = document.getElementById('text-display');
+        
+        let typedIdx = 0;
+        let mistakes = 0;
+        let startTime = null;
+        let chaosLevel = 0;
+        let isLaggy = false;
+        let keySwaps = {};
+
+        // 1. Initial Render
+        targetText.split('').forEach((char, i) => {
+            const span = document.createElement('span');
+            span.innerText = char;
+            span.className = 'char' + (i === 0 ? ' current' : '');
+            display.appendChild(span);
+        });
+        const chars = document.querySelectorAll('.char');
+
+        // 2. Typing Logic
+        window.addEventListener('keydown', (e) => {
+            if (typedIdx >= targetText.length) return;
+            if (e.key.length > 1 && e.key !== 'Backspace') return;
+
+            if (!startTime) startTime = Date.now();
+
+            const delay = isLaggy ? Math.random() * 400 : 0;
+            setTimeout(() => processKey(e.key), delay);
+        });
+
+        function processKey(key) {
+            let actualKey = key;
+            if (keySwaps[key]) actualKey = keySwaps[key];
+
+            const expected = targetText[typedIdx];
+            const currentSpan = chars[typedIdx];
+
+            if (actualKey === expected) {
+                currentSpan.classList.add('correct');
+            } else {
+                currentSpan.classList.add('incorrect');
+                mistakes++;
+            }
+
+            currentSpan.classList.remove('current');
+            typedIdx++;
+            
+            if (chars[typedIdx]) chars[typedIdx].classList.add('current');
+            else finish();
+
+            updateStats();
+            if (typedIdx % 4 === 0) triggerChaos();
+        }
+
+        // 3. The 100 Random Events Engine
+        function triggerChaos() {
+            chaosLevel++;
+            document.getElementById('chaos-val').innerText = chaosLevel + "%";
+
+            const dice = Math.floor(Math.random() * 100);
+
+            if (dice < 10) {
+                const rots = [5, -5, 10, -10, 180];
+                document.getElementById('game-container').style.transform = `rotate(${rots[Math.floor(Math.random()*rots.length)]}deg)`;
+            } 
+            else if (dice < 20) {
+                const filters = ['blur(3px)', 'invert(1)', 'hue-rotate(90deg)', 'contrast(4)', 'grayscale(1)'];
+                document.body.style.filter = filters[Math.floor(Math.random()*filters.length)];
+                setTimeout(() => document.body.style.filter = "none", 1500);
+            }
+            else if (dice < 30) {
+                chars[Math.floor(Math.random() * typedIdx)].classList.add('falling');
+            }
+            else if (dice < 40) {
+                spawnPopup();
+            }
+            else if (dice < 50) {
+                isLaggy = true;
+                setTimeout(() => isLaggy = false, 2000);
+            }
+            else if (dice < 60) {
+                const fonts = ['Comic Sans MS', 'serif', 'cursive', 'monospace'];
+                document.body.style.fontFamily = fonts[Math.floor(Math.random()*fonts.length)];
+            }
+            else if (dice < 70) {
+                const k1 = "etanios".split('')[Math.floor(Math.random()*7)];
+                const k2 = "etanios".split('')[Math.floor(Math.random()*7)];
+                keySwaps[k1] = k2;
+            }
+            else if (dice < 80) {
+                document.getElementById('game-container').style.marginLeft = (Math.random()*200 - 100) + "px";
+            }
+            else if (dice < 90) {
+                document.body.style.background = `hsl(${Math.random()*360}, 100%, 95%)`;
+            }
+            else {
+                document.body.classList.add('shake');
+                setTimeout(() => document.body.classList.remove('shake'), 500);
+            }
+        }
+
+        function spawnPopup() {
+            const p = document.createElement('div');
+            p.className = 'popup';
+            p.style.top = Math.random()*50 + 20 + "%";
+            p.style.left = Math.random()*50 + 20 + "%";
+            p.innerHTML = `<b>SYSTEM ALERT</b><p>Planet Zamunda is requesting your current location. Accept?</p>
+                           <button onclick="this.parentElement.remove()" style="border:1px solid #000; background:#fff; cursor:pointer;">IGNORE</button>`;
+            document.body.appendChild(p);
+        }
+
+        function updateStats() {
+            const elapsed = (Date.now() - startTime) / 60000;
+            const wpm = Math.round((typedIdx / 5) / elapsed) || 0;
+            const acc = Math.round(((typedIdx - mistakes) / typedIdx) * 100) || 100;
+            document.getElementById('wpm-val').innerText = wpm;
+            document.getElementById('acc-val').innerText = acc + "%";
+        }
+
+        function finish() {
+            const elapsed = (Date.now() - startTime) / 60000;
+            const wpm = Math.round((typedIdx / 5) / elapsed);
+            document.getElementById('overlay').style.display = 'flex';
+            document.getElementById('final-stats').innerText = `WPM: ${wpm} | Mistakes: ${mistakes} | Chaos Level: ${chaosLevel}`;
+        }
+    </script>
+</body>
+</html>
