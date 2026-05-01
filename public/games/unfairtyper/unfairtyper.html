@@ -122,7 +122,7 @@
 
         // 2. Typing Logic
         window.addEventListener('keydown', (e) => {
-            if (typedIdx >= targetText.length) return;
+            if (typedIdx >= targetText.length && e.key !== 'Backspace') return;
             if (e.key.length > 1 && e.key !== 'Backspace') return;
 
             if (!startTime) startTime = Date.now();
@@ -132,6 +132,15 @@
         });
 
         function processKey(key) {
+            if (key === 'Backspace') {
+                if (typedIdx > 0) {
+                    typedIdx--;
+                    chars[typedIdx].classList.remove('correct', 'incorrect', 'current');
+                    if (chars[typedIdx]) chars[typedIdx].classList.add('current');
+                }
+                return;
+            }
+
             let actualKey = key;
             if (keySwaps[key]) actualKey = keySwaps[key];
 
