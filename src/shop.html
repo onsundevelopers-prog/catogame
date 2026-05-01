@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shop</title>
+    <style>
+         :root {
+            --bg: #ffffff;
+            --accent: #feeacf;
+            --border: #4d3529;
+            --card-shadow: 8px 8px 0px #291b14;
+            --hover-shadow: 12px 12px 0px #291b14;
+        }
+
+        .bento-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 30px;
+            margin-bottom: 100px;
+        }
+
+        .game-card {
+            background: white;
+            border: 3px solid var(--border);
+            border-radius: 16px;
+            padding: 20px;
+            text-align: center;
+            box-shadow: var(--card-shadow);
+            transition: all 0.2s;
+            cursor: pointer;
+            text-decoration: none;
+            color: inherit;
+        }
+        .catobux-display {
+            font-weight: 700;
+            background: #f1f2f6;
+            padding: 10px 20px;
+            border-radius: 12px;
+            border: 3px solid var(--border);
+        }     
+    </style>
+</head>
+<body>
+    <div class="catobux-display"><script>
+       fetch('home.html')
+       .then(reponse => response.json)
+       .then(data => {
+    document.getElementById("catobux").innerHTML = data;
+  });
+    </script></div>
+    <div class="bento-grid"></div>
+    <a href=home.html>
+        <h3>Early Acsess</h3>
+        <p>400 catobux</p>
+    </a>
+     <a href=home.html>
+        <h3>Partnership</h3>
+        <p>1,000 catobux</p>
+     </a>
+    <a href="home.html">
+        <h3>Start Gambling Your Catobux</h3>
+        <p>1,500</p>
+    </a>
+    <a href="home.html">
+        <h3>Create your own games</h3>
+        <p> 2,000</p>
+    </a>
+    </body>     
+</html>
