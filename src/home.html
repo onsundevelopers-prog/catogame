@@ -229,7 +229,7 @@
         <h2>Catagame</h2>
         <nav>
             <a href="games/myblog.html" id="b">Blog</a>
-            <a href="#" id="p">Shop</a>
+            <a href="../shop.html" id="p">Shop</a>
             <a href="#" id="c">Contact</a>
         </nav>
         <div class="catobux-display" id="catabux-display">0 Catabux</div>
@@ -336,11 +336,6 @@ document.getElementById("featured-game").addEventListener("click", function() {
 document.getElementById('b').addEventListener('click', function(e) {
     e.preventDefault();
     window.location.href = 'games/myblog.html';
-});
-
-document.getElementById('p').addEventListener('click', function(e) {
-    e.preventDefault();
-    alert('Shop coming soon!');
 });
 
 document.getElementById('c').addEventListener('click', function(e) {
