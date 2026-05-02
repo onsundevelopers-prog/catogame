@@ -312,6 +312,14 @@
 </head>
 <body>
 
+    <!-- EmailJS SDK -->
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
+    <script type="text/javascript">
+        (function(){
+            emailjs.init("YOUR_PUBLIC_KEY"); // You'll need to replace this with your EmailJS public key
+        })();
+    </script>
+
     <header>
         <a class="logo" href="../../index.html">Catagame</a>
         <nav>
@@ -493,11 +501,14 @@
             setCatabux(getCatabux() - price);
             addPurchasedItem(item);
             
+            // Send email notification
+            sendPurchaseEmail(item, price);
+            
             closeModal();
             
             let message = 'Thank you for your purchase!';
             if (item === 'dm' || item === 'qa' || item === 'website' || item === 'partnership') {
-                message += ' Check your email for next steps or contact us at support@catagame.com';
+                message += ' Check your email for next steps or contact us at onsundevelopers@gmail.com';
             }
             
             document.getElementById('success-message').textContent = message;
@@ -505,6 +516,42 @@
             
             pendingPurchase = null;
             updateDisplay();
+        }
+
+        function sendPurchaseEmail(item, price) {
+            // Get item name
+            const itemNames = {
+                'partnership': 'Partnership',
+                'website': 'Free Website',
+                'game-creator': 'Game Creator Access',
+                'qa': 'Q&A Session',
+                'dm': '25-Minute DM',
+                'early-access': 'Early Access'
+            };
+
+            const itemName = itemNames[item] || item;
+            const currentCatabux = getCatabux();
+            const timestamp = new Date().toLocaleString();
+
+            // EmailJS parameters
+            const templateParams = {
+                to_email: 'onsundevelopers@gmail.com',
+                item_name: itemName,
+                item_price: price,
+                remaining_catabux: currentCatabux,
+                purchase_time: timestamp,
+                user_info: 'User from Catagame'
+            };
+
+            // Send email using EmailJS
+            // Note: You need to set up EmailJS account and replace with your IDs
+            emailjs.send('YOUR_SERVICE_ID', 'YOUR_TEMPLATE_ID', templateParams)
+                .then(function(response) {
+                    console.log('Email sent successfully!', response.status, response.text);
+                }, function(error) {
+                    console.log('Email failed to send:', error);
+                    // Still allow purchase to complete even if email fails
+                });
         }
 
         function closeModal() {
