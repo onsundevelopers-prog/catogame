@@ -212,7 +212,13 @@
             scoreBg.innerText = score;
             play('vine');
             triggerRandomChaos();
-            if(score >= 100) { alert("ASCENDED"); location.reload(); }
+            if(score >= 100) { 
+                const reward = 25;
+                const currentCatabux = parseInt(localStorage.getItem('catabux')) || 0;
+                localStorage.setItem('catabux', currentCatabux + reward);
+                alert(`ASCENDED\n\n+${reward} Catabux earned!`); 
+                location.reload(); 
+            }
             next();
         }
 

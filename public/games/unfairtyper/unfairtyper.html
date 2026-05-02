@@ -232,8 +232,14 @@
         function finish() {
             const elapsed = (Date.now() - startTime) / 60000;
             const wpm = Math.round((typedIdx / 5) / elapsed);
+            
+            // Award Catabux
+            const reward = 15;
+            const currentCatabux = parseInt(localStorage.getItem('catabux')) || 0;
+            localStorage.setItem('catabux', currentCatabux + reward);
+            
             document.getElementById('overlay').style.display = 'flex';
-            document.getElementById('final-stats').innerText = `WPM: ${wpm} | Mistakes: ${mistakes} | Chaos Level: ${chaosLevel}`;
+            document.getElementById('final-stats').innerText = `WPM: ${wpm} | Mistakes: ${mistakes} | Chaos Level: ${chaosLevel}\n\n+${reward} Catabux earned!`;
         }
     </script>
 </body>

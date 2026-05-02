@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>The Password Game Clone</title>
+    <title>The Password Game - 100 Rules</title>
     <style>
         :root {
             --error-bg: #ffefef;
@@ -31,8 +31,15 @@
 
         h1 {
             font-size: 48px;
-            margin-bottom: 40px;
+            margin-bottom: 20px;
             text-align: center;
+        }
+
+        .progress {
+            text-align: center;
+            font-size: 18px;
+            color: #666;
+            margin-bottom: 20px;
         }
 
         .password-box {
@@ -55,7 +62,7 @@
             width: 100%;
             min-height: 100px;
             padding: 15px;
-            font-size: 24px;
+            font-size: 20px;
             border: 2px solid #000;
             border-radius: 8px;
             outline: none;
@@ -68,21 +75,21 @@
             text-align: right;
             margin-top: 5px;
             color: #666;
+            font-size: 14px;
         }
 
         #rules-container {
             display: flex;
-            flex-direction: column-reverse; /* Newest rules on top */
-            gap: 20px;
+            flex-direction: column-reverse;
+            gap: 15px;
             margin-top: 20px;
         }
 
         .rule-card {
-            padding: 20px;
+            padding: 15px;
             border-radius: 8px;
             border: 2px solid #000;
-            transition: all 0.3s ease;
-            position: relative;
+            transition: all 0.2s ease;
         }
 
         .rule-card.fail {
@@ -99,32 +106,27 @@
 
         .rule-title {
             font-weight: bold;
-            font-size: 18px;
-            margin-bottom: 8px;
+            font-size: 16px;
+            margin-bottom: 6px;
             display: flex;
             align-items: center;
         }
 
         .rule-title svg {
-            margin-right: 10px;
+            margin-right: 8px;
         }
 
-        .captcha-img {
+        .rule-desc {
+            font-size: 14px;
+        }
+
+        .sponsor-logos, .captcha-img {
+            font-weight: bold;
             background: #eee;
-            padding: 10px;
-            letter-spacing: 5px;
-            font-family: 'Courier New', Courier, monospace;
-            font-weight: bold;
-            font-style: italic;
+            padding: 5px 10px;
+            border-radius: 4px;
             display: inline-block;
-            margin-top: 10px;
-            text-decoration: line-through;
-            user-select: none;
-        }
-
-        .sponsor-logos {
-            font-weight: bold;
-            color: #000;
+            margin-top: 5px;
         }
     </style>
 </head>
@@ -132,109 +134,154 @@
 
     <div class="container">
         <h1>The Password Game</h1>
+        <div class="progress">Rule <span id="current-rule">1</span> of 100</div>
 
         <div class="password-box">
             <label>Please choose a password</label>
             <textarea id="password-input" spellcheck="false"></textarea>
-            <div class="char-count" id="char-count">Character count: 0</div>
+            <div class="char-count" id="char-count">Length: 0</div>
         </div>
 
-        <div id="rules-container">
-            <!-- Rules will be injected here -->
-        </div>
+        <div id="rules-container"></div>
     </div>
 
     <script>
         const passwordInput = document.getElementById('password-input');
         const rulesContainer = document.getElementById('rules-container');
         const charCountDisplay = document.getElementById('char-count');
+        const currentRuleDisplay = document.getElementById('current-rule');
 
         let unlockedRules = 1;
-        const captchaValue = Math.random().toString(36).substring(2, 7).toUpperCase();
+        const captcha1 = Math.random().toString(36).substring(2, 7).toUpperCase();
+        const captcha2 = Math.random().toString(36).substring(2, 6).toUpperCase();
+        const todayDate = new Date().toLocaleDateString('en-US');
 
         const RULES = [
-            {
-                id: 1,
-                desc: "Your password must be at least 5 characters.",
-                check: (pw) => pw.length >= 5
-            },
-            {
-                id: 2,
-                desc: "Your password must include a number.",
-                check: (pw) => /\d/.test(pw)
-            },
-            {
-                id: 3,
-                desc: "Your password must include an uppercase letter.",
-                check: (pw) => /[A-Z]/.test(pw)
-            },
-            {
-                id: 4,
-                desc: "Your password must include a special character.",
-                check: (pw) => /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(pw)
-            },
-            {
-                id: 5,
-                desc: "The digits in your password must add up to 25.",
-                check: (pw) => {
-                    const digits = pw.match(/\d/g) || [];
-                    const sum = digits.reduce((a, b) => a + parseInt(b), 0);
-                    return sum === 25;
-                }
-            },
-            {
-                id: 6,
-                desc: "Your password must include a month of the year.",
-                check: (pw) => {
-                    const months = ["january", "february", "march", "april", "may", "june", "july", "august", "september", "october", "november", "december"];
-                    return months.some(m => pw.toLowerCase().includes(m));
-                }
-            },
-            {
-                id: 7,
-                desc: "Your password must include a Roman numeral.",
-                check: (pw) => /[IVXLCDM]/.test(pw)
-            },
-            {
-                id: 8,
-                desc: "Your password must include one of our sponsors: <span class='sponsor-logos'>Pepsi, Starbucks, Shell</span>",
-                check: (pw) => ["pepsi", "starbucks", "shell"].some(s => pw.toLowerCase().includes(s))
-            },
-            {
-                id: 9,
-                desc: "The Roman numerals in your password should multiply to 35.",
-                check: (pw) => {
-                    const romanValues = { 'I': 1, 'V': 5, 'X': 10, 'L': 50, 'C': 100, 'D': 500, 'M': 1000 };
-                    // Very simplified Roman numeral extraction for the game feel
-                    const found = pw.match(/[IVXLCDM]+/g) || [];
-                    let product = found.length > 0 ? 1 : 0;
-                    
-                    // This is a simplified check: it looks for 'V' and 'VII' etc as blocks
-                    // To get 35, users usually type 'V' and 'VII'
-                    found.forEach(str => {
-                        let val = 0;
-                        for(let i=0; i<str.length; i++) {
-                            const cur = romanValues[str[i]];
-                            const next = romanValues[str[i+1]];
-                            if (next > cur) { val -= cur; } else { val += cur; }
-                        }
-                        product *= val;
-                    });
-                    return product === 35;
-                }
-            },
-            {
-                id: 10,
-                desc: `Your password must include this CAPTCHA: <div class="captcha-img">${captchaValue}</div>`,
-                check: (pw) => pw.includes(captchaValue)
-            }
+            // 1-10: Basic
+            { id: 1, desc: "Your password must be at least 5 characters", check: pw => pw.length >= 5 },
+            { id: 2, desc: "Your password must include a number", check: pw => /\d/.test(pw) },
+            { id: 3, desc: "Your password must include an uppercase letter", check: pw => /[A-Z]/.test(pw) },
+            { id: 4, desc: "Your password must include a lowercase letter", check: pw => /[a-z]/.test(pw) },
+            { id: 5, desc: "Your password must include a special character (!@#$%^&*)", check: pw => /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(pw) },
+            { id: 6, desc: "The digits must add up to 25", check: pw => (pw.match(/\d/g) || []).reduce((a, b) => a + parseInt(b), 0) === 25 },
+            { id: 7, desc: "Your password must include a month", check: pw => ["january","february","march","april","may","june","july","august","september","october","november","december"].some(m => pw.toLowerCase().includes(m)) },
+            { id: 8, desc: "Your password must include a Roman numeral", check: pw => /[IVXLCDM]/.test(pw) },
+            { id: 9, desc: "Your password must be at least 10 characters", check: pw => pw.length >= 10 },
+            { id: 10, desc: `Include this CAPTCHA: <span class="captcha-img">${captcha1}</span>`, check: pw => pw.includes(captcha1) },
+            
+            // 11-20: Intermediate
+            { id: 11, desc: "Roman numerals must multiply to 35", check: pw => { const r = {'I':1,'V':5,'X':10,'L':50,'C':100,'D':500,'M':1000}; const f = pw.match(/[IVXLCDM]+/g) || []; let p = f.length > 0 ? 1 : 0; f.forEach(s => { let v = 0; for(let i=0; i<s.length; i++) { const c = r[s[i]]; const n = r[s[i+1]]; if(n > c) v -= c; else v += c; } p *= v; }); return p === 35; }},
+            { id: 12, desc: "Include a day of the week", check: pw => ["monday","tuesday","wednesday","thursday","friday","saturday","sunday"].some(d => pw.toLowerCase().includes(d)) },
+            { id: 13, desc: "Include an emoji", check: pw => /[\u{1F600}-\u{1F64F}\u{1F300}-\u{1F5FF}\u{1F680}-\u{1F6FF}\u{2600}-\u{26FF}]/u.test(pw) },
+            { id: 14, desc: "Include the current year (2026)", check: pw => pw.includes('2026') },
+            { id: 15, desc: "Must NOT contain the letter 'e'", check: pw => !pw.toLowerCase().includes('e') },
+            { id: 16, desc: "Include a color (red, blue, green, yellow, etc)", check: pw => ["red","blue","green","yellow","purple","orange","pink","black","white"].some(c => pw.toLowerCase().includes(c)) },
+            { id: 17, desc: "Must be exactly 20 characters", check: pw => pw.length === 20 },
+            { id: 18, desc: "Include a prime number (2,3,5,7,11,13,17,19,23,29,31,37,41,43,47)", check: pw => [2,3,5,7,11,13,17,19,23,29,31,37,41,43,47].some(p => pw.includes(p.toString())) },
+            { id: 19, desc: "Include a sponsor: <span class='sponsor-logos'>Pepsi, Starbucks, Shell</span>", check: pw => ["pepsi","starbucks","shell"].some(s => pw.toLowerCase().includes(s)) },
+            { id: 20, desc: "All numbers must sum to 50", check: pw => (pw.match(/\d+/g) || []).reduce((a, b) => a + parseInt(b), 0) === 50 },
+            
+            // 21-30: Advanced
+            { id: 21, desc: "Include a country (USA, Canada, France, Germany, Japan, China, India)", check: pw => ["usa","canada","france","germany","japan","china","india","mexico","brazil","italy","spain"].some(c => pw.toLowerCase().includes(c)) },
+            { id: 22, desc: "Include @ symbol exactly 3 times", check: pw => (pw.match(/@/g) || []).length === 3 },
+            { id: 23, desc: "Include a palindrome word (racecar, level, noon, civic)", check: pw => { const w = pw.toLowerCase().match(/[a-z]{3,}/g) || []; return w.some(x => x === x.split('').reverse().join('')); }},
+            { id: 24, desc: "Must be at least 25 characters", check: pw => pw.length >= 25 },
+            { id: 25, desc: "Include a chemical element (hydrogen, carbon, oxygen, iron, gold)", check: pw => ["hydrogen","helium","carbon","oxygen","nitrogen","iron","gold","silver","copper"].some(e => pw.toLowerCase().includes(e)) },
+            { id: 26, desc: "Include the word 'password'", check: pw => pw.toLowerCase().includes('password') },
+            { id: 27, desc: "Must NOT contain any vowels (a,e,i,o,u)", check: pw => !/[aeiouAEIOU]/.test(pw) },
+            { id: 28, desc: "Include a math operator (+, -, *, /)", check: pw => /[+\-*/]/.test(pw) },
+            { id: 29, desc: `Include today's date: ${todayDate}`, check: pw => pw.includes(todayDate) },
+            { id: 30, desc: "Must be exactly 30 characters", check: pw => pw.length === 30 },
+            
+            // 31-40: Expert
+            { id: 31, desc: "Include a programming language (Python, Java, JavaScript, Ruby, PHP)", check: pw => ["python","java","javascript","ruby","php","swift","kotlin","rust","go"].some(l => pw.toLowerCase().includes(l)) },
+            { id: 32, desc: "Include Fibonacci sequence: 112358", check: pw => pw.includes('112358') },
+            { id: 33, desc: "Include a planet (Mercury, Venus, Earth, Mars, Jupiter, Saturn)", check: pw => ["mercury","venus","earth","mars","jupiter","saturn","uranus","neptune"].some(p => pw.toLowerCase().includes(p)) },
+            { id: 34, desc: "Include the word 'legendary'", check: pw => pw.toLowerCase().includes('legendary') },
+            { id: 35, desc: "Must be at least 35 characters", check: pw => pw.length >= 35 },
+            { id: 36, desc: "Include a Greek letter (alpha, beta, gamma, delta, omega)", check: pw => ["alpha","beta","gamma","delta","epsilon","zeta","theta","omega"].some(g => pw.toLowerCase().includes(g)) },
+            { id: 37, desc: "Include the word 'ultimate'", check: pw => pw.toLowerCase().includes('ultimate') },
+            { id: 38, desc: "Include a musical note (A, B, C, D, E, F, G)", check: pw => /[ABCDEFG]/.test(pw) },
+            { id: 39, desc: "Include the word 'victory'", check: pw => pw.toLowerCase().includes('victory') },
+            { id: 40, desc: "Must be exactly 40 characters", check: pw => pw.length === 40 },
+            
+            // 41-50: Master
+            { id: 41, desc: "Include a chess piece (king, queen, rook, bishop, knight, pawn)", check: pw => ["king","queen","rook","bishop","knight","pawn"].some(p => pw.toLowerCase().includes(p)) },
+            { id: 42, desc: "Include the number 42", check: pw => pw.includes('42') },
+            { id: 43, desc: "Include a zodiac sign (aries, taurus, gemini, cancer, leo, virgo)", check: pw => ["aries","taurus","gemini","cancer","leo","virgo","libra","scorpio","sagittarius","capricorn","aquarius","pisces"].some(s => pw.toLowerCase().includes(s)) },
+            { id: 44, desc: "Include the word 'champion'", check: pw => pw.toLowerCase().includes('champion') },
+            { id: 45, desc: "Must be at least 45 characters", check: pw => pw.length >= 45 },
+            { id: 46, desc: "Include a compass direction (north, south, east, west)", check: pw => ["north","south","east","west"].some(d => pw.toLowerCase().includes(d)) },
+            { id: 47, desc: "Include the word 'master'", check: pw => pw.toLowerCase().includes('master') },
+            { id: 48, desc: "Include a season (spring, summer, fall, winter)", check: pw => ["spring","summer","fall","winter","autumn"].some(s => pw.toLowerCase().includes(s)) },
+            { id: 49, desc: "Include 'legendary' twice", check: pw => (pw.toLowerCase().match(/legendary/g) || []).length >= 2 },
+            { id: 50, desc: "Must be exactly 50 characters", check: pw => pw.length === 50 },
+            
+            // 51-60: Legendary
+            { id: 51, desc: `Include second CAPTCHA: <span class="captcha-img">${captcha2}</span>`, check: pw => pw.includes(captcha2) },
+            { id: 52, desc: "Include a fruit (apple, banana, orange, grape, mango)", check: pw => ["apple","banana","orange","grape","mango","strawberry","watermelon"].some(f => pw.toLowerCase().includes(f)) },
+            { id: 53, desc: "Include a car brand (Toyota, Ford, BMW, Tesla, Honda)", check: pw => ["toyota","ford","bmw","tesla","honda","mercedes","audi","ferrari"].some(c => pw.toLowerCase().includes(c)) },
+            { id: 54, desc: "Include the word 'impossible'", check: pw => pw.toLowerCase().includes('impossible') },
+            { id: 55, desc: "Must be at least 55 characters", check: pw => pw.length >= 55 },
+            { id: 56, desc: "Include a body part (hand, foot, head, heart, eye)", check: pw => ["hand","foot","head","heart","eye","arm","leg","nose","mouth"].some(b => pw.toLowerCase().includes(b)) },
+            { id: 57, desc: "Include the word 'eternal'", check: pw => pw.toLowerCase().includes('eternal') },
+            { id: 58, desc: "Include a weather term (rain, snow, sun, cloud, storm)", check: pw => ["rain","snow","sun","cloud","storm","wind","fog","thunder"].some(w => pw.toLowerCase().includes(w)) },
+            { id: 59, desc: "Include the word 'infinite'", check: pw => pw.toLowerCase().includes('infinite') },
+            { id: 60, desc: "Must be exactly 60 characters", check: pw => pw.length === 60 },
+            
+            // 61-70: Mythical
+            { id: 61, desc: "Include a mythical creature (dragon, phoenix, unicorn, griffin)", check: pw => ["dragon","phoenix","unicorn","griffin","pegasus","hydra","kraken"].some(m => pw.toLowerCase().includes(m)) },
+            { id: 62, desc: "Include a gemstone (diamond, ruby, emerald, sapphire)", check: pw => ["diamond","ruby","emerald","sapphire","topaz","amethyst","pearl"].some(g => pw.toLowerCase().includes(g)) },
+            { id: 63, desc: "Include the word 'supreme'", check: pw => pw.toLowerCase().includes('supreme') },
+            { id: 64, desc: "Include a musical instrument (piano, guitar, violin, drums)", check: pw => ["piano","guitar","violin","drums","flute","trumpet","saxophone"].some(i => pw.toLowerCase().includes(i)) },
+            { id: 65, desc: "Must be at least 65 characters", check: pw => pw.length >= 65 },
+            { id: 66, desc: "Include a metal (iron, gold, silver, copper, platinum)", check: pw => ["iron","gold","silver","copper","platinum","bronze","steel"].some(m => pw.toLowerCase().includes(m)) },
+            { id: 67, desc: "Include the word 'divine'", check: pw => pw.toLowerCase().includes('divine') },
+            { id: 68, desc: "Include an ocean (Pacific, Atlantic, Indian, Arctic)", check: pw => ["pacific","atlantic","indian","arctic","southern"].some(o => pw.toLowerCase().includes(o)) },
+            { id: 69, desc: "Include the word 'cosmic'", check: pw => pw.toLowerCase().includes('cosmic') },
+            { id: 70, desc: "Must be exactly 70 characters", check: pw => pw.length === 70 },
+            
+            // 71-80: Godlike
+            { id: 71, desc: "Include a continent (Africa, Asia, Europe, America, Australia)", check: pw => ["africa","asia","europe","america","australia","antarctica"].some(c => pw.toLowerCase().includes(c)) },
+            { id: 72, desc: "Include a famous scientist (Einstein, Newton, Tesla, Curie)", check: pw => ["einstein","newton","tesla","curie","darwin","hawking","galileo"].some(s => pw.toLowerCase().includes(s)) },
+            { id: 73, desc: "Include the word 'transcendent'", check: pw => pw.toLowerCase().includes('transcendent') },
+            { id: 74, desc: "Include a tree (oak, pine, maple, willow, cedar)", check: pw => ["oak","pine","maple","willow","cedar","birch","elm"].some(t => pw.toLowerCase().includes(t)) },
+            { id: 75, desc: "Must be at least 75 characters", check: pw => pw.length >= 75 },
+            { id: 76, desc: "Include a flower (rose, lily, tulip, daisy, orchid)", check: pw => ["rose","lily","tulip","daisy","orchid","sunflower","violet"].some(f => pw.toLowerCase().includes(f)) },
+            { id: 77, desc: "Include the word 'omnipotent'", check: pw => pw.toLowerCase().includes('omnipotent') },
+            { id: 78, desc: "Include a bird (eagle, hawk, owl, raven, falcon)", check: pw => ["eagle","hawk","owl","raven","falcon","sparrow","robin"].some(b => pw.toLowerCase().includes(b)) },
+            { id: 79, desc: "Include the word 'celestial'", check: pw => pw.toLowerCase().includes('celestial') },
+            { id: 80, desc: "Must be exactly 80 characters", check: pw => pw.length === 80 },
+            
+            // 81-90: Transcendent
+            { id: 81, desc: "Include a famous city (Paris, London, Tokyo, New York, Rome)", check: pw => ["paris","london","tokyo","newyork","rome","dubai","sydney"].some(c => pw.toLowerCase().includes(c)) },
+            { id: 82, desc: "Include a famous landmark (Eiffel, Pyramid, Colosseum, Taj)", check: pw => ["eiffel","pyramid","colosseum","taj","statue","tower","wall"].some(l => pw.toLowerCase().includes(l)) },
+            { id: 83, desc: "Include the word 'magnificent'", check: pw => pw.toLowerCase().includes('magnificent') },
+            { id: 84, desc: "Include a famous artist (Picasso, DaVinci, Monet, VanGogh)", check: pw => ["picasso","davinci","monet","vangogh","rembrandt","michelangelo"].some(a => pw.toLowerCase().includes(a)) },
+            { id: 85, desc: "Must be at least 85 characters", check: pw => pw.length >= 85 },
+            { id: 86, desc: "Include a famous book (Bible, Quran, Odyssey, Hamlet)", check: pw => ["bible","quran","odyssey","hamlet","iliad","gatsby","mockingbird"].some(b => pw.toLowerCase().includes(b)) },
+            { id: 87, desc: "Include the word 'extraordinary'", check: pw => pw.toLowerCase().includes('extraordinary') },
+            { id: 88, desc: "Include a famous composer (Mozart, Beethoven, Bach, Chopin)", check: pw => ["mozart","beethoven","bach","chopin","vivaldi","tchaikovsky"].some(c => pw.toLowerCase().includes(c)) },
+            { id: 89, desc: "Include the word 'phenomenal'", check: pw => pw.toLowerCase().includes('phenomenal') },
+            { id: 90, desc: "Must be exactly 90 characters", check: pw => pw.length === 90 },
+            
+            // 91-100: ULTIMATE
+            { id: 91, desc: "Include a famous philosopher (Plato, Aristotle, Socrates, Kant)", check: pw => ["plato","aristotle","socrates","kant","nietzsche","descartes"].some(p => pw.toLowerCase().includes(p)) },
+            { id: 92, desc: "Include a famous invention (wheel, telephone, internet, airplane)", check: pw => ["wheel","telephone","internet","airplane","computer","television"].some(i => pw.toLowerCase().includes(i)) },
+            { id: 93, desc: "Include the word 'unbelievable'", check: pw => pw.toLowerCase().includes('unbelievable') },
+            { id: 94, desc: "Include a famous explorer (Columbus, Magellan, Drake, Cook)", check: pw => ["columbus","magellan","drake","cook","polo","vespucci"].some(e => pw.toLowerCase().includes(e)) },
+            { id: 95, desc: "Must be at least 95 characters", check: pw => pw.length >= 95 },
+            { id: 96, desc: "Include a famous emperor (Caesar, Napoleon, Alexander, Augustus)", check: pw => ["caesar","napoleon","alexander","augustus","charlemagne"].some(e => pw.toLowerCase().includes(e)) },
+            { id: 97, desc: "Include the word 'incomprehensible'", check: pw => pw.toLowerCase().includes('incomprehensible') },
+            { id: 98, desc: "Include a famous mathematician (Pythagoras, Euler, Gauss, Fermat)", check: pw => ["pythagoras","euler","gauss","fermat","fibonacci","archimedes"].some(m => pw.toLowerCase().includes(m)) },
+            { id: 99, desc: "Include the word 'unfathomable'", check: pw => pw.toLowerCase().includes('unfathomable') },
+            { id: 100, desc: "Must be EXACTLY 100 characters", check: pw => pw.length === 100 }
         ];
 
         function updateGame() {
             const pw = passwordInput.value;
-            charCountDisplay.innerText = `Character count: ${pw.length}`;
+            charCountDisplay.innerText = `Length: ${pw.length}`;
             
-            // Check all currently unlocked rules
             let allCurrentSatisfied = true;
             for (let i = 0; i < unlockedRules; i++) {
                 if (!RULES[i].check(pw)) {
@@ -242,9 +289,25 @@
                 }
             }
 
-            // If all are satisfied, unlock the next rule
             if (allCurrentSatisfied && unlockedRules < RULES.length) {
                 unlockedRules++;
+            }
+
+            currentRuleDisplay.textContent = unlockedRules;
+
+            if (unlockedRules === RULES.length && allCurrentSatisfied) {
+                const completed = localStorage.getItem('password_game_100_completed');
+                if (!completed) {
+                    localStorage.setItem('password_game_100_completed', 'true');
+                    const reward = 100;
+                    const currentCatabux = parseInt(localStorage.getItem('catabux')) || 0;
+                    localStorage.setItem('catabux', currentCatabux + reward);
+                    
+                    setTimeout(() => {
+                        alert(`🎉🎉🎉 INCREDIBLE! You completed ALL 100 RULES!\n\n+${reward} Catabux earned!\n\nYou are a PASSWORD LEGEND!`);
+                        window.location.href = '../../index.html';
+                    }, 500);
+                }
             }
 
             renderRules(pw);
@@ -261,8 +324,8 @@
                 card.className = `rule-card ${isPassed ? 'success' : 'fail'}`;
                 
                 const icon = isPassed ? 
-                    `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"></polyline></svg>` : 
-                    `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>`;
+                    `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"></polyline></svg>` : 
+                    `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>`;
 
                 card.innerHTML = `
                     <div class="rule-title">
@@ -276,8 +339,6 @@
         }
 
         passwordInput.addEventListener('input', updateGame);
-
-        // Initial render
         renderRules("");
     </script>
 </body>
