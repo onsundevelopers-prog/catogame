@@ -78,15 +78,17 @@
         // --- CORE CONFIG ---
         const engine = Engine.create();
         const world = engine.world;
-        engine.positionIterations = 10; // Sharper physics
-        engine.velocityIterations = 10;
+        engine.positionIterations = 6; // Reduced for performance
+        engine.velocityIterations = 4; // Reduced for performance
+        engine.enableSleeping = true; // Enable sleeping for inactive bodies
 
         const render = Render.create({
             element: document.getElementById('canvas-container'),
             engine: engine,
             options: {
                 width: window.innerWidth, height: window.innerHeight,
-                wireframes: false, background: '#111'
+                wireframes: false, background: '#111',
+                pixelRatio: 1 // Reduce pixel ratio for better performance
             }
         });
 
@@ -102,16 +104,22 @@
 
         // --- STICKMAN (Ragdoll + Stand Logic) ---
         function spawnStickman() {
+            // Limit total stickmen for performance
+            if (stickmen.length >= 5) {
+                alert('Maximum 5 stickmen allowed!');
+                return;
+            }
+            
             const x = Math.random() * window.innerWidth;
             const y = window.innerHeight - 150;
             const group = Body.nextGroup(true);
             
-            const head = Bodies.circle(x, y-50, 12, { collisionFilter: { group }, render: { fillStyle: '#fff' } });
-            const torso = Bodies.rectangle(x, y-10, 18, 40, { collisionFilter: { group }, render: { fillStyle: '#fff' } });
-            const armL = Bodies.rectangle(x-15, y-10, 8, 30, { collisionFilter: { group }, render: { fillStyle: '#fff' } });
-            const armR = Bodies.rectangle(x+15, y-10, 8, 30, { collisionFilter: { group }, render: { fillStyle: '#fff' } });
-            const legL = Bodies.rectangle(x-7, y+30, 8, 35, { collisionFilter: { group }, render: { fillStyle: '#fff' } });
-            const legR = Bodies.rectangle(x+7, y+30, 8, 35, { collisionFilter: { group }, render: { fillStyle: '#fff' } });
+            const head = Bodies.circle(x, y-50, 12, { collisionFilter: { group }, render: { fillStyle: '#fff' }, friction: 0.3 });
+            const torso = Bodies.rectangle(x, y-10, 18, 40, { collisionFilter: { group }, render: { fillStyle: '#fff' }, friction: 0.3 });
+            const armL = Bodies.rectangle(x-15, y-10, 8, 30, { collisionFilter: { group }, render: { fillStyle: '#fff' }, friction: 0.3 });
+            const armR = Bodies.rectangle(x+15, y-10, 8, 30, { collisionFilter: { group }, render: { fillStyle: '#fff' }, friction: 0.3 });
+            const legL = Bodies.rectangle(x-7, y+30, 8, 35, { collisionFilter: { group }, render: { fillStyle: '#fff' }, friction: 0.3 });
+            const legR = Bodies.rectangle(x+7, y+30, 8, 35, { collisionFilter: { group }, render: { fillStyle: '#fff' }, friction: 0.3 });
 
             const joints = [
                 Constraint.create({ bodyA: head, bodyB: torso, pointA: {x:0, y:12}, pointB: {x:0, y:-20}, stiffness: 0.5, length: 2 }),
@@ -152,15 +160,19 @@
         }
 
         // --- EFFECTS ---
-        function spawnBlood(x, y, count = 5) {
+        function spawnBlood(x, y, count = 3) { // Reduced particle count
+            // Limit total particles for performance
+            if (bloodParticles.length > 50) return;
+            
             for(let i=0; i<count; i++) {
                 const p = Bodies.circle(x, y, Math.random()*2+1, {
                     render: { fillStyle: '#900' },
                     collisionFilter: { mask: 1 }, // Only collide with world
-                    friction: 0.05
+                    friction: 0.05,
+                    frictionAir: 0.02
                 });
-                Body.setVelocity(p, { x: (Math.random()-0.5)*10, y: (Math.random()-0.5)*10 });
-                bloodParticles.push({ body: p, life: 100 });
+                Body.setVelocity(p, { x: (Math.random()-0.5)*8, y: (Math.random()-0.5)*8 });
+                bloodParticles.push({ body: p, life: 60 }); // Shorter life
                 Composite.add(world, p);
             }
         }
@@ -194,14 +206,14 @@
                 });
             }
 
-            // Blood life cycle
-            bloodParticles.forEach((p, i) => {
-                p.life -= 0.5;
-                if(p.life <= 0) {
-                    Composite.remove(world, p.body);
+            // Blood life cycle - optimized
+            for(let i = bloodParticles.length - 1; i >= 0; i--) {
+                bloodParticles[i].life -= 1;
+                if(bloodParticles[i].life <= 0) {
+                    Composite.remove(world, bloodParticles[i].body);
                     bloodParticles.splice(i, 1);
                 }
-            });
+            }
         });
 
         Events.on(engine, 'collisionStart', (event) => {
@@ -209,7 +221,7 @@
                 if (pair.bodyA.label === 'bullet' || pair.bodyB.label === 'bullet') {
                     const bullet = pair.bodyA.label === 'bullet' ? pair.bodyA : pair.bodyB;
                     const other = pair.bodyA.label === 'bullet' ? pair.bodyB : pair.bodyA;
-                    spawnBlood(bullet.position.x, bullet.position.y, 10);
+                    spawnBlood(bullet.position.x, bullet.position.y, 5); // Reduced particles
                     Composite.remove(world, bullet);
                     score += 50;
                     document.getElementById('score').innerText = score;
@@ -220,9 +232,9 @@
                         const bodies = Composite.allBodies(world);
                         bodies.forEach(b => {
                             const d = Vector.magnitude(Vector.sub(b.position, tnt.position));
-                            if(d < 250 && !b.isStatic) {
-                                Body.applyForce(b, b.position, Vector.mult(Vector.normalise(Vector.sub(b.position, tnt.position)), 0.1 * b.mass));
-                                if(d < 100) spawnBlood(b.position.x, b.position.y, 15);
+                            if(d < 200 && !b.isStatic) { // Reduced explosion radius
+                                Body.applyForce(b, b.position, Vector.mult(Vector.normalise(Vector.sub(b.position, tnt.position)), 0.08 * b.mass));
+                                if(d < 80) spawnBlood(b.position.x, b.position.y, 8); // Reduced particles
                             }
                         });
                         Composite.remove(world, tnt);
