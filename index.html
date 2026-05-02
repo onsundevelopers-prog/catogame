@@ -357,7 +357,19 @@
         <div class="hero-eyebrow">grab a coffee and play</div>
         <h1>Create and Play.</h1>
         <p>Explore weird experiments, build strange things, and share them with the world.</p>
-        <button id="start-create-btn" class="main-btn">Start Creating</button>
+        
+        <div style="width: 100%; max-width: 500px; margin: 0 auto;">
+            <div style="background: var(--accent); border: 3px solid var(--border); border-radius: 50px; padding: 8px; position: relative; overflow: hidden;">
+                <div id="progress-bar" style="background: var(--border); height: 40px; border-radius: 50px; width: 0%; transition: width 0.3s;"></div>
+                <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-weight: 700; color: var(--border); font-size: 14px; z-index: 10;">
+                    <span id="progress-text">$0 / $25</span>
+                </div>
+            </div>
+            <p style="font-size: 13px; color: var(--muted); margin-top: 12px; text-align: center;">
+                Support us with $25 to unlock game creation tools! 
+                <a href="https://buymeacoffee.com/oseeke" target="_blank" style="color: var(--border); font-weight: 700; text-decoration: underline;">Donate here</a>
+            </p>
+        </div>
     </div>
 
     <div class="divider">
@@ -449,9 +461,17 @@
         function updateDisplay() { document.getElementById('catabux-display').textContent = getCatabux() + ' Catabux'; }
         updateDisplay();
 
-        document.getElementById('start-create-btn').addEventListener('click', () => {
-            window.location.href = 'src/startcreating.html';
-        });
+        // Progress bar for donations
+        const donationGoal = 25;
+        let currentDonation = 0; // This would be updated from your backend/payment system
+        
+        function updateProgressBar() {
+            const percentage = Math.min((currentDonation / donationGoal) * 100, 100);
+            document.getElementById('progress-bar').style.width = percentage + '%';
+            document.getElementById('progress-text').textContent = `$${currentDonation} / $${donationGoal}`;
+        }
+        
+        updateProgressBar();
 
         document.getElementById('featured-game').addEventListener('click', () => {
             setCatabux(getCatabux() + 10);
