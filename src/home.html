@@ -218,6 +218,9 @@
             border-radius: 12px;
             border: 3px solid var(--border);
         }   
+        .bmac {
+            position: sticky;
+        }
     </style>
 </head>
 <body>
@@ -302,9 +305,21 @@
                 <h4>Report Card</h4>
                 <small>It's sad</small>
             </a>
+            <a href="../public/games/report/reportcard.html" class="game-card">
+                <div class="icon-box"></div>
+                <h4>Report Card</h4>
+                <small>It's sad</small>
+            </a>
+            <a href="../public/games/distractions/distractions.html" class="game-card">
+                <div class="icon-box"></div>
+                <h4>Distractions</h4>
+                <small>Get smarter, while having fun</small>
+            </a>
         </div>
     </div>
-
+<footer>
+    <div class="bmac"><a href="https://www.buymeacoffee.com/oseeke"><img src="https://img.buymeacoffee.com/button-api/?text=Buy me a coffee&emoji=&slug=oseeke&button_colour=FFDD00&font_colour=000000&font_family=Cookie&outline_colour=000000&coffee_colour=ffffff" id="bmac"/></a></div>
+</footer>
 <script>
 // Load Catabux
 let catabux = parseInt(localStorage.getItem("catabux")) || 0;
