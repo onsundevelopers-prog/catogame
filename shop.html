@@ -1,0 +1,524 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Catagame Shop | Spend Your Catabux</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Inter:wght@400;600;700&display=swap');
+
+        :root {
+            --bg: #fdf3e7;
+            --card-bg: #fffaf4;
+            --accent: #feeacf;
+            --border: #4d3529;
+            --text: #2c1a0e;
+            --muted: #7a5c47;
+            --card-shadow: 6px 6px 0px #291b14;
+            --hover-shadow: 10px 10px 0px #291b14;
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            font-family: 'Inter', -apple-system, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            margin: 0;
+            padding: 0;
+            line-height: 1.6;
+        }
+
+        /* --- Header --- */
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 18px 8%;
+            border-bottom: 3px solid var(--border);
+            background: var(--card-bg);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-family: 'Playfair Display', serif;
+            font-weight: 900;
+            font-size: 26px;
+            letter-spacing: -0.5px;
+            color: var(--border);
+            cursor: pointer;
+            text-decoration: none;
+        }
+
+        nav a {
+            margin-left: 28px;
+            text-decoration: none;
+            color: var(--muted);
+            font-weight: 600;
+            font-size: 15px;
+            transition: color 0.2s;
+        }
+
+        nav a:hover { color: var(--border); }
+
+        .catabux-display {
+            font-weight: 700;
+            background: var(--accent);
+            padding: 10px 20px;
+            border-radius: 20px;
+            border: 2px solid var(--border);
+            font-size: 16px;
+            color: var(--border);
+        }
+
+        /* --- Hero --- */
+        .hero {
+            text-align: center;
+            padding: 60px 20px 40px;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .hero h1 {
+            font-family: 'Playfair Display', serif;
+            font-size: clamp(42px, 7vw, 64px);
+            font-weight: 900;
+            margin: 0 0 16px;
+            line-height: 1.1;
+            color: var(--border);
+        }
+
+        .hero p {
+            font-size: 18px;
+            color: var(--muted);
+            margin-bottom: 30px;
+        }
+
+        /* --- Container --- */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px 80px;
+        }
+
+        .section-title {
+            font-family: 'Playfair Display', serif;
+            font-weight: 700;
+            font-size: 28px;
+            color: var(--border);
+            margin: 50px 0 30px;
+            text-align: center;
+        }
+
+        /* --- Shop Grid --- */
+        .shop-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 30px;
+            margin-bottom: 50px;
+        }
+
+        .shop-card {
+            background: var(--card-bg);
+            border: 3px solid var(--border);
+            border-radius: 16px;
+            padding: 30px;
+            box-shadow: var(--card-shadow);
+            transition: all 0.2s;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .shop-card:hover {
+            transform: translate(-3px, -3px);
+            box-shadow: var(--hover-shadow);
+        }
+
+        .shop-card.locked {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .shop-card.locked:hover {
+            transform: none;
+            box-shadow: var(--card-shadow);
+        }
+
+        .price-tag {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: var(--border);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-weight: 700;
+            font-size: 14px;
+        }
+
+        .shop-icon {
+            font-size: 48px;
+            margin-bottom: 15px;
+        }
+
+        .shop-card h3 {
+            font-family: 'Playfair Display', serif;
+            font-size: 24px;
+            margin: 0 0 10px;
+            font-weight: 900;
+            color: var(--border);
+        }
+
+        .shop-card p {
+            font-size: 15px;
+            color: var(--muted);
+            margin: 0 0 20px;
+            line-height: 1.5;
+        }
+
+        .buy-btn {
+            width: 100%;
+            padding: 12px;
+            background: var(--border);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-weight: 700;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .buy-btn:hover {
+            background: #3a2318;
+            transform: translateY(-2px);
+        }
+
+        .buy-btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* --- Donation Section --- */
+        .donation-section {
+            background: var(--card-bg);
+            border: 3px solid var(--border);
+            border-radius: 16px;
+            padding: 40px;
+            text-align: center;
+            box-shadow: var(--card-shadow);
+            margin-bottom: 50px;
+        }
+
+        .donation-section h2 {
+            font-family: 'Playfair Display', serif;
+            font-size: 32px;
+            margin: 0 0 15px;
+            color: var(--border);
+        }
+
+        .donation-section p {
+            font-size: 16px;
+            color: var(--muted);
+            margin-bottom: 25px;
+        }
+
+        .donate-btn {
+            display: inline-block;
+            padding: 16px 36px;
+            background: #FFDD00;
+            color: #000;
+            border: 3px solid var(--border);
+            border-radius: 50px;
+            font-weight: 700;
+            font-size: 16px;
+            text-decoration: none;
+            box-shadow: var(--card-shadow);
+            transition: all 0.2s;
+        }
+
+        .donate-btn:hover {
+            transform: translate(-3px, -3px);
+            box-shadow: var(--hover-shadow);
+        }
+
+        /* --- Footer --- */
+        footer {
+            text-align: center;
+            padding: 30px 20px;
+            border-top: 2px solid var(--border);
+            color: var(--muted);
+            font-size: 13px;
+        }
+
+        /* --- Modal --- */
+        .modal {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.7);
+            z-index: 2000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content {
+            background: var(--card-bg);
+            border: 3px solid var(--border);
+            border-radius: 16px;
+            padding: 40px;
+            max-width: 500px;
+            width: 90%;
+            box-shadow: var(--hover-shadow);
+            text-align: center;
+        }
+
+        .modal-content h2 {
+            font-family: 'Playfair Display', serif;
+            font-size: 28px;
+            margin: 0 0 15px;
+            color: var(--border);
+        }
+
+        .modal-content p {
+            font-size: 16px;
+            color: var(--muted);
+            margin-bottom: 25px;
+        }
+
+        .modal-btn {
+            padding: 12px 30px;
+            background: var(--border);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-weight: 700;
+            cursor: pointer;
+            margin: 0 10px;
+        }
+
+        .modal-btn.cancel {
+            background: #ccc;
+            color: #333;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <a class="logo" href="index.html">Catagame</a>
+        <nav>
+            <a href="index.html">Home</a>
+            <a href="shop.html">Shop</a>
+            <a href="games/myblog.html">Blog</a>
+        </nav>
+        <div class="catabux-display" id="catabux-display">0 Catabux</div>
+    </header>
+
+    <div class="hero">
+        <h1>Catabux Shop</h1>
+        <p>Spend your Catabux on exclusive perks, partnerships, and direct access!</p>
+    </div>
+
+    <div class="container">
+        
+        <div class="section-title">🎁 Shop Items</div>
+        
+        <div class="shop-grid">
+            
+            <div class="shop-card" data-price="500" data-item="partnership">
+                <div class="price-tag">500 Catabux</div>
+                <div class="shop-icon">🤝</div>
+                <h3>Partnership</h3>
+                <p>Become an official Catagame partner! Get featured on our homepage and exclusive partner badge.</p>
+                <button class="buy-btn" onclick="purchaseItem('partnership', 500)">Purchase</button>
+            </div>
+
+            <div class="shop-card" data-price="1000" data-item="website">
+                <div class="price-tag">1,000 Catabux</div>
+                <div class="shop-icon">🌐</div>
+                <h3>Free Website</h3>
+                <p>Get a custom website built by us! Perfect for your portfolio, business, or personal brand.</p>
+                <button class="buy-btn" onclick="purchaseItem('website', 1000)">Purchase</button>
+            </div>
+
+            <div class="shop-card" data-price="1500" data-item="game-creator">
+                <div class="price-tag">1,500 Catabux</div>
+                <div class="shop-icon">🎮</div>
+                <h3>Game Creator Access</h3>
+                <p>Unlock the ability to create and publish your own games on Catagame!</p>
+                <button class="buy-btn" onclick="purchaseItem('game-creator', 1500)">Purchase</button>
+            </div>
+
+            <div class="shop-card" data-price="750" data-item="qa">
+                <div class="price-tag">750 Catabux</div>
+                <div class="shop-icon">❓</div>
+                <h3>Q&A Session</h3>
+                <p>Submit your questions and get detailed answers about game development, coding, or anything!</p>
+                <button class="buy-btn" onclick="purchaseItem('qa', 750)">Purchase</button>
+            </div>
+
+            <div class="shop-card" data-price="2000" data-item="dm">
+                <div class="price-tag">2,000 Catabux</div>
+                <div class="shop-icon">💬</div>
+                <h3>25-Minute DM</h3>
+                <p>Get a private 25-minute direct message session with me! Discuss anything you want.</p>
+                <button class="buy-btn" onclick="purchaseItem('dm', 2000)">Purchase</button>
+            </div>
+
+            <div class="shop-card" data-price="300" data-item="early-access">
+                <div class="price-tag">300 Catabux</div>
+                <div class="shop-icon">⚡</div>
+                <h3>Early Access</h3>
+                <p>Get early access to new games and features before anyone else!</p>
+                <button class="buy-btn" onclick="purchaseItem('early-access', 300)">Purchase</button>
+            </div>
+
+        </div>
+
+        <div class="section-title">☕ Get More Catabux</div>
+
+        <div class="donation-section">
+            <h2>Support Catagame</h2>
+            <p>Donate to get Catabux! Every $1 = 100 Catabux<br>Your support helps us create more amazing games!</p>
+            <a href="https://buymeacoffee.com/oseeke" target="_blank" class="donate-btn">
+                ☕ Donate & Get Catabux
+            </a>
+        </div>
+
+    </div>
+
+    <footer>
+        <p>Catagame Shop — Spend wisely!</p>
+    </footer>
+
+    <!-- Purchase Modal -->
+    <div class="modal" id="purchase-modal">
+        <div class="modal-content">
+            <h2 id="modal-title">Confirm Purchase</h2>
+            <p id="modal-message">Are you sure you want to purchase this item?</p>
+            <button class="modal-btn" onclick="confirmPurchase()">Confirm</button>
+            <button class="modal-btn cancel" onclick="closeModal()">Cancel</button>
+        </div>
+    </div>
+
+    <!-- Success Modal -->
+    <div class="modal" id="success-modal">
+        <div class="modal-content">
+            <h2>🎉 Purchase Successful!</h2>
+            <p id="success-message">Your item has been purchased!</p>
+            <button class="modal-btn" onclick="closeSuccessModal()">Close</button>
+        </div>
+    </div>
+
+    <script>
+        const catabuxKey = 'catabux';
+        const purchasedKey = 'purchased_items';
+        let pendingPurchase = null;
+
+        function getCatabux() {
+            return parseInt(localStorage.getItem(catabuxKey)) || 0;
+        }
+
+        function setCatabux(value) {
+            localStorage.setItem(catabuxKey, value);
+            updateDisplay();
+        }
+
+        function getPurchasedItems() {
+            return JSON.parse(localStorage.getItem(purchasedKey) || '[]');
+        }
+
+        function addPurchasedItem(item) {
+            const items = getPurchasedItems();
+            items.push(item);
+            localStorage.setItem(purchasedKey, JSON.stringify(items));
+        }
+
+        function updateDisplay() {
+            document.getElementById('catabux-display').textContent = getCatabux() + ' Catabux';
+            
+            // Update button states
+            const purchased = getPurchasedItems();
+            document.querySelectorAll('.shop-card').forEach(card => {
+                const item = card.dataset.item;
+                const price = parseInt(card.dataset.price);
+                const btn = card.querySelector('.buy-btn');
+                
+                if (purchased.includes(item)) {
+                    card.classList.add('locked');
+                    btn.textContent = 'Owned';
+                    btn.disabled = true;
+                } else if (getCatabux() < price) {
+                    btn.disabled = true;
+                    btn.textContent = 'Not Enough Catabux';
+                } else {
+                    btn.disabled = false;
+                    btn.textContent = 'Purchase';
+                }
+            });
+        }
+
+        function purchaseItem(item, price) {
+            const purchased = getPurchasedItems();
+            
+            if (purchased.includes(item)) {
+                alert('You already own this item!');
+                return;
+            }
+            
+            if (getCatabux() < price) {
+                alert('Not enough Catabux! Donate to get more.');
+                return;
+            }
+
+            pendingPurchase = { item, price };
+            document.getElementById('modal-title').textContent = 'Confirm Purchase';
+            document.getElementById('modal-message').textContent = `This will cost ${price} Catabux. Continue?`;
+            document.getElementById('purchase-modal').style.display = 'flex';
+        }
+
+        function confirmPurchase() {
+            if (!pendingPurchase) return;
+
+            const { item, price } = pendingPurchase;
+            
+            setCatabux(getCatabux() - price);
+            addPurchasedItem(item);
+            
+            closeModal();
+            
+            let message = 'Thank you for your purchase!';
+            if (item === 'dm' || item === 'qa' || item === 'website' || item === 'partnership') {
+                message += ' Check your email for next steps or contact us at support@catagame.com';
+            }
+            
+            document.getElementById('success-message').textContent = message;
+            document.getElementById('success-modal').style.display = 'flex';
+            
+            pendingPurchase = null;
+            updateDisplay();
+        }
+
+        function closeModal() {
+            document.getElementById('purchase-modal').style.display = 'none';
+            pendingPurchase = null;
+        }
+
+        function closeSuccessModal() {
+            document.getElementById('success-modal').style.display = 'none';
+        }
+
+        // Initialize
+        updateDisplay();
+    </script>
+
+</body>
+</html>
