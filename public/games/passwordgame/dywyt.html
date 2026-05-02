@@ -6,7 +6,7 @@
     <title>The Password Game</title>
     <style>
         body {
-            font-family: Arial, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
             background-color: #f5f5f5;
             display: flex;
             justify-content: center;
@@ -18,68 +18,91 @@
 
         .container {
             background: white;
-            padding: 40px;
-            border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-            max-width: 500px;
+            padding: 30px;
+            border-radius: 4px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            max-width: 600px;
             width: 100%;
+            border: 1px solid #ddd;
         }
 
         h1 {
             text-align: center;
             color: #333;
-            margin-bottom: 30px;
+            margin-bottom: 10px;
+            font-size: 28px;
+            font-weight: 600;
+        }
+
+        .level-indicator {
+            text-align: center;
+            color: #666;
+            margin-bottom: 25px;
+            font-size: 14px;
         }
 
         .password-input {
             width: 100%;
-            padding: 12px;
+            padding: 14px;
             font-size: 16px;
             border: 2px solid #ddd;
             border-radius: 4px;
             margin-bottom: 20px;
             box-sizing: border-box;
+            font-family: 'Courier New', monospace;
+        }
+
+        .password-input:focus {
+            outline: none;
+            border-color: #1a73e8;
+        }
+
+        .rules-container {
+            max-height: 400px;
+            overflow-y: auto;
+            margin-bottom: 20px;
         }
 
         .rule {
             padding: 12px;
-            margin-bottom: 10px;
+            margin-bottom: 8px;
             border-radius: 4px;
-            border: 2px solid #ddd;
-            transition: all 0.3s;
+            border: 1px solid #ddd;
+            transition: all 0.2s;
+            font-size: 13px;
         }
 
         .rule.valid {
-            background-color: #d4edda;
-            border-color: #28a745;
-            color: #155724;
+            background-color: #e8f5e9;
+            border-color: #4caf50;
+            color: #2e7d32;
         }
 
         .rule.invalid {
-            background-color: #f8d7da;
-            border-color: #dc3545;
-            color: #721c24;
+            background-color: #ffebee;
+            border-color: #f44336;
+            color: #c62828;
         }
 
-        .rule-text {
-            font-size: 14px;
+        .rule-number {
+            font-weight: bold;
+            margin-right: 8px;
         }
 
         .submit-btn {
             width: 100%;
-            padding: 15px;
-            background-color: #007bff;
+            padding: 14px;
+            background-color: #1a73e8;
             color: white;
             border: none;
             border-radius: 4px;
-            font-size: 16px;
-            font-weight: bold;
+            font-size: 15px;
+            font-weight: 600;
             cursor: pointer;
-            margin-top: 20px;
         }
 
         .submit-btn:hover {
-            background-color: #0056b3;
+            background-color: #1557b0;
         }
 
         .submit-btn:disabled {
@@ -87,97 +110,139 @@
             cursor: not-allowed;
         }
 
-        .success-message {
-            display: none;
-            text-align: center;
-            padding: 20px;
-            background-color: #d4edda;
-            border: 2px solid #28a745;
-            border-radius: 4px;
-            margin-top: 20px;
+        .progress-bar {
+            width: 100%;
+            height: 6px;
+            background: #e0e0e0;
+            border-radius: 3px;
+            margin-bottom: 20px;
+            overflow: hidden;
         }
 
-        .success-message h2 {
-            color: #155724;
-            margin: 0 0 10px 0;
-        }
-
-        .catabux-reward {
-            font-size: 20px;
-            font-weight: bold;
-            color: #28a745;
+        .progress-fill {
+            height: 100%;
+            background: #1a73e8;
+            transition: width 0.3s;
         }
     </style>
 </head>
 <body>
     <div class="container">
         <h1>The Password Game</h1>
-        <p style="text-align: center; color: #666; margin-bottom: 20px;">Create a password that meets all the requirements</p>
+        <div class="level-indicator">Level <span id="level">1</span> of 20</div>
         
-        <input type="text" class="password-input" id="password" placeholder="Enter your password...">
+        <div class="progress-bar">
+            <div class="progress-fill" id="progress" style="width: 5%"></div>
+        </div>
         
-        <div id="rules">
-            <div class="rule invalid" id="rule1">
-                <div class="rule-text">✗ Password must be at least 8 characters</div>
-            </div>
-            <div class="rule invalid" id="rule2">
-                <div class="rule-text">✗ Password must contain a number</div>
-            </div>
-            <div class="rule invalid" id="rule3">
-                <div class="rule-text">✗ Password must contain an uppercase letter</div>
-            </div>
-            <div class="rule invalid" id="rule4">
-                <div class="rule-text">✗ Password must contain a lowercase letter</div>
-            </div>
-            <div class="rule invalid" id="rule5">
-                <div class="rule-text">✗ Password must contain a special character (!@#$%^&*)</div>
-            </div>
-        </div>
+        <textarea class="password-input" id="password" rows="3" placeholder="Enter your password..."></textarea>
+        
+        <div class="rules-container" id="rules"></div>
 
-        <button class="submit-btn" id="submit-btn" disabled>Submit Password</button>
-
-        <div class="success-message" id="success-message">
-            <h2>🎉 Success!</h2>
-            <p>You've created a valid password!</p>
-            <div class="catabux-reward">+10 Catabux</div>
-            <a href="../../index.html" style="display: inline-block; margin-top: 15px; color: #007bff; text-decoration: none; font-weight: bold;">← Back to Home</a>
-        </div>
+        <button class="submit-btn" id="submit-btn" disabled>Continue to Next Level</button>
     </div>
 
     <script>
         const passwordInput = document.getElementById('password');
         const submitBtn = document.getElementById('submit-btn');
-        const successMessage = document.getElementById('success-message');
+        const rulesContainer = document.getElementById('rules');
+        const levelDisplay = document.getElementById('level');
+        const progressBar = document.getElementById('progress');
 
-        const rules = {
-            rule1: (pw) => pw.length >= 8,
-            rule2: (pw) => /\d/.test(pw),
-            rule3: (pw) => /[A-Z]/.test(pw),
-            rule4: (pw) => /[a-z]/.test(pw),
-            rule5: (pw) => /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(pw)
-        };
+        let currentLevel = 1;
+        const maxLevel = 20;
+
+        const RULES = [
+            // Level 1-5: Basic
+            { level: 1, text: "Your password must be at least 8 characters", check: pw => pw.length >= 8 },
+            { level: 2, text: "Your password must include a number", check: pw => /\d/.test(pw) },
+            { level: 3, text: "Your password must include an uppercase letter", check: pw => /[A-Z]/.test(pw) },
+            { level: 4, text: "Your password must include a lowercase letter", check: pw => /[a-z]/.test(pw) },
+            { level: 5, text: "Your password must include a special character", check: pw => /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(pw) },
+            
+            // Level 6-10: Intermediate
+            { level: 6, text: "The digits in your password must add up to 25", check: pw => {
+                const digits = pw.match(/\d/g) || [];
+                return digits.reduce((sum, d) => sum + parseInt(d), 0) === 25;
+            }},
+            { level: 7, text: "Your password must include a month of the year", check: pw => {
+                const months = ["january", "february", "march", "april", "may", "june", "july", "august", "september", "october", "november", "december"];
+                return months.some(m => pw.toLowerCase().includes(m));
+            }},
+            { level: 8, text: "Your password must include a Roman numeral", check: pw => /[IVXLCDM]/.test(pw) },
+            { level: 9, text: "Your password must be at least 15 characters", check: pw => pw.length >= 15 },
+            { level: 10, text: "The Roman numerals in your password should multiply to 35", check: pw => {
+                const romanMap = { 'I': 1, 'V': 5, 'X': 10, 'L': 50, 'C': 100, 'D': 500, 'M': 1000 };
+                const romans = pw.match(/[IVXLCDM]+/g) || [];
+                if (romans.length === 0) return false;
+                let product = 1;
+                romans.forEach(r => {
+                    let val = 0;
+                    for (let i = 0; i < r.length; i++) {
+                        const curr = romanMap[r[i]];
+                        const next = romanMap[r[i + 1]];
+                        if (next && next > curr) val -= curr;
+                        else val += curr;
+                    }
+                    product *= val;
+                });
+                return product === 35;
+            }},
+            
+            // Level 11-15: Advanced
+            { level: 11, text: "Your password must include today's date (MM/DD/YYYY)", check: pw => {
+                const today = new Date();
+                const dateStr = `${(today.getMonth() + 1).toString().padStart(2, '0')}/${today.getDate().toString().padStart(2, '0')}/${today.getFullYear()}`;
+                return pw.includes(dateStr);
+            }},
+            { level: 12, text: "Your password must include an emoji", check: pw => /[\u{1F600}-\u{1F64F}\u{1F300}-\u{1F5FF}\u{1F680}-\u{1F6FF}\u{1F1E0}-\u{1F1FF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}]/u.test(pw) },
+            { level: 13, text: "Your password must NOT contain the letter 'e'", check: pw => !pw.toLowerCase().includes('e') },
+            { level: 14, text: "Your password must include a prime number between 10 and 50", check: pw => {
+                const primes = [11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47];
+                return primes.some(p => pw.includes(p.toString()));
+            }},
+            { level: 15, text: "Your password must be exactly 25 characters long", check: pw => pw.length === 25 },
+            
+            // Level 16-20: Expert
+            { level: 16, text: "Your password must include a country name", check: pw => {
+                const countries = ["usa", "canada", "mexico", "france", "germany", "italy", "spain", "japan", "china", "india", "brazil", "russia"];
+                return countries.some(c => pw.toLowerCase().includes(c));
+            }},
+            { level: 17, text: "Your password must include the chemical symbol for gold (Au)", check: pw => pw.includes('Au') },
+            { level: 18, text: "The sum of all numbers in your password must equal 100", check: pw => {
+                const nums = pw.match(/\d+/g) || [];
+                return nums.reduce((sum, n) => sum + parseInt(n), 0) === 100;
+            }},
+            { level: 19, text: "Your password must include a palindrome word (at least 4 letters)", check: pw => {
+                const words = pw.toLowerCase().match(/[a-z]{4,}/g) || [];
+                return words.some(w => w === w.split('').reverse().join(''));
+            }},
+            { level: 20, text: "Your password must be exactly 50 characters long", check: pw => pw.length === 50 }
+        ];
+
+        function getCurrentRules() {
+            return RULES.filter(r => r.level <= currentLevel);
+        }
 
         function checkPassword() {
             const password = passwordInput.value;
+            const currentRules = getCurrentRules();
+            
+            rulesContainer.innerHTML = '';
             let allValid = true;
 
-            for (const [ruleId, checkFn] of Object.entries(rules)) {
-                const ruleElement = document.getElementById(ruleId);
-                const isValid = checkFn(password);
-                
-                if (isValid) {
-                    ruleElement.classList.remove('invalid');
-                    ruleElement.classList.add('valid');
-                    ruleElement.querySelector('.rule-text').textContent = 
-                        ruleElement.querySelector('.rule-text').textContent.replace('✗', '✓');
-                } else {
-                    ruleElement.classList.remove('valid');
-                    ruleElement.classList.add('invalid');
-                    ruleElement.querySelector('.rule-text').textContent = 
-                        ruleElement.querySelector('.rule-text').textContent.replace('✓', '✗');
-                    allValid = false;
-                }
-            }
+            currentRules.forEach(rule => {
+                const isValid = rule.check(password);
+                if (!isValid) allValid = false;
+
+                const ruleDiv = document.createElement('div');
+                ruleDiv.className = `rule ${isValid ? 'valid' : 'invalid'}`;
+                ruleDiv.innerHTML = `
+                    <span class="rule-number">Rule ${rule.level}:</span>
+                    <span>${isValid ? '✓' : '✗'} ${rule.text}</span>
+                `;
+                rulesContainer.appendChild(ruleDiv);
+            });
 
             submitBtn.disabled = !allValid;
         }
@@ -185,16 +250,36 @@
         passwordInput.addEventListener('input', checkPassword);
 
         submitBtn.addEventListener('click', () => {
-            // Award Catabux
-            const currentCatabux = parseInt(localStorage.getItem('catabux')) || 0;
-            localStorage.setItem('catabux', currentCatabux + 10);
+            if (currentLevel >= maxLevel) {
+                // Game complete!
+                const reward = 30;
+                const currentCatabux = parseInt(localStorage.getItem('catabux')) || 0;
+                localStorage.setItem('catabux', currentCatabux + reward);
 
-            // Show success message
-            document.getElementById('rules').style.display = 'none';
-            passwordInput.style.display = 'none';
-            submitBtn.style.display = 'none';
-            successMessage.style.display = 'block';
+                document.body.innerHTML = `
+                    <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif; padding: 50px; text-align:center; background:#f5f5f5; height:100vh; display:flex; flex-direction:column; align-items:center; justify-content:center;">
+                        <div style="background:white; border-radius:4px; padding:50px; box-shadow:0 2px 8px rgba(0,0,0,0.1); max-width:450px; border: 1px solid #ddd;">
+                            <div style="font-size:72px; margin-bottom: 20px;">🎉</div>
+                            <h1 style="color:#1a73e8; font-size: 32px; font-weight: 600; margin: 0 0 15px;">Congratulations!</h1>
+                            <p style="color:#555; font-size: 16px; margin-bottom: 20px;">You've completed all 20 levels of The Password Game!</p>
+                            <div style="background: #e8f5e9; padding: 20px; border-radius: 4px; margin-bottom: 25px;">
+                                <p style="font-weight:bold; font-size:24px; color: #2e7d32; margin: 0;">+${reward} Catabux</p>
+                            </div>
+                            <a href="../../index.html" style="display:inline-block; padding:14px 32px; background:#1a73e8; color:white; border-radius:4px; text-decoration:none; font-weight:600; font-size: 15px;">Back to Home</a>
+                        </div>
+                    </div>`;
+            } else {
+                currentLevel++;
+                levelDisplay.textContent = currentLevel;
+                progressBar.style.width = (currentLevel / maxLevel * 100) + '%';
+                passwordInput.value = '';
+                checkPassword();
+                passwordInput.focus();
+            }
         });
+
+        // Initialize
+        checkPassword();
     </script>
 </body>
 </html>

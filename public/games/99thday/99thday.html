@@ -3,37 +3,28 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Not a Robot</title>
+    <title>reCAPTCHA Verification</title>
     <style>
-        :root {
-            --blue: #4a90e2;
-            --gray: #f9f9f9;
-            --border: #d3d3d3;
-        }
-
         body {
             margin: 0;
             padding: 0;
             display: flex;
             justify-content: center;
             align-items: center;
-            height: 100vh;
-            background-color: #f0f2f5;
-            font-family: "Roboto", Arial, sans-serif;
-            overflow: hidden;
+            min-height: 100vh;
+            background-color: #f9f9f9;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
         }
 
-        /* 1. INITIAL CHECKBOX WIDGET */
         #captcha-widget {
             background: white;
-            border: 1px solid var(--border);
+            border: 1px solid #d3d3d3;
             border-radius: 3px;
-            padding: 15px 12px;
+            padding: 14px 12px;
             display: flex;
             align-items: center;
             width: 300px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-            transition: opacity 0.3s;
+            box-shadow: 0 0 3px rgba(0,0,0,0.1);
         }
 
         .checkbox-container {
@@ -43,129 +34,205 @@
             border-radius: 2px;
             cursor: pointer;
             position: relative;
-            margin-right: 15px;
+            margin-right: 12px;
             display: flex;
             justify-content: center;
             align-items: center;
+            background: #fafafa;
         }
 
         .checkbox-container:hover { border-color: #b2b2b2; }
 
         #spinner {
-            width: 20px;
-            height: 20px;
-            border: 3px solid #f3f3f3;
-            border-top: 3px solid var(--blue);
+            width: 18px;
+            height: 18px;
+            border: 2px solid #f3f3f3;
+            border-top: 2px solid #1a73e8;
             border-radius: 50%;
             display: none;
-            animation: spin 0.8s linear infinite;
+            animation: spin 0.6s linear infinite;
         }
 
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
-        .captcha-text { font-size: 14px; color: #555; flex-grow: 1; }
-        .captcha-logo { text-align: center; font-size: 10px; color: #9b9b9b; }
+        .captcha-text { 
+            font-size: 14px; 
+            color: #222; 
+            flex-grow: 1;
+            font-weight: 500;
+        }
 
-        /* 2. THE POPUP MODAL */
+        .captcha-logo { 
+            text-align: right;
+            font-size: 9px; 
+            color: #555;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+        }
+
+        .recaptcha-icon {
+            width: 28px;
+            height: 28px;
+            margin-bottom: 2px;
+        }
+
         #modal {
-            position: absolute;
+            position: fixed;
             background: white;
-            width: 380px;
-            border: 1px solid #ccc;
-            box-shadow: 0 0 10px rgba(0,0,0,0.2);
+            width: 400px;
+            border: 1px solid #d3d3d3;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.2);
             display: none;
             flex-direction: column;
-            padding: 10px;
             z-index: 100;
+            border-radius: 2px;
         }
 
         .modal-header {
-            background: var(--blue);
-            color: white;
-            padding: 20px;
-            margin: -10px -10px 10px -10px;
+            background: #f9f9f9;
+            border-bottom: 1px solid #d3d3d3;
+            padding: 16px 18px;
         }
 
-        .modal-header h2 { margin: 0; font-size: 22px; font-weight: 900; }
-        .modal-header p { margin: 5px 0 0; font-size: 15px; }
+        .modal-header h2 { 
+            margin: 0; 
+            font-size: 14px; 
+            font-weight: 500;
+            color: #222;
+        }
 
-        /* TASK 1: THE GRID */
+        .modal-content {
+            padding: 18px;
+        }
+
         .grid-container {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
-            gap: 4px;
+            gap: 3px;
+            background: #f0f0f0;
+            padding: 3px;
         }
 
         .grid-item {
             aspect-ratio: 1;
             background-size: cover;
+            background-position: center;
             cursor: pointer;
-            border: 0px solid white;
-            transition: transform 0.1s;
+            position: relative;
+            background-color: #e0e0e0;
         }
 
-        .grid-item.selected {
-            transform: scale(0.85);
-            outline: 4px solid var(--blue);
-            z-index: 1;
+        .grid-item.selected::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: rgba(26, 115, 232, 0.4);
+            border: 3px solid #1a73e8;
         }
 
-        /* TASK 2: DRAWING */
-        #canvas-area {
+        .input-area {
             display: none;
             text-align: center;
         }
 
-        canvas {
-            border: 2px dashed #ccc;
-            background: #fafafa;
-            cursor: crosshair;
+        .captcha-input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #d3d3d3;
+            border-radius: 2px;
+            font-size: 14px;
+            box-sizing: border-box;
+            font-family: monospace;
+            text-align: center;
         }
 
-        /* TASK 3: THE BUTTON */
-        #escape-phase {
-            display: none;
-            height: 200px;
-            position: relative;
+        .captcha-input:focus {
+            outline: none;
+            border-color: #1a73e8;
         }
 
-        #final-phase {
-            display: none;
-            padding: 15px;
-        }
-
-        #runaway-btn {
-            position: absolute;
-            padding: 10px 20px;
-            background: var(--blue);
-            color: white;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
+        .distorted-text {
+            background: #f5f5f5;
+            padding: 20px;
+            text-align: center;
+            margin: 10px 0;
+            border: 1px solid #d3d3d3;
+            font-size: 32px;
             font-weight: bold;
+            letter-spacing: 8px;
+            color: #333;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+            font-family: 'Courier New', monospace;
+            transform: skewX(-5deg);
+            user-select: none;
         }
 
-        #final-input {
-            width: calc(100% - 24px);
-            max-width: 240px;
+        .audio-challenge {
+            display: none;
+            text-align: center;
+        }
+
+        .audio-player {
+            width: 100%;
+            margin: 15px 0;
         }
 
         .modal-footer {
-            margin-top: 15px;
-            padding-top: 10px;
-            border-top: 1px solid #eee;
+            padding: 12px 18px;
+            border-top: 1px solid #d3d3d3;
             display: flex;
-            justify-content: flex-end;
+            justify-content: space-between;
+            align-items: center;
+            background: #f9f9f9;
         }
 
         .verify-btn {
-            background: var(--blue);
+            background: #1a73e8;
             color: white;
             border: none;
-            padding: 10px 20px;
-            font-weight: bold;
+            padding: 10px 24px;
+            font-weight: 500;
             cursor: pointer;
             border-radius: 2px;
+            font-size: 14px;
+        }
+
+        .verify-btn:hover {
+            background: #1557b0;
+        }
+
+        .verify-btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+
+        .skip-btn {
+            background: transparent;
+            border: none;
+            color: #1a73e8;
+            cursor: pointer;
+            font-size: 13px;
+            text-decoration: none;
+        }
+
+        .skip-btn:hover {
+            text-decoration: underline;
+        }
+
+        .instruction {
+            font-size: 13px;
+            color: #555;
+            margin-bottom: 12px;
+        }
+
+        .challenge-image {
+            width: 100%;
+            height: 200px;
+            background-size: cover;
+            background-position: center;
+            border: 1px solid #d3d3d3;
+            margin: 10px 0;
         }
 
         .hidden { display: none !important; }
@@ -173,88 +240,111 @@
 </head>
 <body>
 
-    <!-- Standard Checkbox -->
     <div id="captcha-widget">
         <div class="checkbox-container" id="main-checkbox">
             <div id="spinner"></div>
         </div>
         <div class="captcha-text">I'm not a robot</div>
         <div class="captcha-logo">
-            <img src="https://upload.wikimedia.org/wikipedia/commons/a/ad/RecaptchaLogo.svg" width="30"><br>
-            Privacy - Terms
+            <svg class="recaptcha-icon" viewBox="0 0 24 24">
+                <path fill="#1a73e8" d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+            </svg>
+            <span style="font-size: 8px;">reCAPTCHA</span>
+            <span style="font-size: 8px; color: #999;">Privacy - Terms</span>
         </div>
     </div>
 
-    <!-- Popup Modal -->
     <div id="modal">
         <div class="modal-header">
-            <h2 id="modal-title">Select all squares with</h2>
-            <p id="modal-subtitle">boats</p>
+            <h2 id="modal-title">Select all squares with traffic lights</h2>
         </div>
 
-        <!-- Phase 1: Grid -->
-        <div id="grid-phase" class="grid-container">
-            <!-- 9 items generated by JS -->
-        </div>
+        <div class="modal-content">
+            <!-- Phase 1: Image Grid -->
+            <div id="grid-phase" class="grid-container"></div>
 
-        <!-- Phase 2: Drawing -->
-        <div id="canvas-phase" class="canvas-area">
-            <p style="text-align:center">Please draw a <b>perfect circle</b> to prove you have a soul. Wink Wink.</p>
-            <canvas id="drawingCanvas" width="350" height="200"></canvas>
-        </div>
-
-        <!-- Phase 3: The Runaway Button -->
-        <div id="escape-phase" class="escape-area">
-            <p style="text-align:center">Click the button to confirm you are human.</p>
-            <div style="height:150px; position:relative;">
-                <button id="runaway-btn">CLICK ME</button>
+            <!-- Phase 2: Distorted Text -->
+            <div id="text-phase" class="input-area">
+                <div class="instruction">Type the characters you see below:</div>
+                <div class="distorted-text" id="distorted-text"></div>
+                <input type="text" class="captcha-input" id="text-input" placeholder="Enter text">
             </div>
-        </div>
 
-        <!-- Phase 4: Final Text Check -->
-        <div id="final-phase" class="final-area">
-            <p style="text-align:center">Final human check: type the word below.</p>
-            <div style="font-size:24px; font-weight: 900; text-align:center; margin: 15px 0;">HUMAN</div>
-            <div style="text-align:center;">
-                <input id="final-input" type="text" placeholder="Type HUMAN" style="padding: 10px 12px; width: 220px; border: 1px solid #ccc; border-radius: 6px; font-size: 16px;">
+            <!-- Phase 3: Audio Challenge -->
+            <div id="audio-phase" class="audio-challenge">
+                <div class="instruction">Type the numbers you hear:</div>
+                <audio class="audio-player" id="audio-player" controls></audio>
+                <input type="text" class="captcha-input" id="audio-input" placeholder="Enter numbers">
             </div>
-        </div>
 
-        <!-- Phase 5: Math Challenge -->
-        <div id="math-phase" style="display:none; padding:10px;">
-            <p style="text-align:center">Humans can do math. Solve this:</p>
-            <div id="math-question" style="font-size:28px; font-weight:900; text-align:center; margin:15px 0;"></div>
-            <div style="text-align:center;">
-                <input id="math-input" type="number" placeholder="Your answer" style="padding:10px 12px; width:160px; border:1px solid #ccc; border-radius:6px; font-size:18px; text-align:center;">
+            <!-- Phase 4: Object Detection -->
+            <div id="object-phase" class="input-area">
+                <div class="instruction">How many objects do you see?</div>
+                <div class="challenge-image" id="object-image"></div>
+                <input type="number" class="captcha-input" id="object-input" placeholder="Enter count">
             </div>
-        </div>
 
-        <!-- Phase 6: Reaction Test -->
-        <div id="reaction-phase" style="display:none; padding:10px; text-align:center;">
-            <p>Click the green box as fast as you can!</p>
-            <div id="reaction-box" style="width:80px; height:80px; background:#ccc; border-radius:8px; margin:20px auto; cursor:pointer; transition: background 0.2s;"></div>
-            <div id="reaction-msg" style="font-size:14px; color:#555; min-height:20px;"></div>
-        </div>
-
-        <!-- Phase 7: Sequence Memory -->
-        <div id="sequence-phase" style="display:none; padding:10px; text-align:center;">
-            <p>Remember the sequence, then repeat it!</p>
-            <div id="seq-display" style="font-size:32px; font-weight:900; letter-spacing:8px; margin:10px 0; min-height:40px;"></div>
-            <div id="seq-input-area" style="display:none;">
-                <input id="seq-input" type="text" placeholder="Type the sequence" style="padding:10px; width:200px; border:1px solid #ccc; border-radius:6px; font-size:18px; text-align:center; letter-spacing:4px;">
+            <!-- Phase 5: Rotating Images -->
+            <div id="rotate-phase" class="input-area">
+                <div class="instruction">Select the upright image:</div>
+                <div class="grid-container" id="rotate-grid"></div>
             </div>
-        </div>
 
-        <!-- Phase 8: Emoji Decode -->
-        <div id="emoji-phase" style="display:none; padding:10px; text-align:center;">
-            <p>Decode the emoji phrase and type the answer:</p>
-            <div id="emoji-question" style="font-size:36px; margin:15px 0;"></div>
-            <div id="emoji-hint" style="font-size:13px; color:#888; margin-bottom:10px;"></div>
-            <input id="emoji-input" type="text" placeholder="Your answer" style="padding:10px 12px; width:220px; border:1px solid #ccc; border-radius:6px; font-size:16px; text-align:center;">
+            <!-- Phase 6: Pattern Recognition -->
+            <div id="pattern-phase" class="input-area">
+                <div class="instruction">Which image is different?</div>
+                <div class="grid-container" id="pattern-grid"></div>
+            </div>
+
+            <!-- Phase 7: Math CAPTCHA -->
+            <div id="math-phase" class="input-area">
+                <div class="instruction">Solve the equation:</div>
+                <div class="distorted-text" id="math-text"></div>
+                <input type="number" class="captcha-input" id="math-input" placeholder="Enter answer">
+            </div>
+
+            <!-- Phase 8: Color Detection -->
+            <div id="color-phase" class="input-area">
+                <div class="instruction">Select all images with the specified color:</div>
+                <div id="color-instruction" style="font-weight: bold; margin: 10px 0; font-size: 14px;"></div>
+                <div class="grid-container" id="color-grid"></div>
+            </div>
+
+            <!-- Phase 9: Slider CAPTCHA -->
+            <div id="slider-phase" class="input-area">
+                <div class="instruction">Slide to complete the puzzle:</div>
+                <div style="position: relative; width: 100%; height: 200px; background: #f0f0f0; border: 1px solid #d3d3d3; margin: 10px 0;">
+                    <div id="puzzle-bg" style="width: 100%; height: 100%; background-size: cover; background-position: center;"></div>
+                    <div id="puzzle-piece" style="position: absolute; top: 50px; left: 0; width: 50px; height: 50px; background: white; border: 2px solid #1a73e8; cursor: move;"></div>
+                </div>
+                <input type="range" id="slider-input" min="0" max="100" value="0" style="width: 100%;">
+            </div>
+
+            <!-- Phase 10: Time-based Challenge -->
+            <div id="time-phase" class="input-area">
+                <div class="instruction">Click when the timer reaches exactly 5 seconds:</div>
+                <div id="timer-display" style="font-size: 48px; font-weight: bold; text-align: center; margin: 20px 0; color: #1a73e8;">0.00</div>
+                <button id="timer-btn" style="width: 100%; padding: 15px; background: #1a73e8; color: white; border: none; border-radius: 2px; cursor: pointer; font-size: 16px;">STOP</button>
+            </div>
+
+            <!-- Phase 11: Sequence Memory -->
+            <div id="sequence-phase" class="input-area">
+                <div class="instruction">Remember and repeat the sequence:</div>
+                <div id="sequence-display" style="font-size: 28px; font-weight: bold; text-align: center; margin: 20px 0; letter-spacing: 10px; min-height: 40px;"></div>
+                <input type="text" class="captcha-input" id="sequence-input" placeholder="Enter sequence" style="display: none;">
+            </div>
+
+            <!-- Phase 12: Final Grid Challenge -->
+            <div id="final-phase" class="input-area">
+                <div class="instruction">Select all images that match the category:</div>
+                <div id="final-instruction" style="font-weight: bold; margin: 10px 0; font-size: 14px;"></div>
+                <div class="grid-container" id="final-grid"></div>
+            </div>
         </div>
 
         <div class="modal-footer">
-            <button class="verify-btn" id="verify-btn">VERIFY</button>
+            <button class="skip-btn" id="skip-btn">↻ New Challenge</button>
+            <button class="verify-btn" id="verify-btn">Verify</button>
         </div>
     </div>
 
@@ -263,323 +353,380 @@
         const spinner = document.getElementById('spinner');
         const modal = document.getElementById('modal');
         const verifyBtn = document.getElementById('verify-btn');
-        const gridPhase = document.getElementById('grid-phase');
-        const canvasPhase = document.getElementById('canvas-phase');
-        const escapePhase = document.getElementById('escape-phase');
-        const finalPhase = document.getElementById('final-phase');
-        const mathPhase = document.getElementById('math-phase');
-        const reactionPhase = document.getElementById('reaction-phase');
-        const sequencePhase = document.getElementById('sequence-phase');
-        const emojiPhase = document.getElementById('emoji-phase');
-        const finalInput = document.getElementById('final-input');
-        
-        let currentStep = 1;
-        let runawayClicks = 0;
+        const skipBtn = document.getElementById('skip-btn');
+        const modalTitle = document.getElementById('modal-title');
 
-        // Math challenge state
-        let mathAnswer = 0;
+        let currentPhase = 0;
+        let phaseData = {};
 
-        // Reaction test state
-        let reactionReady = false;
-        let reactionPassed = false;
-        let reactionTimeout = null;
-
-        // Sequence state
-        const SEQ_CHARS = 'ABCDEFGHJKLMNPQRSTUVWXYZ';
-        let seqTarget = '';
-        let seqShowing = false;
-
-        // Emoji decode state
-        const EMOJI_PUZZLES = [
-            { emoji: '🌊🏄', hint: 'Sport on water', answer: 'surfing' },
-            { emoji: '🌙⭐🌌', hint: 'What you see at night', answer: 'stars' },
-            { emoji: '🍕🍕🍕', hint: 'Italian food', answer: 'pizza' },
-            { emoji: '🐱💻', hint: 'Internet meme animal', answer: 'cat' },
-            { emoji: '🌧️🌈', hint: 'After the rain', answer: 'rainbow' },
+        const PHASES = [
+            'grid', 'text', 'audio', 'object', 'rotate', 
+            'pattern', 'math', 'color', 'slider', 'time', 
+            'sequence', 'final'
         ];
-        let currentEmoji = null;
 
         function getCatabux() { return parseInt(localStorage.getItem('catabux')) || 0; }
         function setCatabux(value) { localStorage.setItem('catabux', value); }
-        function addCatabux(amount) { const total = getCatabux() + amount; setCatabux(total); return total; }
 
-        function hideAllPhases() {
-            gridPhase.classList.add('hidden');
-            canvasPhase.style.display = 'none';
-            escapePhase.style.display = 'none';
-            finalPhase.style.display = 'none';
-            mathPhase.style.display = 'none';
-            reactionPhase.style.display = 'none';
-            sequencePhase.style.display = 'none';
-            emojiPhase.style.display = 'none';
-            verifyBtn.style.display = 'inline-block';
-            verifyBtn.innerText = 'VERIFY';
-        }
-
-        // 1. Initial Checkbox Logic
         mainCheckbox.addEventListener('click', () => {
             mainCheckbox.style.borderColor = 'transparent';
             spinner.style.display = 'block';
             setTimeout(() => {
                 modal.style.display = 'flex';
-                initGridPhase();
-            }, 1000);
+                startPhase(0);
+            }, 800);
         });
 
-        // Phase 1: The Grid
-        function initGridPhase() {
-            currentStep = 1;
+        function hideAllPhases() {
+            document.querySelectorAll('.modal-content > div').forEach(el => {
+                el.style.display = 'none';
+                el.classList.add('hidden');
+            });
+        }
+
+        function startPhase(index) {
+            currentPhase = index;
             hideAllPhases();
-            gridPhase.innerHTML = '';
-            gridPhase.classList.remove('hidden');
-            document.getElementById('modal-title').innerText = 'Select all squares with robots';
-            document.getElementById('modal-subtitle').innerText = 'Tap at least 3 items';
+            
+            const phase = PHASES[index];
+            const phaseEl = document.getElementById(phase + '-phase');
+            phaseEl.style.display = 'block';
+            phaseEl.classList.remove('hidden');
+
+            switch(phase) {
+                case 'grid': initGridPhase(); break;
+                case 'text': initTextPhase(); break;
+                case 'audio': initAudioPhase(); break;
+                case 'object': initObjectPhase(); break;
+                case 'rotate': initRotatePhase(); break;
+                case 'pattern': initPatternPhase(); break;
+                case 'math': initMathPhase(); break;
+                case 'color': initColorPhase(); break;
+                case 'slider': initSliderPhase(); break;
+                case 'time': initTimePhase(); break;
+                case 'sequence': initSequencePhase(); break;
+                case 'final': initFinalPhase(); break;
+            }
+        }
+
+        // Phase 1: Grid Selection
+        function initGridPhase() {
+            modalTitle.textContent = 'Select all squares with traffic lights';
+            const grid = document.getElementById('grid-phase');
+            grid.innerHTML = '';
+            
+            const correctIndices = [1, 4, 7];
+            phaseData.correctIndices = correctIndices;
+            phaseData.selected = [];
 
             for (let i = 0; i < 9; i++) {
                 const div = document.createElement('div');
                 div.className = 'grid-item';
-                div.style.backgroundImage = `url(https://picsum.photos/seed/${i + 20}/200)`;
-                div.onclick = () => div.classList.toggle('selected');
-                gridPhase.appendChild(div);
+                div.style.backgroundImage = `url(https://picsum.photos/seed/${100 + i}/150)`;
+                div.onclick = () => {
+                    div.classList.toggle('selected');
+                    const idx = Array.from(grid.children).indexOf(div);
+                    if (phaseData.selected.includes(idx)) {
+                        phaseData.selected = phaseData.selected.filter(x => x !== idx);
+                    } else {
+                        phaseData.selected.push(idx);
+                    }
+                };
+                grid.appendChild(div);
             }
         }
 
-        // Phase 2: Drawing
-        function initCanvasPhase() {
-            currentStep = 2;
-            hideAllPhases();
-            canvasPhase.style.display = 'block';
-            document.getElementById('modal-title').innerText = 'Prove you have a soul';
-            document.getElementById('modal-subtitle').innerText = 'Draw a perfect circle';
-            verifyBtn.innerText = 'ANALYZE';
-
-            const canvas = document.getElementById('drawingCanvas');
-            const ctx = canvas.getContext('2d');
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            let drawing = false;
-
-            canvas.onmousedown = () => drawing = true;
-            canvas.onmouseup = () => drawing = false;
-            canvas.onmousemove = (e) => {
-                if (!drawing) return;
-                ctx.fillStyle = 'black';
-                ctx.beginPath();
-                ctx.arc(e.offsetX, e.offsetY, 2, 0, Math.PI * 2);
-                ctx.fill();
-            };
+        // Phase 2: Distorted Text
+        function initTextPhase() {
+            modalTitle.textContent = 'Verify you are human';
+            const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+            let text = '';
+            for (let i = 0; i < 6; i++) {
+                text += chars[Math.floor(Math.random() * chars.length)];
+            }
+            phaseData.textAnswer = text;
+            document.getElementById('distorted-text').textContent = text;
+            document.getElementById('text-input').value = '';
         }
 
-        // Phase 3: Runaway Button
-        function initEscapePhase() {
-            currentStep = 3;
-            hideAllPhases();
-            escapePhase.style.display = 'block';
-            document.getElementById('modal-title').innerText = 'Final Step';
-            document.getElementById('modal-subtitle').innerText = 'Catch the button to prove you are human';
-            verifyBtn.style.display = 'none';
-            runawayClicks = 0;
+        // Phase 3: Audio Challenge
+        function initAudioPhase() {
+            modalTitle.textContent = 'Audio verification';
+            const numbers = Array.from({length: 5}, () => Math.floor(Math.random() * 10));
+            phaseData.audioAnswer = numbers.join('');
+            
+            // Simulate audio (in real implementation, would use actual audio)
+            const audioEl = document.getElementById('audio-player');
+            audioEl.src = ''; // Would be actual audio file
+            document.getElementById('audio-input').value = '';
+        }
 
-            const btn = document.getElementById('runaway-btn');
-            btn.style.left = '0px';
-            btn.style.top = '0px';
+        // Phase 4: Object Detection
+        function initObjectPhase() {
+            modalTitle.textContent = 'Count the objects';
+            const count = Math.floor(Math.random() * 8) + 3;
+            phaseData.objectCount = count;
+            document.getElementById('object-image').style.backgroundImage = `url(https://picsum.photos/seed/${200}/400/200)`;
+            document.getElementById('object-input').value = '';
+        }
 
-            btn.onmouseover = () => {
-                const x = Math.random() * 230;
-                const y = Math.random() * 120;
-                btn.style.left = x + 'px';
-                btn.style.top = y + 'px';
-            };
+        // Phase 5: Rotating Images
+        function initRotatePhase() {
+            modalTitle.textContent = 'Select the upright image';
+            const grid = document.getElementById('rotate-grid');
+            grid.innerHTML = '';
+            
+            const correctIdx = Math.floor(Math.random() * 9);
+            phaseData.rotateCorrect = correctIdx;
+            phaseData.rotateSelected = null;
 
-            btn.onclick = () => {
-                runawayClicks += 1;
-                if (runawayClicks >= 3) {
-                    initFinalPhase();
-                } else {
-                    alert('Nice catch! ' + (3 - runawayClicks) + ' more time(s).');
+            for (let i = 0; i < 9; i++) {
+                const div = document.createElement('div');
+                div.className = 'grid-item';
+                div.style.backgroundImage = `url(https://picsum.photos/seed/${300 + i}/150)`;
+                if (i !== correctIdx) {
+                    div.style.transform = `rotate(${[90, 180, 270][Math.floor(Math.random() * 3)]}deg)`;
                 }
-            };
+                div.onclick = () => {
+                    grid.querySelectorAll('.grid-item').forEach(el => el.classList.remove('selected'));
+                    div.classList.add('selected');
+                    phaseData.rotateSelected = i;
+                };
+                grid.appendChild(div);
+            }
         }
 
-        // Phase 4: Type HUMAN
-        function initFinalPhase() {
-            currentStep = 4;
-            hideAllPhases();
-            finalPhase.style.display = 'block';
-            document.getElementById('modal-title').innerText = 'Last Check';
-            document.getElementById('modal-subtitle').innerText = 'Type the word shown above';
-            verifyBtn.innerText = 'SUBMIT';
-            finalInput.value = '';
-            finalInput.focus();
+        // Phase 6: Pattern Recognition
+        function initPatternPhase() {
+            modalTitle.textContent = 'Find the different image';
+            const grid = document.getElementById('pattern-grid');
+            grid.innerHTML = '';
+            
+            const differentIdx = Math.floor(Math.random() * 9);
+            phaseData.patternCorrect = differentIdx;
+            phaseData.patternSelected = null;
+
+            for (let i = 0; i < 9; i++) {
+                const div = document.createElement('div');
+                div.className = 'grid-item';
+                const seed = i === differentIdx ? 500 : 400;
+                div.style.backgroundImage = `url(https://picsum.photos/seed/${seed}/150)`;
+                div.onclick = () => {
+                    grid.querySelectorAll('.grid-item').forEach(el => el.classList.remove('selected'));
+                    div.classList.add('selected');
+                    phaseData.patternSelected = i;
+                };
+                grid.appendChild(div);
+            }
         }
 
-        // Phase 5: Math Challenge
+        // Phase 7: Math CAPTCHA
         function initMathPhase() {
-            currentStep = 5;
-            hideAllPhases();
-            mathPhase.style.display = 'block';
-            document.getElementById('modal-title').innerText = 'Brain Check';
-            document.getElementById('modal-subtitle').innerText = 'Robots are bad at math (apparently)';
-            verifyBtn.innerText = 'SUBMIT';
-
-            const a = Math.floor(Math.random() * 20) + 5;
-            const b = Math.floor(Math.random() * 20) + 5;
-            const ops = [
-                { sym: '+', fn: (x, y) => x + y },
-                { sym: '×', fn: (x, y) => x * y },
-                { sym: '−', fn: (x, y) => x - y },
-            ];
+            modalTitle.textContent = 'Solve the equation';
+            const a = Math.floor(Math.random() * 20) + 10;
+            const b = Math.floor(Math.random() * 20) + 10;
+            const ops = ['+', '-', '×'];
             const op = ops[Math.floor(Math.random() * ops.length)];
-            mathAnswer = op.fn(a, b);
-            document.getElementById('math-question').innerText = `${a} ${op.sym} ${b} = ?`;
+            
+            let answer;
+            if (op === '+') answer = a + b;
+            else if (op === '-') answer = a - b;
+            else answer = a * b;
+            
+            phaseData.mathAnswer = answer;
+            document.getElementById('math-text').textContent = `${a} ${op} ${b} = ?`;
             document.getElementById('math-input').value = '';
-            document.getElementById('math-input').focus();
         }
 
-        // Phase 6: Reaction Test
-        function initReactionPhase() {
-            currentStep = 6;
-            hideAllPhases();
-            reactionPhase.style.display = 'block';
-            document.getElementById('modal-title').innerText = 'Reaction Test';
-            document.getElementById('modal-subtitle').innerText = 'Only humans have reflexes';
-            verifyBtn.style.display = 'none';
-            reactionReady = false;
-            reactionPassed = false;
+        // Phase 8: Color Detection
+        function initColorPhase() {
+            modalTitle.textContent = 'Select images by color';
+            const colors = ['red', 'blue', 'green', 'yellow'];
+            const targetColor = colors[Math.floor(Math.random() * colors.length)];
+            document.getElementById('color-instruction').textContent = `Select all ${targetColor} images`;
+            
+            const grid = document.getElementById('color-grid');
+            grid.innerHTML = '';
+            
+            const correctIndices = [2, 5, 8];
+            phaseData.colorCorrect = correctIndices;
+            phaseData.colorSelected = [];
 
-            const box = document.getElementById('reaction-box');
-            const msg = document.getElementById('reaction-msg');
-            box.style.background = '#ccc';
-            msg.innerText = 'Wait for green...';
+            for (let i = 0; i < 9; i++) {
+                const div = document.createElement('div');
+                div.className = 'grid-item';
+                div.style.backgroundImage = `url(https://picsum.photos/seed/${600 + i}/150)`;
+                div.onclick = () => {
+                    div.classList.toggle('selected');
+                    const idx = Array.from(grid.children).indexOf(div);
+                    if (phaseData.colorSelected.includes(idx)) {
+                        phaseData.colorSelected = phaseData.colorSelected.filter(x => x !== idx);
+                    } else {
+                        phaseData.colorSelected.push(idx);
+                    }
+                };
+                grid.appendChild(div);
+            }
+        }
 
-            const delay = 1500 + Math.random() * 2500;
-            reactionTimeout = setTimeout(() => {
-                box.style.background = '#4caf50';
-                msg.innerText = 'CLICK NOW!';
-                reactionReady = true;
-            }, delay);
-
-            box.onclick = () => {
-                if (!reactionReady) {
-                    clearTimeout(reactionTimeout);
-                    msg.innerText = 'Too early! Restarting...';
-                    box.style.background = '#f44336';
-                    setTimeout(() => initReactionPhase(), 1500);
-                } else {
-                    box.style.background = '#2196f3';
-                    msg.innerText = '✅ Fast enough! Proceeding...';
-                    reactionPassed = true;
-                    setTimeout(() => initSequencePhase(), 1200);
-                }
+        // Phase 9: Slider CAPTCHA
+        function initSliderPhase() {
+            modalTitle.textContent = 'Complete the puzzle';
+            const slider = document.getElementById('slider-input');
+            const piece = document.getElementById('puzzle-piece');
+            phaseData.sliderTarget = 75;
+            
+            slider.value = 0;
+            slider.oninput = (e) => {
+                piece.style.left = e.target.value + '%';
             };
         }
 
-        // Phase 7: Sequence Memory
+        // Phase 10: Time Challenge
+        function initTimePhase() {
+            modalTitle.textContent = 'Timing challenge';
+            const display = document.getElementById('timer-display');
+            const btn = document.getElementById('timer-btn');
+            
+            let startTime = Date.now();
+            phaseData.timerInterval = setInterval(() => {
+                const elapsed = (Date.now() - startTime) / 1000;
+                display.textContent = elapsed.toFixed(2);
+            }, 10);
+            
+            btn.onclick = () => {
+                clearInterval(phaseData.timerInterval);
+                const elapsed = parseFloat(display.textContent);
+                phaseData.timerValue = elapsed;
+            };
+        }
+
+        // Phase 11: Sequence Memory
         function initSequencePhase() {
-            currentStep = 7;
-            hideAllPhases();
-            sequencePhase.style.display = 'block';
-            document.getElementById('modal-title').innerText = 'Memory Test';
-            document.getElementById('modal-subtitle').innerText = 'Remember the sequence';
-            verifyBtn.style.display = 'none';
-
-            const len = 5;
-            seqTarget = Array.from({length: len}, () => SEQ_CHARS[Math.floor(Math.random() * SEQ_CHARS.length)]).join('');
-            const display = document.getElementById('seq-display');
-            const inputArea = document.getElementById('seq-input-area');
-            const seqInput = document.getElementById('seq-input');
-
-            display.innerText = seqTarget;
-            inputArea.style.display = 'none';
-            seqInput.value = '';
-
+            modalTitle.textContent = 'Memory test';
+            const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ';
+            let sequence = '';
+            for (let i = 0; i < 6; i++) {
+                sequence += chars[Math.floor(Math.random() * chars.length)];
+            }
+            phaseData.sequence = sequence;
+            
+            const display = document.getElementById('sequence-display');
+            const input = document.getElementById('sequence-input');
+            
+            display.textContent = sequence;
+            input.style.display = 'none';
+            input.value = '';
+            
             setTimeout(() => {
-                display.innerText = '?????';
-                inputArea.style.display = 'block';
-                seqInput.focus();
-                verifyBtn.style.display = 'inline-block';
-                verifyBtn.innerText = 'SUBMIT';
+                display.textContent = '??????';
+                input.style.display = 'block';
             }, 3000);
         }
 
-        // Phase 8: Emoji Decode
-        function initEmojiPhase() {
-            currentStep = 8;
-            hideAllPhases();
-            emojiPhase.style.display = 'block';
-            document.getElementById('modal-title').innerText = 'Emoji Decoder';
-            document.getElementById('modal-subtitle').innerText = 'Robots can\'t understand feelings';
-            verifyBtn.innerText = 'SUBMIT';
+        // Phase 12: Final Grid
+        function initFinalPhase() {
+            modalTitle.textContent = 'Final verification';
+            const categories = ['vehicles', 'buildings', 'nature', 'people'];
+            const category = categories[Math.floor(Math.random() * categories.length)];
+            document.getElementById('final-instruction').textContent = `Select all images with ${category}`;
+            
+            const grid = document.getElementById('final-grid');
+            grid.innerHTML = '';
+            
+            const correctIndices = [0, 3, 6];
+            phaseData.finalCorrect = correctIndices;
+            phaseData.finalSelected = [];
 
-            currentEmoji = EMOJI_PUZZLES[Math.floor(Math.random() * EMOJI_PUZZLES.length)];
-            document.getElementById('emoji-question').innerText = currentEmoji.emoji;
-            document.getElementById('emoji-hint').innerText = 'Hint: ' + currentEmoji.hint;
-            document.getElementById('emoji-input').value = '';
-            document.getElementById('emoji-input').focus();
+            for (let i = 0; i < 9; i++) {
+                const div = document.createElement('div');
+                div.className = 'grid-item';
+                div.style.backgroundImage = `url(https://picsum.photos/seed/${700 + i}/150)`;
+                div.onclick = () => {
+                    div.classList.toggle('selected');
+                    const idx = Array.from(grid.children).indexOf(div);
+                    if (phaseData.finalSelected.includes(idx)) {
+                        phaseData.finalSelected = phaseData.finalSelected.filter(x => x !== idx);
+                    } else {
+                        phaseData.finalSelected.push(idx);
+                    }
+                };
+                grid.appendChild(div);
+            }
         }
 
-        // Verification Progression
         verifyBtn.addEventListener('click', () => {
-            if (currentStep === 1) {
-                const selected = document.querySelectorAll('.selected');
-                if (selected.length < 3) { alert('Please select at least 3 images.'); return; }
-                initCanvasPhase();
+            const phase = PHASES[currentPhase];
+            let passed = false;
 
-            } else if (currentStep === 2) {
-                verifyBtn.innerText = 'ANALYZING...';
-                setTimeout(() => {
-                    alert('Nice drawing! You seem human enough.');
-                    initEscapePhase();
-                }, 1200);
+            switch(phase) {
+                case 'grid':
+                    passed = phaseData.selected.length >= 3;
+                    break;
+                case 'text':
+                    passed = document.getElementById('text-input').value.toUpperCase() === phaseData.textAnswer;
+                    break;
+                case 'audio':
+                    passed = document.getElementById('audio-input').value === phaseData.audioAnswer;
+                    break;
+                case 'object':
+                    const objVal = parseInt(document.getElementById('object-input').value);
+                    passed = Math.abs(objVal - phaseData.objectCount) <= 1;
+                    break;
+                case 'rotate':
+                    passed = phaseData.rotateSelected === phaseData.rotateCorrect;
+                    break;
+                case 'pattern':
+                    passed = phaseData.patternSelected === phaseData.patternCorrect;
+                    break;
+                case 'math':
+                    passed = parseInt(document.getElementById('math-input').value) === phaseData.mathAnswer;
+                    break;
+                case 'color':
+                    passed = phaseData.colorSelected.length >= 2;
+                    break;
+                case 'slider':
+                    const sliderVal = parseInt(document.getElementById('slider-input').value);
+                    passed = Math.abs(sliderVal - phaseData.sliderTarget) <= 5;
+                    break;
+                case 'time':
+                    passed = Math.abs(phaseData.timerValue - 5.0) <= 0.3;
+                    break;
+                case 'sequence':
+                    passed = document.getElementById('sequence-input').value.toUpperCase() === phaseData.sequence;
+                    break;
+                case 'final':
+                    passed = phaseData.finalSelected.length >= 2;
+                    break;
+            }
 
-            } else if (currentStep === 4) {
-                if (finalInput.value.trim().toUpperCase() === 'HUMAN') {
-                    initMathPhase();
+            if (passed) {
+                if (currentPhase < PHASES.length - 1) {
+                    startPhase(currentPhase + 1);
                 } else {
-                    alert('Type HUMAN exactly to continue.');
-                }
-
-            } else if (currentStep === 5) {
-                const userAns = parseInt(document.getElementById('math-input').value);
-                if (userAns === mathAnswer) {
-                    alert('Correct! A robot would have used a calculator.');
-                    initReactionPhase();
-                } else {
-                    alert(`Wrong! The answer was ${mathAnswer}. Try again.`);
-                    initMathPhase();
-                }
-
-            } else if (currentStep === 7) {
-                const userSeq = document.getElementById('seq-input').value.trim().toUpperCase();
-                if (userSeq === seqTarget) {
-                    alert('Perfect memory! Very human of you.');
-                    initEmojiPhase();
-                } else {
-                    alert(`Wrong! The sequence was ${seqTarget}. Try again.`);
-                    initSequencePhase();
-                }
-
-            } else if (currentStep === 8) {
-                const userEmoji = document.getElementById('emoji-input').value.trim().toLowerCase();
-                if (userEmoji === currentEmoji.answer) {
-                    const reward = 15;
-                    addCatabux(reward);
+                    // Success!
+                    const reward = 25;
+                    setCatabux(getCatabux() + reward);
                     document.body.innerHTML = `
-                        <div style="font-family: Arial, sans-serif; padding: 50px; text-align:center; background:#f0f2f5; height:100vh; display:flex; flex-direction:column; align-items:center; justify-content:center;">
-                            <div style="background:white; border-radius:12px; padding:40px; box-shadow:0 4px 20px rgba(0,0,0,0.1); max-width:400px;">
-                                <div style="font-size:60px;">✅</div>
-                                <h1 style="color:#4a90e2;">Access Granted</h1>
-                                <p style="color:#555;">You passed all 8 challenges. Definitely human.</p>
-                                <p style="font-weight:bold; font-size:18px;">+${reward} Catabux earned!</p>
-                                <a href="../../home.html" style="display:inline-block; margin-top:20px; padding:12px 24px; background:#4a90e2; color:white; border-radius:6px; text-decoration:none; font-weight:bold;">Back to Home</a>
+                        <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif; padding: 50px; text-align:center; background:#f9f9f9; height:100vh; display:flex; flex-direction:column; align-items:center; justify-content:center;">
+                            <div style="background:white; border-radius:3px; padding:40px; box-shadow:0 2px 10px rgba(0,0,0,0.1); max-width:400px; border: 1px solid #d3d3d3;">
+                                <div style="font-size:60px;">✓</div>
+                                <h1 style="color:#1a73e8; font-size: 24px; font-weight: 500;">Verification Complete</h1>
+                                <p style="color:#555; font-size: 14px;">You have successfully completed all 12 challenges.</p>
+                                <p style="font-weight:bold; font-size:18px; color: #1a73e8;">+${reward} Catabux</p>
+                                <a href="../../index.html" style="display:inline-block; margin-top:20px; padding:10px 24px; background:#1a73e8; color:white; border-radius:2px; text-decoration:none; font-weight:500; font-size: 14px;">Return Home</a>
                             </div>
                         </div>`;
-                } else {
-                    alert(`Not quite! The answer was "${currentEmoji.answer}". Try again.`);
-                    initEmojiPhase();
                 }
+            } else {
+                alert('Verification failed. Please try again.');
+                startPhase(currentPhase);
             }
         });
 
+        skipBtn.addEventListener('click', () => {
+            startPhase(currentPhase);
+        });
     </script>
 </body>
 </html>
