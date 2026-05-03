@@ -336,9 +336,184 @@
         @media (max-width: 480px) {
             .bento-grid { grid-template-columns: 1fr; }
         }
+
+        /* --- Custom Animations --- */
+        
+        /* Water animation for progress bar */
+        @keyframes waterBubble {
+            0%, 100% { transform: translateY(0) scale(1); opacity: 0.6; }
+            50% { transform: translateY(-10px) scale(1.2); opacity: 1; }
+        }
+
+        @keyframes waterFill {
+            0% { width: 0%; }
+            100% { width: var(--fill-width); }
+        }
+
+        #progress-bar {
+            position: relative;
+            overflow: visible !important;
+        }
+
+        #progress-bar::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: 
+                radial-gradient(circle at 20% 50%, rgba(255,255,255,0.3) 0%, transparent 50%),
+                radial-gradient(circle at 60% 70%, rgba(255,255,255,0.2) 0%, transparent 50%),
+                radial-gradient(circle at 80% 30%, rgba(255,255,255,0.25) 0%, transparent 50%);
+            animation: waterBubble 2s ease-in-out infinite;
+        }
+
+        .bubble {
+            position: absolute;
+            bottom: 0;
+            background: rgba(255, 255, 255, 0.4);
+            border-radius: 50%;
+            animation: bubbleRise 3s ease-in-out infinite;
+        }
+
+        @keyframes bubbleRise {
+            0% { transform: translateY(0) scale(0); opacity: 0; }
+            10% { opacity: 1; }
+            90% { opacity: 1; }
+            100% { transform: translateY(-40px) scale(1); opacity: 0; }
+        }
+
+        /* Coffee animation */
+        #hero-coffee {
+            position: fixed;
+            width: 32px;
+            height: 32px;
+            z-index: 9999;
+            pointer-events: none;
+            opacity: 0;
+        }
+
+        @keyframes coffeeJourney {
+            0% {
+                transform: translate(0, 0) scale(1) rotate(0deg);
+                opacity: 1;
+            }
+            25% {
+                transform: translate(calc(50vw - 50%), calc(40vh - 50%)) scale(8) rotate(360deg);
+                opacity: 1;
+            }
+            50% {
+                transform: translate(calc(50vw - 50%), calc(40vh - 50%)) scale(8) rotate(720deg);
+                opacity: 1;
+            }
+            75% {
+                transform: translate(0, 0) scale(1) rotate(1080deg);
+                opacity: 1;
+            }
+            100% {
+                transform: translate(0, 0) scale(1) rotate(1440deg);
+                opacity: 0;
+            }
+        }
+
+        /* Text to icon hover effects */
+        .morph-text {
+            position: relative;
+            display: inline-block;
+            transition: all 0.3s ease;
+        }
+
+        .morph-text .original-text {
+            transition: opacity 0.3s ease, transform 0.3s ease;
+        }
+
+        .morph-text .icon-text {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(0) rotate(-180deg);
+            opacity: 0;
+            transition: all 0.3s ease;
+        }
+
+        .morph-text:hover .original-text {
+            opacity: 0;
+            transform: scale(0) rotate(180deg);
+        }
+
+        .morph-text:hover .icon-text {
+            opacity: 1;
+            transform: translate(-50%, -50%) scale(1) rotate(0deg);
+        }
+
+        /* Catabux hover effect */
+        .catabux {
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .catabux .catabux-text {
+            transition: opacity 0.3s ease, transform 0.3s ease;
+        }
+
+        .catabux .catabux-icon {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(0) rotate(-180deg);
+            opacity: 0;
+            transition: all 0.3s ease;
+            font-size: 18px;
+        }
+
+        .catabux:hover .catabux-text {
+            opacity: 0;
+            transform: scale(0) rotate(180deg);
+        }
+
+        .catabux:hover .catabux-icon {
+            opacity: 1;
+            transform: translate(-50%, -50%) scale(1) rotate(0deg);
+        }
+
+        /* Play link hover */
+        .play-link {
+            position: relative;
+            display: inline-block;
+        }
+
+        .play-link .play-text {
+            transition: opacity 0.3s ease, transform 0.3s ease;
+        }
+
+        .play-link .play-icon {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(0);
+            opacity: 0;
+            transition: all 0.3s ease;
+            width: 20px;
+            height: 20px;
+        }
+
+        .play-link:hover .play-text {
+            opacity: 0;
+            transform: scale(0);
+        }
+
+        .play-link:hover .play-icon {
+            opacity: 1;
+            transform: translate(-50%, -50%) scale(1);
+        }
     </style>
 </head>
 <body>
+
+    <!-- Animated coffee icon -->
+    <img id="hero-coffee" src="assets/coffee-icon-svgrepo-com.svg" alt="coffee">
 
     <header>
         <a class="logo" href="#">
@@ -351,12 +526,18 @@
             <a href="#">My Story</a>
             <a href="#">Contact</a>
         </nav>
-        <span class="catabux" id="catabux-display">0 Catabux</span>
+        <span class="catabux" id="catabux-display">
+            <span class="catabux-text">0 Catabux</span>
+            <span class="catabux-icon">💰</span>
+        </span>
     </header>
 
     <div class="hero-section">
         <div class="hero-eyebrow">grab a coffee and play</div>
-        <h1>Create and Play.</h1>
+        <h1 class="morph-text">
+            <span class="original-text">Create and Play.</span>
+            <span class="icon-text">💰 ☕ 🎮</span>
+        </h1>
         <p>Explore weird experiments, build strange things, and share them with the world.</p>
         
         <div style="width: 100%; max-width: 500px; margin: 0 auto;">
@@ -385,10 +566,13 @@
                 <img src="assets/PasswordGame.png" alt="Password Game">
             </div>
             <div class="featured-content">
-                <div class="featured-tag">⭐ Editor's Pick</div>
+                <div class="featured-tag">Editor's Pick</div>
                 <h3>The Homework Game</h3>
                 <p>Complete your homework with 50 impossible rules. Can you get an A+?</p>
-                <span class="play-link">Play now →</span>
+                <span class="play-link">
+                    <span class="play-text">Play now →</span>
+                    <img class="play-icon" src="assets/coffee-icon-svgrepo-com.svg" alt="play">
+                </span>
             </div>
         </div>
 
@@ -459,7 +643,14 @@
         const catabuxKey = 'catabux';
         function getCatabux() { return parseInt(localStorage.getItem(catabuxKey)) || 0; }
         function setCatabux(v) { localStorage.setItem(catabuxKey, v); updateDisplay(); }
-        function updateDisplay() { document.getElementById('catabux-display').textContent = getCatabux() + ' Catabux'; }
+        function updateDisplay() { 
+            const textSpan = document.querySelector('.catabux-text');
+            if (textSpan) {
+                textSpan.textContent = getCatabux() + ' Catabux';
+            } else {
+                document.getElementById('catabux-display').textContent = getCatabux() + ' Catabux';
+            }
+        }
         updateDisplay();
 
         // Progress bar for donations
@@ -473,6 +664,58 @@
         }
         
         updateProgressBar();
+
+        function createBubbles() {
+            const progressBar = document.getElementById('progress-bar');
+            const numBubbles = 8;
+            
+            for (let i = 0; i < numBubbles; i++) {
+                const bubble = document.createElement('div');
+                bubble.className = 'bubble';
+                const size = Math.random() * 8 + 4;
+                bubble.style.width = size + 'px';
+                bubble.style.height = size + 'px';
+                bubble.style.left = Math.random() * 100 + '%';
+                bubble.style.animationDelay = Math.random() * 3 + 's';
+                bubble.style.animationDuration = (Math.random() * 2 + 2) + 's';
+                progressBar.appendChild(bubble);
+            }
+        }
+
+        // Coffee animation on page load
+        function animateCoffee() {
+            const heroCoffee = document.getElementById('hero-coffee');
+            const logoImg = document.querySelector('.logo img');
+            
+            if (!heroCoffee || !logoImg) return;
+            
+            // Get logo position
+            const logoRect = logoImg.getBoundingClientRect();
+            heroCoffee.style.left = logoRect.left + 'px';
+            heroCoffee.style.top = logoRect.top + 'px';
+            heroCoffee.style.opacity = '1';
+            
+            // Start animation
+            heroCoffee.style.animation = 'coffeeJourney 3s ease-in-out forwards';
+            
+            // Hide after animation
+            setTimeout(() => {
+                heroCoffee.style.opacity = '0';
+            }, 3000);
+        }
+
+        // Initialize on page load
+        window.addEventListener('load', () => {
+            createBubbles();
+            setTimeout(() => {
+                const progressBar = document.getElementById('progress-bar');
+                progressBar.style.animation = 'waterFill 2s ease-out forwards';
+            }, 500);
+            
+            setTimeout(() => {
+                animateCoffee();
+            }, 800);
+        });
 
         document.getElementById('featured-game').addEventListener('click', () => {
             setCatabux(getCatabux() + 10);
