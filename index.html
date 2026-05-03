@@ -392,6 +392,7 @@
             z-index: 9999;
             pointer-events: none;
             opacity: 0;
+            filter: invert(18%) sepia(40%) saturate(600%) hue-rotate(340deg);
         }
 
         @keyframes coffeeJourney {
@@ -400,11 +401,11 @@
                 opacity: 1;
             }
             25% {
-                transform: translate(calc(50vw - 50%), calc(40vh - 50%)) scale(8) rotate(360deg);
+                transform: translate(calc(70vw), calc(30vh)) scale(8) rotate(360deg);
                 opacity: 1;
             }
             50% {
-                transform: translate(calc(50vw - 50%), calc(40vh - 50%)) scale(8) rotate(720deg);
+                transform: translate(calc(70vw), calc(30vh)) scale(8) rotate(720deg);
                 opacity: 1;
             }
             75% {
@@ -435,6 +436,9 @@
             transform: translate(-50%, -50%) scale(0) rotate(-180deg);
             opacity: 0;
             transition: all 0.3s ease;
+            width: 60px;
+            height: 60px;
+            filter: invert(18%) sepia(40%) saturate(600%) hue-rotate(340deg);
         }
 
         .morph-text:hover .original-text {
@@ -495,8 +499,9 @@
             transform: translate(-50%, -50%) scale(0);
             opacity: 0;
             transition: all 0.3s ease;
-            width: 20px;
-            height: 20px;
+            width: 24px;
+            height: 24px;
+            filter: invert(18%) sepia(40%) saturate(600%) hue-rotate(340deg);
         }
 
         .play-link:hover .play-text {
@@ -536,7 +541,7 @@
         <div class="hero-eyebrow">grab a coffee and play</div>
         <h1 class="morph-text">
             <span class="original-text">Create and Play.</span>
-            <span class="icon-text">💰 ☕ 🎮</span>
+            <img class="icon-text" src="assets/coffee-icon-svgrepo-com.svg" alt="coffee">
         </h1>
         <p>Explore weird experiments, build strange things, and share them with the world.</p>
         
