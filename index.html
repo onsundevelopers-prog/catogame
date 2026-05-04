@@ -1050,13 +1050,22 @@
             const mobileBtn = document.getElementById('mobile-play-btn');
             const scrollContainer = document.getElementById('mobile-scroll-container');
 
-            // Always show button for testing, but you can add back the mobile check later
-            // if (!isMobileDevice()) {
-            //     mobileBtn.style.display = 'none';
-            //     return;
-            // }
+            console.log('Initializing Play on Scroll...');
+            console.log('Button:', mobileBtn);
+            console.log('Container:', scrollContainer);
+
+            if (!mobileBtn) {
+                console.error('Mobile play button not found!');
+                return;
+            }
+
+            if (!scrollContainer) {
+                console.error('Scroll container not found!');
+                return;
+            }
 
             mobileBtn.addEventListener('click', () => {
+                console.log('Button clicked!');
                 // Create game slides
                 scrollContainer.innerHTML = '';
                 
@@ -1118,7 +1127,10 @@
 
                 scrollContainer.classList.add('active');
                 document.body.style.overflow = 'hidden';
+                console.log('Scroll container activated!');
             });
+
+            console.log('Event listener attached to button');
         }
 
         window.closeMobileScroll = function() {
@@ -1130,6 +1142,9 @@
 
         // Initialize mobile feature
         document.addEventListener('DOMContentLoaded', () => {
+            console.log('DOM Content Loaded');
+            console.log('Games array:', games);
+            
             // Initialize with empty data structure if none exists
             games.forEach(game => {
                 if (!localStorage.getItem(`game_${game.id}`)) {
@@ -1138,7 +1153,12 @@
             });
 
             // Initialize for all devices (remove mobile check for testing)
-            initMobileScrollPlay();
+            try {
+                initMobileScrollPlay();
+                console.log('initMobileScrollPlay completed');
+            } catch (error) {
+                console.error('Error initializing:', error);
+            }
         });
     </script>
 
