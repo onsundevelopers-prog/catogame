@@ -1130,23 +1130,10 @@
 
         // Initialize mobile feature
         document.addEventListener('DOMContentLoaded', () => {
-            // Seed some initial data for demonstration
-            const seedData = {
-                'homework': { likes: 1247, comments: [], likedBy: [] },
-                'robot': { likes: 892, comments: [], likedBy: [] },
-                'asteroid': { likes: 2341, comments: [], likedBy: [] },
-                'typer': { likes: 567, comments: [], likedBy: [] },
-                'distractions': { likes: 1823, comments: [], likedBy: [] },
-                'report': { likes: 445, comments: [], likedBy: [] },
-                'sandbox': { likes: 3102, comments: [], likedBy: [] },
-                'pickone': { likes: 678, comments: [], likedBy: [] },
-                'tower': { likes: 1456, comments: [], likedBy: [] }
-            };
-
-            // Only seed if no data exists
+            // Initialize with empty data structure if none exists
             games.forEach(game => {
                 if (!localStorage.getItem(`game_${game.id}`)) {
-                    saveGameData(game.id, seedData[game.id]);
+                    saveGameData(game.id, { likes: 0, comments: [], likedBy: [] });
                 }
             });
 
