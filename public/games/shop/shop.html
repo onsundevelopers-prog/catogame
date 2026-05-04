@@ -308,6 +308,146 @@
             background: #ccc;
             color: #333;
         }
+
+        /* --- Premium Tiers --- */
+        .shop-card.premium {
+            background: linear-gradient(135deg, var(--card-bg) 0%, #f0e6d2 100%);
+            border-color: #8b4513;
+        }
+
+        .shop-card.premium .price-tag {
+            background: linear-gradient(135deg, #8b4513, #a0522d);
+        }
+
+        /* --- Promo Items --- */
+        .shop-card.promo {
+            background: linear-gradient(135deg, var(--card-bg) 0%, #e8f4fd 100%);
+            border-color: #2563eb;
+        }
+
+        .shop-card.promo .price-tag {
+            background: linear-gradient(135deg, #2563eb, #3b82f6);
+        }
+
+        /* --- Casino Section --- */
+        .casino-section {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 30px;
+            margin-bottom: 50px;
+        }
+
+        .casino-card {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            border: 3px solid #ffd700;
+            border-radius: 16px;
+            padding: 30px;
+            box-shadow: 0 8px 32px rgba(255, 215, 0, 0.3);
+            color: white;
+            text-align: center;
+        }
+
+        .casino-icon {
+            font-size: 48px;
+            margin-bottom: 15px;
+        }
+
+        .casino-card h3 {
+            font-family: 'Playfair Display', serif;
+            font-size: 24px;
+            margin: 0 0 10px;
+            color: #ffd700;
+        }
+
+        .casino-card p {
+            font-size: 14px;
+            color: #ccc;
+            margin: 0 0 20px;
+            line-height: 1.5;
+        }
+
+        .bet-controls {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .bet-controls input {
+            padding: 10px;
+            border: 2px solid #ffd700;
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            text-align: center;
+            width: 150px;
+        }
+
+        .bet-controls input::placeholder {
+            color: #ccc;
+        }
+
+        .casino-btn {
+            padding: 12px 24px;
+            background: linear-gradient(135deg, #ffd700, #ffed4e);
+            color: #1a1a2e;
+            border: none;
+            border-radius: 8px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s;
+            margin: 5px;
+        }
+
+        .casino-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(255, 215, 0, 0.4);
+        }
+
+        .slot-display {
+            font-size: 32px;
+            margin: 15px 0;
+            padding: 15px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 8px;
+            border: 2px solid #ffd700;
+        }
+
+        .highlow-game {
+            margin: 15px 0;
+        }
+
+        .highlow-game div {
+            font-size: 18px;
+            margin-bottom: 10px;
+            color: #ffd700;
+        }
+
+        /* --- Result Messages --- */
+        .result-message {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: var(--card-bg);
+            border: 3px solid var(--border);
+            border-radius: 16px;
+            padding: 30px;
+            box-shadow: var(--hover-shadow);
+            z-index: 3000;
+            text-align: center;
+            min-width: 300px;
+        }
+
+        .result-message.win {
+            border-color: #22c55e;
+            background: #f0fdf4;
+        }
+
+        .result-message.lose {
+            border-color: #ef4444;
+            background: #fef2f2;
+        }
     </style>
 </head>
 <body>
@@ -337,68 +477,135 @@
 
     <div class="container">
         
-        <div class="section-title"> Shop Items</div>
+        <div class="section-title">💎 Premium Tiers</div>
         
         <div class="shop-grid">
             
-            <div class="shop-card" data-price="500" data-item="partnership">
+            <div class="shop-card premium" data-price="200" data-item="starter">
+                <div class="price-tag">200 Catabux</div>
+                <div class="shop-icon">🚀</div>
+                <h3>Starter</h3>
+                <p>Basic tools to get started: Game creator access, early access to new features, and basic analytics.</p>
+                <button class="buy-btn" onclick="purchaseItem('starter', 200)">Purchase</button>
+            </div>
+
+            <div class="shop-card premium" data-price="500" data-item="pro">
                 <div class="price-tag">500 Catabux</div>
-                <div class="shop-icon"></div>
-                <h3>Partnership</h3>
-                <p>Become an official Catagame partner! Get featured on our homepage and exclusive partner badge.</p>
-                <button class="buy-btn" onclick="purchaseItem('partnership', 500)">Purchase</button>
+                <div class="shop-icon">📊</div>
+                <h3>Pro</h3>
+                <p>Advanced analytics, trending boosts, launch boosts, and priority support. Perfect for serious creators.</p>
+                <button class="buy-btn" onclick="purchaseItem('pro', 500)">Purchase</button>
             </div>
 
-            <div class="shop-card" data-price="1000" data-item="website">
+            <div class="shop-card premium" data-price="1000" data-item="creator-plus">
                 <div class="price-tag">1,000 Catabux</div>
-                <div class="shop-icon"></div>
-                <h3>Free Website</h3>
-                <p>Get a custom website built by us! Perfect for your portfolio, business, or personal brand.</p>
-                <button class="buy-btn" onclick="purchaseItem('website', 1000)">Purchase</button>
+                <div class="shop-icon">🤖</div>
+                <h3>Creator+</h3>
+                <p>Monetization tools, AI-powered game suggestions, custom website, and revenue sharing opportunities.</p>
+                <button class="buy-btn" onclick="purchaseItem('creator-plus', 1000)">Purchase</button>
             </div>
 
-            <div class="shop-card" data-price="1500" data-item="game-creator">
-                <div class="price-tag">1,500 Catabux</div>
-                <div class="shop-icon"></div>
-                <h3>Game Creator Access</h3>
-                <p>Unlock the ability to create and publish your own games on Catagame!</p>
-                <button class="buy-btn" onclick="purchaseItem('game-creator', 1500)">Purchase</button>
-            </div>
-
-            <div class="shop-card" data-price="750" data-item="qa">
-                <div class="price-tag">750 Catabux</div>
-                <div class="shop-icon"></div>
-                <h3>Q&A Session</h3>
-                <p>Submit your questions and get detailed answers about game development, coding, or anything!</p>
-                <button class="buy-btn" onclick="purchaseItem('qa', 750)">Purchase</button>
-            </div>
-
-            <div class="shop-card" data-price="2000" data-item="dm">
+            <div class="shop-card premium" data-price="2000" data-item="elite">
                 <div class="price-tag">2,000 Catabux</div>
-                <div class="shop-icon"></div>
-                <h3>25-Minute DM</h3>
-                <p>Get a private 25-minute direct message session with me! Discuss anything you want.</p>
-                <button class="buy-btn" onclick="purchaseItem('dm', 2000)">Purchase</button>
-            </div>
-
-            <div class="shop-card" data-price="300" data-item="early-access">
-                <div class="price-tag">300 Catabux</div>
-                <div class="shop-icon"></div>
-                <h3>Early Access</h3>
-                <p>Get early access to new games and features before anyone else!</p>
-                <button class="buy-btn" onclick="purchaseItem('early-access', 300)">Purchase</button>
+                <div class="shop-icon">👑</div>
+                <h3>Elite</h3>
+                <p>Full platform control, maximum exposure, partnership status, direct access, and exclusive Elite badge.</p>
+                <button class="buy-btn" onclick="purchaseItem('elite', 2000)">Purchase</button>
             </div>
 
         </div>
 
-        <div class="section-title">☕ Get More Catabux</div>
+        <div class="section-title">🎯 Promotional Items</div>
+        
+        <div class="shop-grid">
+            
+            <div class="shop-card promo" data-price="300" data-item="featured-slot">
+                <div class="price-tag">300 Catabux</div>
+                <div class="shop-icon">⭐</div>
+                <h3>Featured Slot</h3>
+                <p>Put your game on the homepage for 7 days! Get maximum visibility and player engagement.</p>
+                <button class="buy-btn" onclick="purchaseItem('featured-slot', 300)">Purchase</button>
+            </div>
+
+            <div class="shop-card promo" data-price="150" data-item="trending-boost">
+                <div class="price-tag">150 Catabux</div>
+                <div class="shop-icon">📈</div>
+                <h3>Trending Boost</h3>
+                <p>Temporary algorithm boost for 48 hours. Push your game to the top of trending lists!</p>
+                <button class="buy-btn" onclick="purchaseItem('trending-boost', 150)">Purchase</button>
+            </div>
+
+            <div class="shop-card promo" data-price="200" data-item="launch-boost">
+                <div class="price-tag">200 Catabux</div>
+                <div class="shop-icon">🚀</div>
+                <h3>Launch Boost</h3>
+                <p>Push new games to players immediately! Get instant visibility when you publish.</p>
+                <button class="buy-btn" onclick="purchaseItem('launch-boost', 200)">Purchase</button>
+            </div>
+
+            <div class="shop-card promo" data-price="100" data-item="category-highlight">
+                <div class="price-tag">100 Catabux</div>
+                <div class="shop-icon">🏆</div>
+                <h3>Category Highlight</h3>
+                <p>Appear at the top of your game's category for 3 days. Perfect for targeted exposure!</p>
+                <button class="buy-btn" onclick="purchaseItem('category-highlight', 100)">Purchase</button>
+            </div>
+
+        </div>
+
+        <div class="section-title">🎰 Catabux Casino</div>
+        
+        <div class="casino-section">
+            <div class="casino-card">
+                <div class="casino-icon">🎲</div>
+                <h3>Dice Roll</h3>
+                <p>Roll the dice! Win 2x your bet or lose it all. 50/50 chance!</p>
+                <div class="bet-controls">
+                    <input type="number" id="dice-bet" placeholder="Bet amount" min="10" max="1000">
+                    <button class="casino-btn" onclick="playDice()">Roll Dice</button>
+                </div>
+            </div>
+            
+            <div class="casino-card">
+                <div class="casino-icon">🎰</div>
+                <h3>Slot Machine</h3>
+                <p>Spin the slots! Match 3 symbols to win big! Payouts: 🍒=2x, 🍋=3x, 💎=5x, 👑=10x</p>
+                <div class="bet-controls">
+                    <input type="number" id="slot-bet" placeholder="Bet amount" min="5" max="500">
+                    <button class="casino-btn" onclick="playSlots()">Spin Slots</button>
+                </div>
+                <div class="slot-display" id="slot-display">🍒 🍋 💎</div>
+            </div>
+            
+            <div class="casino-card">
+                <div class="casino-icon">🃏</div>
+                <h3>High-Low</h3>
+                <p>Guess if the next number (1-100) will be higher or lower than the current one!</p>
+                <div class="bet-controls">
+                    <input type="number" id="highlow-bet" placeholder="Bet amount" min="20" max="800">
+                    <div class="highlow-game" id="highlow-game" style="display:none;">
+                        <div>Current: <span id="current-number">50</span></div>
+                        <button class="casino-btn" onclick="guessHighLow('high')">Higher</button>
+                        <button class="casino-btn" onclick="guessHighLow('low')">Lower</button>
+                    </div>
+                    <button class="casino-btn" id="start-highlow" onclick="startHighLow()">Start Game</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="section-title">💰 Get More Catabux</div>
 
         <div class="donation-section">
-            <h2>Support Catagame</h2>
-            <p>Donate to get Catabux! Every $1 = 100 Catabux<br>Your support helps us create more amazing games!</p>
-            <a href="https://buymeacoffee.com/oseeke" target="_blank" class="donate-btn">
-                ☕ Donate & Get Catabux
-            </a>
+            <h2>Purchase Catabux</h2>
+            <p>Buy Catabux to unlock premium features and gamble in the casino!</p>
+            <div style="display: flex; gap: 20px; justify-content: center; flex-wrap: wrap;">
+                <a href="https://kookiemystery.gumroad.com/l/qdemv" target="_blank" class="donate-btn">
+                    150 Catabux - $1
+                </a>
+                <a href="https://kookiemystery.gumroad.com/l/vplcux" target="_blank" class="donate-btn">
+                    500 Catabux - $4
+                </a>
+            </div>
         </div>
 
     </div>
@@ -521,12 +728,14 @@
         function sendPurchaseEmail(item, price) {
             // Get item name
             const itemNames = {
-                'partnership': 'Partnership',
-                'website': 'Free Website',
-                'game-creator': 'Game Creator Access',
-                'qa': 'Q&A Session',
-                'dm': '25-Minute DM',
-                'early-access': 'Early Access'
+                'starter': 'Starter Tier',
+                'pro': 'Pro Tier', 
+                'creator-plus': 'Creator+ Tier',
+                'elite': 'Elite Tier',
+                'featured-slot': 'Featured Slot',
+                'trending-boost': 'Trending Boost',
+                'launch-boost': 'Launch Boost',
+                'category-highlight': 'Category Highlight'
             };
 
             const itemName = itemNames[item] || item;
@@ -544,14 +753,144 @@
             };
 
             // Send email using EmailJS
-            // Note: You need to set up EmailJS account and replace with your IDs
             emailjs.send('service_6c3aei8', 'template_bps5scb', templateParams)
                 .then(function(response) {
                     console.log('Email sent successfully!', response.status, response.text);
                 }, function(error) {
                     console.log('Email failed to send:', error);
-                    // Still allow purchase to complete even if email fails
                 });
+        }
+
+        // Casino Functions
+        let currentHighLowNumber = 50;
+        let highLowBet = 0;
+
+        function showResult(message, isWin) {
+            const resultDiv = document.createElement('div');
+            resultDiv.className = `result-message ${isWin ? 'win' : 'lose'}`;
+            resultDiv.innerHTML = `
+                <h3>${isWin ? '🎉 You Won!' : '😞 You Lost!'}</h3>
+                <p>${message}</p>
+                <button class="modal-btn" onclick="this.parentElement.remove()">Close</button>
+            `;
+            document.body.appendChild(resultDiv);
+            
+            setTimeout(() => {
+                if (resultDiv.parentElement) {
+                    resultDiv.remove();
+                }
+            }, 3000);
+        }
+
+        function playDice() {
+            const betInput = document.getElementById('dice-bet');
+            const bet = parseInt(betInput.value);
+            
+            if (!bet || bet < 10 || bet > 1000) {
+                alert('Please enter a bet between 10 and 1000 Catabux');
+                return;
+            }
+            
+            if (getCatabux() < bet) {
+                alert('Not enough Catabux!');
+                return;
+            }
+            
+            const roll = Math.random() < 0.5;
+            
+            if (roll) {
+                setCatabux(getCatabux() + bet);
+                showResult(`You rolled a winner! +${bet} Catabux`, true);
+            } else {
+                setCatabux(getCatabux() - bet);
+                showResult(`You rolled a loser! -${bet} Catabux`, false);
+            }
+            
+            betInput.value = '';
+        }
+
+        function playSlots() {
+            const betInput = document.getElementById('slot-bet');
+            const bet = parseInt(betInput.value);
+            
+            if (!bet || bet < 5 || bet > 500) {
+                alert('Please enter a bet between 5 and 500 Catabux');
+                return;
+            }
+            
+            if (getCatabux() < bet) {
+                alert('Not enough Catabux!');
+                return;
+            }
+            
+            const symbols = ['🍒', '🍋', '💎', '👑', '⭐', '🔔'];
+            const payouts = { '🍒': 2, '🍋': 3, '💎': 5, '👑': 10, '⭐': 7, '🔔': 4 };
+            
+            const result = [
+                symbols[Math.floor(Math.random() * symbols.length)],
+                symbols[Math.floor(Math.random() * symbols.length)],
+                symbols[Math.floor(Math.random() * symbols.length)]
+            ];
+            
+            document.getElementById('slot-display').textContent = result.join(' ');
+            
+            // Check for wins
+            if (result[0] === result[1] && result[1] === result[2]) {
+                const multiplier = payouts[result[0]];
+                const winnings = bet * multiplier;
+                setCatabux(getCatabux() + winnings - bet);
+                showResult(`Triple ${result[0]}! You won ${winnings} Catabux!`, true);
+            } else if (result[0] === result[1] || result[1] === result[2] || result[0] === result[2]) {
+                const winnings = Math.floor(bet * 0.5);
+                setCatabux(getCatabux() + winnings - bet);
+                showResult(`Pair! You won ${winnings} Catabux!`, true);
+            } else {
+                setCatabux(getCatabux() - bet);
+                showResult(`No match! You lost ${bet} Catabux`, false);
+            }
+            
+            betInput.value = '';
+        }
+
+        function startHighLow() {
+            const betInput = document.getElementById('highlow-bet');
+            const bet = parseInt(betInput.value);
+            
+            if (!bet || bet < 20 || bet > 800) {
+                alert('Please enter a bet between 20 and 800 Catabux');
+                return;
+            }
+            
+            if (getCatabux() < bet) {
+                alert('Not enough Catabux!');
+                return;
+            }
+            
+            highLowBet = bet;
+            currentHighLowNumber = Math.floor(Math.random() * 100) + 1;
+            document.getElementById('current-number').textContent = currentHighLowNumber;
+            document.getElementById('highlow-game').style.display = 'block';
+            document.getElementById('start-highlow').style.display = 'none';
+        }
+
+        function guessHighLow(guess) {
+            const nextNumber = Math.floor(Math.random() * 100) + 1;
+            const isHigher = nextNumber > currentHighLowNumber;
+            const correct = (guess === 'high' && isHigher) || (guess === 'low' && !isHigher);
+            
+            if (correct) {
+                setCatabux(getCatabux() + Math.floor(highLowBet * 0.8));
+                showResult(`Correct! Next number was ${nextNumber}. You won ${Math.floor(highLowBet * 0.8)} Catabux!`, true);
+            } else {
+                setCatabux(getCatabux() - highLowBet);
+                showResult(`Wrong! Next number was ${nextNumber}. You lost ${highLowBet} Catabux`, false);
+            }
+            
+            // Reset game
+            document.getElementById('highlow-game').style.display = 'none';
+            document.getElementById('start-highlow').style.display = 'block';
+            document.getElementById('highlow-bet').value = '';
+            highLowBet = 0;
         }
 
         function closeModal() {
