@@ -371,14 +371,32 @@
         }
 
         .game-slide iframe {
-            width: 100%;
+            width: 90%;
             height: 100%;
             border: none;
             position: absolute;
             top: 0;
-            left: 0;
-            touch-action: pan-y;
+            left: 5%;
+            touch-action: none;
             pointer-events: auto;
+        }
+
+        /* Scroll zones on the sides */
+        .scroll-zone {
+            position: absolute;
+            top: 0;
+            width: 5%;
+            height: 100%;
+            z-index: 5;
+            pointer-events: auto;
+        }
+
+        .scroll-zone-left {
+            left: 0;
+        }
+
+        .scroll-zone-right {
+            right: 0;
         }
 
         .game-overlay {
@@ -1078,7 +1096,9 @@
                     slide.className = 'game-slide';
                     slide.setAttribute('data-game-id', game.id);
                     slide.innerHTML = `
-                        <button class="close-scroll-overlay" onclick="closeMobileScroll()">âœ• Close</button>
+                        <div class="scroll-zone scroll-zone-left"></div>
+                        <div class="scroll-zone scroll-zone-right"></div>
+                        <button class="close-scroll-overlay" onclick="closeMobileScroll()">✕ Close</button>
                         <iframe src="${game.url}" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
                         <div class="game-overlay">
                             <div class="game-title-overlay">${game.title}</div>
