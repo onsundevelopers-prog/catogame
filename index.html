@@ -1222,7 +1222,12 @@
                     .select('user_id')
                     .eq('game_id', gameId);
                 
-                if (likesError) throw likesError;
+                if (likesError) {
+                    console.warn('Likes table error:', likesError.message);
+                    if (likesError.message.includes('does not exist')) {
+                        console.error('⚠️ SUPABASE TABLES NOT SET UP! Please run the SQL from supabase-setup.sql');
+                    }
+                }
 
                 // Get comments
                 const { data: comments, error: commentsError } = await supabase
@@ -1231,7 +1236,9 @@
                     .eq('game_id', gameId)
                     .order('created_at', { ascending: false });
                 
-                if (commentsError) throw commentsError;
+                if (commentsError) {
+                    console.warn('Comments table error:', commentsError.message);
+                }
 
                 const userId = getUserId();
                 const likedBy = likes?.map(l => l.user_id) || [];
@@ -1247,6 +1254,7 @@
                 };
             } catch (error) {
                 console.error('Error fetching game data:', error);
+                console.error('⚠️ Make sure you ran the SQL setup from supabase-setup.sql in your Supabase dashboard!');
                 return { likes: 0, comments: [], likedBy: [] };
             }
         }
