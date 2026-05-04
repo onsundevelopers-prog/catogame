@@ -337,6 +337,93 @@
             .bento-grid { grid-template-columns: 1fr; }
         }
 
+        /* --- Mobile Scroll-to-Play Feature --- */
+        .mobile-scroll-container {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100vh;
+            background: var(--bg);
+            z-index: 10000;
+            overflow-y: scroll;
+            scroll-snap-type: y mandatory;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .mobile-scroll-container.active {
+            display: block;
+        }
+
+        .game-slide {
+            width: 100%;
+            height: 100vh;
+            scroll-snap-align: start;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            background: var(--card-bg);
+            border-bottom: 3px solid var(--border);
+        }
+
+        .game-slide iframe {
+            width: 100%;
+            flex: 1;
+            border: none;
+            background: white;
+        }
+
+        .game-slide-header {
+            padding: 15px 20px;
+            background: var(--card-bg);
+            border-bottom: 2px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .game-slide-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 20px;
+            font-weight: 900;
+            color: var(--border);
+        }
+
+        .close-scroll-btn {
+            background: var(--border);
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-weight: 700;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .mobile-play-btn {
+            display: none;
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: var(--border);
+            color: white;
+            border: none;
+            padding: 16px 24px;
+            border-radius: 50px;
+            font-weight: 700;
+            cursor: pointer;
+            font-size: 16px;
+            box-shadow: var(--card-shadow);
+            z-index: 1000;
+        }
+
+        @media (max-width: 768px) {
+            .mobile-play-btn {
+                display: block;
+            }
+        }
+
         /* --- Custom Animations --- */
         
         /* Progress bar animations */
@@ -487,6 +574,12 @@
     </style>
 </head>
 <body>
+
+    <!-- Mobile Scroll-to-Play Container -->
+    <div class="mobile-scroll-container" id="mobile-scroll-container"></div>
+
+    <!-- Mobile Play Button -->
+    <button class="mobile-play-btn" id="mobile-play-btn">📱 Play on Scroll</button>
 
     <!-- Animated coffee icon -->
     <img id="hero-coffee" src="assets/coffee-icon-svgrepo-com.svg" alt="coffee">
@@ -699,6 +792,67 @@
             setCatabux(getCatabux() + 10);
             window.location.href = 'games/passwordgame/dywyt.html';
         });
+
+        // Mobile Scroll-to-Play Feature
+        const games = [
+            { title: 'The Homework Game', url: 'games/passwordgame/dywyt.html' },
+            { title: 'Are you a robot?', url: 'games/99thday/99thday.html' },
+            { title: 'Asteroid Clicker', url: 'spendatrillionairesmoney/mapsurvallancesytem.html' },
+            { title: 'Unfair Typer', url: 'games/unfairtyper/unfairtyper.html' },
+            { title: 'Distractions', url: 'games/distractions/distractions.html' },
+            { title: 'Report Card', url: 'games/report/reportcard.html' },
+            { title: 'The Sandbox', url: 'games/sandbox/sandbox.html' },
+            { title: 'Pick One', url: 'games/Pickone/pickone.html' },
+            { title: 'Tower Defense', url: 'games/actaselonmusk/towerdefense.html' }
+        ];
+
+        function isMobileDevice() {
+            return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) 
+                || window.innerWidth <= 768;
+        }
+
+        function initMobileScrollPlay() {
+            const mobileBtn = document.getElementById('mobile-play-btn');
+            const scrollContainer = document.getElementById('mobile-scroll-container');
+
+            if (!isMobileDevice()) {
+                mobileBtn.style.display = 'none';
+                return;
+            }
+
+            mobileBtn.addEventListener('click', () => {
+                // Create game slides
+                scrollContainer.innerHTML = '';
+                
+                games.forEach((game, index) => {
+                    const slide = document.createElement('div');
+                    slide.className = 'game-slide';
+                    slide.innerHTML = `
+                        <div class="game-slide-header">
+                            <div class="game-slide-title">${game.title}</div>
+                            <button class="close-scroll-btn" onclick="closeMobileScroll()">✕ Close</button>
+                        </div>
+                        <iframe src="${game.url}" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+                    `;
+                    scrollContainer.appendChild(slide);
+                });
+
+                scrollContainer.classList.add('active');
+                document.body.style.overflow = 'hidden';
+            });
+        }
+
+        window.closeMobileScroll = function() {
+            const scrollContainer = document.getElementById('mobile-scroll-container');
+            scrollContainer.classList.remove('active');
+            scrollContainer.innerHTML = '';
+            document.body.style.overflow = '';
+        };
+
+        // Initialize mobile feature
+        if (isMobileDevice()) {
+            initMobileScrollPlay();
+        }
     </script>
 
 </body>
