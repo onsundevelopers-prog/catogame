@@ -1020,7 +1020,12 @@
     <div class="redeem-modal" id="redeem-modal">
         <h3>Redeem Code</h3>
         <p>Enter your Gumroad purchase code to get Catabux!</p>
-        <input type="text" class="redeem-input" id="redeem-code-input" placeholder="XXXX-XXXX-XXXX" maxlength="14">
+        <div style="margin: 15px 0; padding: 12px; background: var(--accent); border-radius: 8px; border: 2px solid var(--border);">
+            <p style="margin: 0 0 8px 0; font-weight: 600; color: var(--text);">Purchase Catabux:</p>
+            <a href="https://kookiemystery.gumroad.com/l/qdemv" target="_blank" style="display: block; color: var(--text); text-decoration: none; margin: 4px 0;">💰 150 Catabux - $1.50</a>
+            <a href="https://kookiemystery.gumroad.com/l/vplcux" target="_blank" style="display: block; color: var(--text); text-decoration: none; margin: 4px 0;">💰 500 Catabux - $5.00</a>
+        </div>
+        <input type="text" class="redeem-input" id="redeem-code-input" placeholder="XXXX-XXXX-XXXX" maxlength="20">
         <div class="redeem-buttons">
             <button class="redeem-btn" onclick="redeemCode()">Redeem</button>
             <button class="cancel-btn" onclick="closeRedeemModal()">Cancel</button>
@@ -1204,6 +1209,7 @@
         let currentGameId = null;
 
         // Initialize Supabase (only if not already initialized)
+        // Version: 2.0 - Fixed duplicate declaration issue
         const supabaseUrl = 'https://psydvmqkeenwuxvmdrgj.supabase.co';
         const supabaseKey = 'sb_publishable_4SLqZQElvgeuG2ZYp88uQw_Z8xg0xrg';
         const supabaseClient = window.supabaseClient || window.supabase.createClient(supabaseUrl, supabaseKey);
@@ -1588,12 +1594,20 @@
         });
 
         // Redeem Code System
+        // Gumroad Products:
+        // - 150 Catabux: https://kookiemystery.gumroad.com/l/qdemv
+        // - 500 Catabux: https://kookiemystery.gumroad.com/l/vplcux
+        // 
         // Valid codes with their Catabux values
+        // Generate unique codes for each purchase and add them here
         const validCodes = {
-            'DEMO-CODE-1234': { amount: 150, description: '150 Catabux Pack' },
-            'GUMROAD-5000': { amount: 500, description: '500 Catabux Pack' },
-            'STARTER-PACK': { amount: 100, description: 'Starter Pack' }
-            // Add more codes here as you generate them
+            // Example codes (replace with real codes from Gumroad purchases):
+            'DEMO-150-1234': { amount: 150, description: '150 Catabux Pack' },
+            'DEMO-500-5678': { amount: 500, description: '500 Catabux Pack' },
+            
+            // Add purchased codes here in format:
+            // 'UNIQUE-CODE-HERE': { amount: 150, description: '150 Catabux Pack' },
+            // 'ANOTHER-CODE': { amount: 500, description: '500 Catabux Pack' }
         };
 
         function openRedeemModal() {
