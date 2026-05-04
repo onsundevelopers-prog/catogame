@@ -345,11 +345,16 @@
             left: 0;
             width: 100%;
             height: 100vh;
-            background: var(--bg);
+            background: #000;
             z-index: 10000;
             overflow-y: scroll;
             scroll-snap-type: y mandatory;
             -webkit-overflow-scrolling: touch;
+            scrollbar-width: none;
+        }
+
+        .mobile-scroll-container::-webkit-scrollbar {
+            display: none;
         }
 
         .mobile-scroll-container.active {
@@ -361,44 +366,97 @@
             height: 100vh;
             scroll-snap-align: start;
             position: relative;
-            display: flex;
-            flex-direction: column;
-            background: var(--card-bg);
-            border-bottom: 3px solid var(--border);
+            background: #000;
         }
 
         .game-slide iframe {
             width: 100%;
-            flex: 1;
+            height: 100%;
             border: none;
-            background: white;
+            position: absolute;
+            top: 0;
+            left: 0;
         }
 
-        .game-slide-header {
-            padding: 15px 20px;
-            background: var(--card-bg);
-            border-bottom: 2px solid var(--border);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
+        .game-overlay {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            padding: 20px;
+            background: linear-gradient(to top, rgba(0,0,0,0.8) 0%, transparent 100%);
+            color: white;
+            z-index: 10;
+            pointer-events: none;
         }
 
-        .game-slide-title {
+        .game-title-overlay {
             font-family: 'Playfair Display', serif;
-            font-size: 20px;
-            font-weight: 900;
-            color: var(--border);
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 8px;
         }
 
-        .close-scroll-btn {
-            background: var(--border);
+        .game-description {
+            font-size: 14px;
+            opacity: 0.9;
+            margin-bottom: 15px;
+        }
+
+        .side-actions {
+            position: absolute;
+            right: 15px;
+            bottom: 80px;
+            display: flex;
+            flex-direction: column;
+            gap: 25px;
+            z-index: 10;
+        }
+
+        .action-btn {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 5px;
+            background: none;
+            border: none;
+            color: white;
+            cursor: pointer;
+            pointer-events: auto;
+        }
+
+        .action-icon {
+            width: 40px;
+            height: 40px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            backdrop-filter: blur(10px);
+        }
+
+        .action-count {
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .close-scroll-overlay {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: rgba(0,0,0,0.5);
             color: white;
             border: none;
-            padding: 8px 16px;
+            padding: 10px 20px;
             border-radius: 20px;
             font-weight: 700;
             cursor: pointer;
             font-size: 14px;
+            z-index: 10;
+            backdrop-filter: blur(10px);
+            pointer-events: auto;
         }
 
         .mobile-play-btn {
@@ -579,7 +637,7 @@
     <div class="mobile-scroll-container" id="mobile-scroll-container"></div>
 
     <!-- Mobile Play Button -->
-    <button class="mobile-play-btn" id="mobile-play-btn">📱 Play on Scroll</button>
+    <button class="mobile-play-btn" id="mobile-play-btn">Play on Scroll</button>
 
     <!-- Animated coffee icon -->
     <img id="hero-coffee" src="assets/coffee-icon-svgrepo-com.svg" alt="coffee">
@@ -795,15 +853,15 @@
 
         // Mobile Scroll-to-Play Feature
         const games = [
-            { title: 'The Homework Game', url: 'games/passwordgame/dywyt.html' },
-            { title: 'Are you a robot?', url: 'games/99thday/99thday.html' },
-            { title: 'Asteroid Clicker', url: 'spendatrillionairesmoney/mapsurvallancesytem.html' },
-            { title: 'Unfair Typer', url: 'games/unfairtyper/unfairtyper.html' },
-            { title: 'Distractions', url: 'games/distractions/distractions.html' },
-            { title: 'Report Card', url: 'games/report/reportcard.html' },
-            { title: 'The Sandbox', url: 'games/sandbox/sandbox.html' },
-            { title: 'Pick One', url: 'games/Pickone/pickone.html' },
-            { title: 'Tower Defense', url: 'games/actaselonmusk/towerdefense.html' }
+            { title: 'The Homework Game', desc: 'Complete 50 impossible rules', url: 'games/passwordgame/dywyt.html' },
+            { title: 'Are you a robot?', desc: '100 levels of verification', url: 'games/99thday/99thday.html' },
+            { title: 'Asteroid Clicker', desc: 'Click to destroy the world', url: 'spendatrillionairesmoney/mapsurvallancesytem.html' },
+            { title: 'Unfair Typer', desc: 'Type fast, the game fights back', url: 'games/unfairtyper/unfairtyper.html' },
+            { title: 'Distractions', desc: 'Get smarter with brainrot', url: 'games/distractions/distractions.html' },
+            { title: 'Report Card', desc: "It's sad", url: 'games/report/reportcard.html' },
+            { title: 'The Sandbox', desc: 'Ragdoll physics playground', url: 'games/sandbox/sandbox.html' },
+            { title: 'Pick One', desc: 'Erase one event from history', url: 'games/Pickone/pickone.html' },
+            { title: 'Tower Defense', desc: 'Defend your tower', url: 'games/actaselonmusk/towerdefense.html' }
         ];
 
         function isMobileDevice() {
@@ -828,11 +886,26 @@
                     const slide = document.createElement('div');
                     slide.className = 'game-slide';
                     slide.innerHTML = `
-                        <div class="game-slide-header">
-                            <div class="game-slide-title">${game.title}</div>
-                            <button class="close-scroll-btn" onclick="closeMobileScroll()">✕ Close</button>
-                        </div>
+                        <button class="close-scroll-overlay" onclick="closeMobileScroll()">✕ Close</button>
                         <iframe src="${game.url}" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+                        <div class="game-overlay">
+                            <div class="game-title-overlay">${game.title}</div>
+                            <div class="game-description">${game.desc}</div>
+                        </div>
+                        <div class="side-actions">
+                            <button class="action-btn">
+                                <div class="action-icon">❤️</div>
+                                <div class="action-count">${Math.floor(Math.random() * 100)}K</div>
+                            </button>
+                            <button class="action-btn">
+                                <div class="action-icon">💬</div>
+                                <div class="action-count">${Math.floor(Math.random() * 50)}K</div>
+                            </button>
+                            <button class="action-btn">
+                                <div class="action-icon">🔗</div>
+                                <div class="action-count">Share</div>
+                            </button>
+                        </div>
                     `;
                     scrollContainer.appendChild(slide);
                 });
