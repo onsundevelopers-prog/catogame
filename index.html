@@ -882,9 +882,20 @@
             <img class="icon-text" src="assets/coffee-icon-svgrepo-com.svg" alt="coffee">
         </h1>
         <p>Explore weird experiments, build strange things, and share them with the world.</p>
-        <a href="https://kookiemystery.gumroad.com/coffee" target="_blank" class="main-btn" style="text-decoration: none; margin-top: 10px;">
-            ☕ Buy me a coffee
-        </a>
+        
+        <!-- Gumroad Support Section -->
+        <div style="max-width: 500px; margin: 30px auto 0;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                <span style="font-weight: 600; font-size: 15px; color: var(--border);">☕ Support on Gumroad</span>
+                <span style="font-weight: 700; font-size: 14px; color: var(--muted);" id="donation-progress">$0 / $25</span>
+            </div>
+            <div style="width: 100%; height: 12px; background: var(--accent); border: 2px solid var(--border); border-radius: 20px; overflow: hidden; position: relative;">
+                <div id="progress-bar" style="height: 100%; background: var(--border); width: 0%; transition: width 0.5s ease;"></div>
+            </div>
+            <a href="https://kookiemystery.gumroad.com/coffee" target="_blank" class="main-btn" style="text-decoration: none; margin-top: 16px; display: inline-block;">
+                ☕ Buy me a coffee
+            </a>
+        </div>
     </div>
 
     <div class="divider">
@@ -985,6 +996,30 @@
             }
         }
         updateDisplay();
+
+        // Gumroad donation progress
+        const donationGoal = 25; // Goal in dollars
+        let currentDonation = 0; // Update this manually with Gumroad data
+        
+        function updateDonationProgress(amount) {
+            currentDonation = amount;
+            const percentage = Math.min((currentDonation / donationGoal) * 100, 100);
+            const progressBar = document.getElementById('progress-bar');
+            const progressText = document.getElementById('donation-progress');
+            
+            if (progressBar) {
+                progressBar.style.width = percentage + '%';
+            }
+            if (progressText) {
+                progressText.textContent = `$${currentDonation} / $${donationGoal}`;
+            }
+        }
+        
+        // Initialize progress bar
+        updateDonationProgress(currentDonation);
+        
+        // To update with Gumroad data, call: updateDonationProgress(amount)
+        // Example: updateDonationProgress(15); // for $15 donated
 
         document.getElementById('featured-game').addEventListener('click', () => {
             setCatabux(getCatabux() + 10);
