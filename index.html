@@ -348,7 +348,7 @@
             background: #000;
             z-index: 10000;
             overflow-y: scroll;
-            scroll-snap-type: y mandatory;
+            scroll-snap-type: y proximity;
             -webkit-overflow-scrolling: touch;
             scrollbar-width: none;
             overscroll-behavior: contain;
@@ -371,15 +371,35 @@
         }
 
         .game-slide iframe {
-            width: 70%;
+            width: 100%;
             height: 100%;
             border: none;
             position: absolute;
             top: 0;
-            left: 15%;
-            touch-action: none;
+            left: 0;
+            touch-action: pan-y;
             pointer-events: auto;
             transition: filter 0.3s;
+        }
+
+        /* Allow scrolling when touching near edges */
+        .game-slide::before,
+        .game-slide::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            width: 50px;
+            height: 100%;
+            z-index: 1;
+            pointer-events: none;
+        }
+
+        .game-slide::before {
+            left: 0;
+        }
+
+        .game-slide::after {
+            right: 0;
         }
 
         .game-slide.paused iframe {
@@ -391,8 +411,8 @@
         .pause-overlay {
             position: absolute;
             top: 0;
-            left: 15%;
-            width: 70%;
+            left: 0;
+            width: 100%;
             height: 100%;
             background: rgba(0, 0, 0, 0.5);
             display: none;
@@ -428,47 +448,7 @@
             fill: #4d3529;
         }
 
-        /* Scroll zones on the sides - increased to 15% each */
-        .scroll-zone {
-            position: absolute;
-            top: 0;
-            width: 15%;
-            height: 100%;
-            z-index: 5;
-            pointer-events: auto;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            opacity: 0.7;
-            transition: opacity 0.3s;
-        }
-
-        .scroll-zone:active {
-            opacity: 1;
-        }
-
-        .scroll-zone-left {
-            left: 0;
-            background: linear-gradient(to right, rgba(0,0,0,0.4), transparent);
-        }
-
-        .scroll-zone-right {
-            right: 0;
-            background: linear-gradient(to left, rgba(0,0,0,0.4), transparent);
-        }
-
-        /* Swipe indicators */
-        .scroll-zone::after {
-            content: '⟨';
-            font-size: 40px;
-            color: rgba(255,255,255,0.7);
-            font-weight: bold;
-            text-shadow: 0 2px 4px rgba(0,0,0,0.5);
-        }
-
-        .scroll-zone-right::after {
-            content: '⟩';
-        }
+        /* Scroll zones removed - full screen game */
 
         .game-overlay {
             position: absolute;
@@ -577,6 +557,38 @@
             z-index: 10;
             backdrop-filter: blur(10px);
             pointer-events: auto;
+        }
+
+        .pause-btn {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(0,0,0,0.5);
+            color: white;
+            border: none;
+            padding: 10px;
+            border-radius: 50%;
+            width: 45px;
+            height: 45px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            z-index: 10;
+            backdrop-filter: blur(10px);
+            pointer-events: auto;
+            transition: all 0.3s;
+        }
+
+        .pause-btn:hover {
+            background: rgba(0,0,0,0.7);
+            transform: scale(1.1);
+        }
+
+        .pause-btn svg {
+            width: 20px;
+            height: 20px;
+            fill: white;
         }
 
         .mobile-play-btn {
@@ -1167,9 +1179,13 @@
                     slide.className = 'game-slide';
                     slide.setAttribute('data-game-id', game.id);
                     slide.innerHTML = `
-                        <div class="scroll-zone scroll-zone-left"></div>
-                        <div class="scroll-zone scroll-zone-right"></div>
                         <button class="close-scroll-overlay" onclick="closeMobileScroll()">✕ Close</button>
+                        <button class="pause-btn">
+                            <svg viewBox="0 0 24 24">
+                                <rect x="6" y="4" width="4" height="16"></rect>
+                                <rect x="14" y="4" width="4" height="16"></rect>
+                            </svg>
+                        </button>
                         <iframe src="${game.url}" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
                         <div class="pause-overlay">
                             <div class="pause-icon">
@@ -1224,24 +1240,28 @@
                 });
 
                 // Add pause/unpause functionality
-                scrollContainer.querySelectorAll('.pause-overlay').forEach(overlay => {
-                    overlay.addEventListener('click', function(e) {
+                scrollContainer.querySelectorAll('.pause-btn').forEach(btn => {
+                    btn.addEventListener('click', function(e) {
                         e.stopPropagation();
-                        const slide = this.closest('.game-slide');
-                        slide.classList.remove('paused');
-                        this.classList.remove('active');
-                    });
-                });
-
-                scrollContainer.querySelectorAll('.game-slide iframe').forEach(iframe => {
-                    iframe.addEventListener('click', function(e) {
                         const slide = this.closest('.game-slide');
                         const pauseOverlay = slide.querySelector('.pause-overlay');
                         
                         if (!slide.classList.contains('paused')) {
                             slide.classList.add('paused');
                             pauseOverlay.classList.add('active');
+                        } else {
+                            slide.classList.remove('paused');
+                            pauseOverlay.classList.remove('active');
                         }
+                    });
+                });
+
+                scrollContainer.querySelectorAll('.pause-overlay').forEach(overlay => {
+                    overlay.addEventListener('click', function(e) {
+                        e.stopPropagation();
+                        const slide = this.closest('.game-slide');
+                        slide.classList.remove('paused');
+                        this.classList.remove('active');
                     });
                 });
 
