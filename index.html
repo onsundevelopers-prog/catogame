@@ -379,6 +379,53 @@
             left: 5%;
             touch-action: none;
             pointer-events: auto;
+            transition: filter 0.3s;
+        }
+
+        .game-slide.paused iframe {
+            pointer-events: none;
+            filter: blur(5px) brightness(0.7);
+        }
+
+        /* Pause overlay */
+        .pause-overlay {
+            position: absolute;
+            top: 0;
+            left: 5%;
+            width: 90%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 15;
+            cursor: pointer;
+        }
+
+        .pause-overlay.active {
+            display: flex;
+        }
+
+        .pause-icon {
+            width: 80px;
+            height: 80px;
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            animation: pausePulse 1.5s infinite;
+        }
+
+        @keyframes pausePulse {
+            0%, 100% { transform: scale(1); opacity: 0.9; }
+            50% { transform: scale(1.1); opacity: 1; }
+        }
+
+        .pause-icon svg {
+            width: 40px;
+            height: 40px;
+            fill: #4d3529;
         }
 
         /* Scroll zones on the sides */
@@ -1100,6 +1147,13 @@
                         <div class="scroll-zone scroll-zone-right"></div>
                         <button class="close-scroll-overlay" onclick="closeMobileScroll()">✕ Close</button>
                         <iframe src="${game.url}" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+                        <div class="pause-overlay">
+                            <div class="pause-icon">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <polygon points="5 3 19 12 5 21 5 3"></polygon>
+                                </svg>
+                            </div>
+                        </div>
                         <div class="game-overlay">
                             <div class="game-title-overlay">${game.title}</div>
                             <div class="game-description">${game.desc}</div>
@@ -1142,6 +1196,28 @@
                         const title = this.getAttribute('data-game-title');
                         const url = this.getAttribute('data-game-url');
                         shareGame(title, url);
+                    });
+                });
+
+                // Add pause/unpause functionality
+                scrollContainer.querySelectorAll('.pause-overlay').forEach(overlay => {
+                    overlay.addEventListener('click', function(e) {
+                        e.stopPropagation();
+                        const slide = this.closest('.game-slide');
+                        slide.classList.remove('paused');
+                        this.classList.remove('active');
+                    });
+                });
+
+                scrollContainer.querySelectorAll('.game-slide iframe').forEach(iframe => {
+                    iframe.addEventListener('click', function(e) {
+                        const slide = this.closest('.game-slide');
+                        const pauseOverlay = slide.querySelector('.pause-overlay');
+                        
+                        if (!slide.classList.contains('paused')) {
+                            slide.classList.add('paused');
+                            pauseOverlay.classList.add('active');
+                        }
                     });
                 });
 
