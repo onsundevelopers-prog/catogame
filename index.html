@@ -491,7 +491,7 @@
         }
 
         .mobile-play-btn {
-            display: none;
+            display: block;
             position: fixed;
             bottom: 20px;
             right: 20px;
@@ -505,12 +505,6 @@
             font-size: 16px;
             box-shadow: var(--card-shadow);
             z-index: 1000;
-        }
-
-        @media (max-width: 768px) {
-            .mobile-play-btn {
-                display: block;
-            }
         }
 
         /* Comment Modal */
@@ -1056,10 +1050,11 @@
             const mobileBtn = document.getElementById('mobile-play-btn');
             const scrollContainer = document.getElementById('mobile-scroll-container');
 
-            if (!isMobileDevice()) {
-                mobileBtn.style.display = 'none';
-                return;
-            }
+            // Always show button for testing, but you can add back the mobile check later
+            // if (!isMobileDevice()) {
+            //     mobileBtn.style.display = 'none';
+            //     return;
+            // }
 
             mobileBtn.addEventListener('click', () => {
                 // Create game slides
@@ -1134,9 +1129,30 @@
         };
 
         // Initialize mobile feature
-        if (isMobileDevice()) {
+        document.addEventListener('DOMContentLoaded', () => {
+            // Seed some initial data for demonstration
+            const seedData = {
+                'homework': { likes: 1247, comments: [], likedBy: [] },
+                'robot': { likes: 892, comments: [], likedBy: [] },
+                'asteroid': { likes: 2341, comments: [], likedBy: [] },
+                'typer': { likes: 567, comments: [], likedBy: [] },
+                'distractions': { likes: 1823, comments: [], likedBy: [] },
+                'report': { likes: 445, comments: [], likedBy: [] },
+                'sandbox': { likes: 3102, comments: [], likedBy: [] },
+                'pickone': { likes: 678, comments: [], likedBy: [] },
+                'tower': { likes: 1456, comments: [], likedBy: [] }
+            };
+
+            // Only seed if no data exists
+            games.forEach(game => {
+                if (!localStorage.getItem(`game_${game.id}`)) {
+                    saveGameData(game.id, seedData[game.id]);
+                }
+            });
+
+            // Initialize for all devices (remove mobile check for testing)
             initMobileScrollPlay();
-        }
+        });
     </script>
 
 </body>
