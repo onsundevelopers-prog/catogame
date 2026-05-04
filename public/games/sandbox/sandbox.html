@@ -137,8 +137,8 @@
         // --- GUNS (Compound Bodies) ---
         function spawnGun() {
             const x = Math.random() * window.innerWidth;
-            const barrel = Bodies.rectangle(x, 100, 40, 12, { render: { fillStyle: '#555' } });
-            const grip = Bodies.rectangle(x-15, 110, 12, 25, { render: { fillStyle: '#444' } });
+            const barrel = Bodies.rectangle(x, 100, 40, 12, { render: { fillStyle: '#555' }, label: 'gun' });
+            const grip = Bodies.rectangle(x-15, 110, 12, 25, { render: { fillStyle: '#444' }, label: 'gun' });
             
             const gun = Body.create({
                 parts: [barrel, grip],
@@ -148,9 +148,10 @@
         }
 
         function shoot(gun) {
-            const angle = gun.angle;
-            const force = 0.05;
-            const bullet = Bodies.circle(gun.position.x + Math.cos(angle)*30, gun.position.y + Math.sin(angle)*30, 4, {
+            // Get the parent body if this is a compound body part
+            const parentBody = gun.parent || gun;
+            const angle = parentBody.angle;
+            const bullet = Bodies.circle(parentBody.position.x + Math.cos(angle)*30, parentBody.position.y + Math.sin(angle)*30, 4, {
                 render: { fillStyle: '#ffeb3b' },
                 label: 'bullet',
                 frictionAir: 0

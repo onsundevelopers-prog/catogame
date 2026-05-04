@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -505,6 +505,16 @@
             font-size: 16px;
             box-shadow: var(--card-shadow);
             z-index: 1000;
+            pointer-events: auto;
+        }
+
+        .mobile-play-btn:hover {
+            transform: translate(-2px, -2px);
+            box-shadow: var(--hover-shadow);
+        }
+
+        .mobile-play-btn:active {
+            transform: translate(1px, 1px);
         }
 
         /* Comment Modal */
@@ -738,7 +748,7 @@
     <div class="comment-modal" id="comment-modal">
         <div class="comment-header">
             <h3><span id="comment-count">0</span> Comments</h3>
-            <button class="close-comments" onclick="closeComments()">×</button>
+            <button class="close-comments" onclick="closeComments()">Ã—</button>
         </div>
         <div class="comments-list" id="comments-list"></div>
         <div class="comment-input-area">
@@ -760,7 +770,7 @@
         </nav>
         <span class="catabux" id="catabux-display">
             <span class="catabux-text">0 Catabux</span>
-            <span class="catabux-icon">💰</span>
+            <span class="catabux-icon">ðŸ’°</span>
         </span>
     </header>
 
@@ -789,7 +799,7 @@
                 <h3>The Homework Game</h3>
                 <p>Complete your homework with 50 impossible rules. Can you get an A+?</p>
                 <span class="play-link">
-                    <span class="play-text">Play now →</span>
+                    <span class="play-text">Play now â†’</span>
                     <img class="play-icon" src="assets/coffee-icon-svgrepo-com.svg" alt="play">
                 </span>
             </div>
@@ -856,7 +866,7 @@
         </div>
     </div>
 
-    <footer>Catagame — made with curiosity</footer>
+    <footer>Catagame â€” made with curiosity</footer>
 
     <script>
         const catabuxKey = 'catabux';
@@ -871,22 +881,6 @@
             }
         }
         updateDisplay();
-
-        // Progress bar for donations
-        const donationGoal = 25;
-        let currentDonation = 0; // This would be updated from your backend/payment system
-        
-        function updateProgressBar() {
-            const percentage = Math.min((currentDonation / donationGoal) * 100, 100);
-            document.getElementById('progress-bar').style.width = percentage + '%';
-            document.getElementById('progress-text').textContent = `$${currentDonation} / $${donationGoal}`;
-        }
-        
-        updateProgressBar();
-
-        function createBubbles() {
-            // Removed - no longer needed
-        }
 
         document.getElementById('featured-game').addEventListener('click', () => {
             setCatabux(getCatabux() + 10);
@@ -1064,8 +1058,14 @@
                 return;
             }
 
-            mobileBtn.addEventListener('click', () => {
+            // Remove any existing event listeners by cloning the button
+            const newBtn = mobileBtn.cloneNode(true);
+            mobileBtn.parentNode.replaceChild(newBtn, mobileBtn);
+
+            newBtn.addEventListener('click', function(e) {
+                e.preventDefault();
                 console.log('Button clicked!');
+                
                 // Create game slides
                 scrollContainer.innerHTML = '';
                 
@@ -1078,7 +1078,7 @@
                     slide.className = 'game-slide';
                     slide.setAttribute('data-game-id', game.id);
                     slide.innerHTML = `
-                        <button class="close-scroll-overlay" onclick="closeMobileScroll()">✕ Close</button>
+                        <button class="close-scroll-overlay" onclick="closeMobileScroll()">âœ• Close</button>
                         <iframe src="${game.url}" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
                         <div class="game-overlay">
                             <div class="game-title-overlay">${game.title}</div>
