@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -849,7 +849,7 @@
     <div class="comment-modal" id="comment-modal">
         <div class="comment-header">
             <h3><span id="comment-count">0</span> Comments</h3>
-            <button class="close-comments" onclick="closeComments()">Ã—</button>
+            <button class="close-comments" onclick="closeComments()">×</button>
         </div>
         <div class="comments-list" id="comments-list"></div>
         <div class="comment-input-area">
@@ -871,7 +871,7 @@
         </nav>
         <span class="catabux" id="catabux-display">
             <span class="catabux-text">0 Catabux</span>
-            <span class="catabux-icon">ðŸ’°</span>
+            <span class="catabux-icon">💰</span>
         </span>
     </header>
 
@@ -882,19 +882,18 @@
             <img class="icon-text" src="assets/coffee-icon-svgrepo-com.svg" alt="coffee">
         </h1>
         <p>Explore weird experiments, build strange things, and share them with the world.</p>
-        
-        <!-- Gumroad Support Section -->
-        <div style="max-width: 500px; margin: 30px auto 0;">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
-                <span style="font-weight: 600; font-size: 15px; color: var(--border);">☕ Support on Gumroad</span>
-                <span style="font-weight: 700; font-size: 14px; color: var(--muted);" id="donation-progress">$0 / $25</span>
+
+        <div style="width: 100%; max-width: 500px; margin: 0 auto;">
+            <div style="background: var(--accent); border: 3px solid var(--border); border-radius: 50px; padding: 8px; position: relative; overflow: hidden;">
+                <div id="progress-bar" style="background: var(--border); height: 40px; border-radius: 50px; width: 0%; transition: width 0.3s;"></div>
+                <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-weight: 700; color: var(--border); font-size: 14px; z-index: 10;">
+                    <span id="progress-text">$0 / $25</span>
+                </div>
             </div>
-            <div style="width: 100%; height: 12px; background: var(--accent); border: 2px solid var(--border); border-radius: 20px; overflow: hidden; position: relative;">
-                <div id="progress-bar" style="height: 100%; background: var(--border); width: 0%; transition: width 0.5s ease;"></div>
-            </div>
-            <a href="https://kookiemystery.gumroad.com/coffee" target="_blank" class="main-btn" style="text-decoration: none; margin-top: 16px; display: inline-block;">
-                ☕ Buy me a coffee
-            </a>
+            <p style="font-size: 13px; color: var(--muted); margin-top: 12px; text-align: center;">
+                Support us with $25 to unlock game creation tools!
+                <a href="https://kookiemystery.gumroad.com/coffee" target="_blank" style="color: var(--border); font-weight: 700; text-decoration: underline;">Donate here</a>
+            </p>
         </div>
     </div>
 
@@ -914,7 +913,7 @@
                 <h3>The Homework Game</h3>
                 <p>Complete your homework with 50 impossible rules. Can you get an A+?</p>
                 <span class="play-link">
-                    <span class="play-text">Play now â†’</span>
+                    <span class="play-text">Play now →</span>
                     <img class="play-icon" src="assets/coffee-icon-svgrepo-com.svg" alt="play">
                 </span>
             </div>
@@ -981,7 +980,7 @@
         </div>
     </div>
 
-    <footer>Catagame â€” made with curiosity</footer>
+    <footer>Catagame — made with curiosity</footer>
 
     <script>
         const catabuxKey = 'catabux';
@@ -1001,11 +1000,10 @@
         const donationGoal = 25; // Goal in dollars
         let currentDonation = 0; // Update this manually with Gumroad data
         
-        function updateDonationProgress(amount) {
-            currentDonation = amount;
+        function updateProgressBar() {
             const percentage = Math.min((currentDonation / donationGoal) * 100, 100);
             const progressBar = document.getElementById('progress-bar');
-            const progressText = document.getElementById('donation-progress');
+            const progressText = document.getElementById('progress-text');
             
             if (progressBar) {
                 progressBar.style.width = percentage + '%';
@@ -1015,13 +1013,7 @@
             }
         }
         
-        // Initialize progress bar
-        updateDonationProgress(currentDonation);
-        
-        // To update with Gumroad data, call: updateDonationProgress(amount)
-        // Example: updateDonationProgress(15); // for $15 donated
-
-        document.getElementById('featured-game').addEventListener('click', () => {
+        updateProgressBar(); document.getElementById('featured-game').addEventListener('click', () => {
             setCatabux(getCatabux() + 10);
             window.location.href = 'games/passwordgame/dywyt.html';
         });
@@ -1217,7 +1209,7 @@
                     slide.className = 'game-slide';
                     slide.setAttribute('data-game-id', game.id);
                     slide.innerHTML = `
-                        <button class="close-scroll-overlay" onclick="closeMobileScroll()">✕ Close</button>
+                        <button class="close-scroll-overlay" onclick="closeMobileScroll()">? Close</button>
                         <button class="pause-btn">
                             <svg viewBox="0 0 24 24">
                                 <rect x="6" y="4" width="4" height="16"></rect>
