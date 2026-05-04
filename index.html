@@ -1206,8 +1206,8 @@
         // Initialize Supabase (only if not already initialized)
         const supabaseUrl = 'https://psydvmqkeenwuxvmdrgj.supabase.co';
         const supabaseKey = 'sb_publishable_4SLqZQElvgeuG2ZYp88uQw_Z8xg0xrg';
-        const supabase = window.supabaseClient || window.supabase.createClient(supabaseUrl, supabaseKey);
-        window.supabaseClient = supabase; // Store for reuse
+        const supabaseClient = window.supabaseClient || window.supabase.createClient(supabaseUrl, supabaseKey);
+        window.supabaseClient = supabaseClient; // Store for reuse
 
         // SVG Icons
         const heartIcon = `<svg viewBox="0 0 24 24" fill="none"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>`;
@@ -1218,7 +1218,7 @@
         async function getGameData(gameId) {
             try {
                 // Get likes count
-                const { data: likes, error: likesError } = await supabase
+                const { data: likes, error: likesError } = await supabaseClient
                     .from('likes')
                     .select('user_id')
                     .eq('game_id', gameId);
@@ -1231,7 +1231,7 @@
                 }
 
                 // Get comments
-                const { data: comments, error: commentsError } = await supabase
+                const { data: comments, error: commentsError } = await supabaseClient
                     .from('comments')
                     .select('*')
                     .eq('game_id', gameId)
@@ -1287,7 +1287,7 @@
             
             try {
                 // Check if already liked
-                const { data: existingLike } = await supabase
+                const { data: existingLike } = await supabaseClient
                     .from('likes')
                     .select('id')
                     .eq('game_id', gameId)
@@ -1296,7 +1296,7 @@
 
                 if (existingLike) {
                     // Unlike
-                    await supabase
+                    await supabaseClient
                         .from('likes')
                         .delete()
                         .eq('game_id', gameId)
@@ -1305,7 +1305,7 @@
                     button.classList.remove('liked');
                 } else {
                     // Like
-                    await supabase
+                    await supabaseClient
                         .from('likes')
                         .insert({ game_id: gameId, user_id: userId });
                     
@@ -1364,7 +1364,7 @@
                 const author = 'Player ' + Math.floor(Math.random() * 9999);
                 
                 // Insert comment into Supabase
-                const { error } = await supabase
+                const { error } = await supabaseClient
                     .from('comments')
                     .insert({
                         game_id: currentGameId,
