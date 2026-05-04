@@ -423,6 +423,11 @@
             color: white;
             cursor: pointer;
             pointer-events: auto;
+            transition: transform 0.2s;
+        }
+
+        .action-btn:active {
+            transform: scale(0.9);
         }
 
         .action-icon {
@@ -433,8 +438,31 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 20px;
             backdrop-filter: blur(10px);
+            transition: all 0.3s;
+        }
+
+        .action-icon svg {
+            width: 22px;
+            height: 22px;
+            fill: white;
+            stroke: white;
+            stroke-width: 2;
+        }
+
+        .action-btn.liked .action-icon {
+            background: rgba(255, 59, 92, 0.8);
+        }
+
+        .action-btn.liked .action-icon svg {
+            fill: #ff3b5c;
+            stroke: #ff3b5c;
+            animation: likeAnimation 0.3s ease;
+        }
+
+        @keyframes likeAnimation {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.3); }
         }
 
         .action-count {
@@ -480,6 +508,128 @@
             .mobile-play-btn {
                 display: block;
             }
+        }
+
+        /* Comment Modal */
+        .comment-modal {
+            display: none;
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: white;
+            border-radius: 20px 20px 0 0;
+            max-height: 70vh;
+            z-index: 10001;
+            animation: slideUp 0.3s ease;
+        }
+
+        @keyframes slideUp {
+            from { transform: translateY(100%); }
+            to { transform: translateY(0); }
+        }
+
+        .comment-modal.active {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .comment-header {
+            padding: 20px;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .comment-header h3 {
+            margin: 0;
+            font-family: 'Playfair Display', serif;
+            color: var(--border);
+        }
+
+        .close-comments {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: var(--muted);
+        }
+
+        .comments-list {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+        }
+
+        .comment-item {
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .comment-author {
+            font-weight: 700;
+            color: var(--border);
+            margin-bottom: 5px;
+        }
+
+        .comment-text {
+            color: var(--text);
+            line-height: 1.5;
+        }
+
+        .comment-time {
+            font-size: 12px;
+            color: var(--muted);
+            margin-top: 5px;
+        }
+
+        .comment-input-area {
+            padding: 15px 20px;
+            border-top: 1px solid #eee;
+            display: flex;
+            gap: 10px;
+            background: white;
+        }
+
+        .comment-input {
+            flex: 1;
+            padding: 10px 15px;
+            border: 1px solid #ddd;
+            border-radius: 20px;
+            outline: none;
+            font-family: inherit;
+        }
+
+        .send-comment-btn {
+            background: var(--border);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 20px;
+            font-weight: 700;
+            cursor: pointer;
+        }
+
+        .send-comment-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .modal-backdrop {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 10000;
+        }
+
+        .modal-backdrop.active {
+            display: block;
         }
 
         /* --- Custom Animations --- */
@@ -635,6 +785,20 @@
 
     <!-- Mobile Scroll-to-Play Container -->
     <div class="mobile-scroll-container" id="mobile-scroll-container"></div>
+
+    <!-- Comment Modal -->
+    <div class="modal-backdrop" id="modal-backdrop" onclick="closeComments()"></div>
+    <div class="comment-modal" id="comment-modal">
+        <div class="comment-header">
+            <h3><span id="comment-count">0</span> Comments</h3>
+            <button class="close-comments" onclick="closeComments()">×</button>
+        </div>
+        <div class="comments-list" id="comments-list"></div>
+        <div class="comment-input-area">
+            <input type="text" class="comment-input" id="comment-input" placeholder="Add a comment...">
+            <button class="send-comment-btn" id="send-comment-btn">Post</button>
+        </div>
+    </div>
 
     <!-- Mobile Play Button -->
     <button class="mobile-play-btn" id="mobile-play-btn">Play on Scroll</button>
@@ -853,16 +1017,135 @@
 
         // Mobile Scroll-to-Play Feature
         const games = [
-            { title: 'The Homework Game', desc: 'Complete 50 impossible rules', url: 'games/passwordgame/dywyt.html' },
-            { title: 'Are you a robot?', desc: '100 levels of verification', url: 'games/99thday/99thday.html' },
-            { title: 'Asteroid Clicker', desc: 'Click to destroy the world', url: 'spendatrillionairesmoney/mapsurvallancesytem.html' },
-            { title: 'Unfair Typer', desc: 'Type fast, the game fights back', url: 'games/unfairtyper/unfairtyper.html' },
-            { title: 'Distractions', desc: 'Get smarter with brainrot', url: 'games/distractions/distractions.html' },
-            { title: 'Report Card', desc: "It's sad", url: 'games/report/reportcard.html' },
-            { title: 'The Sandbox', desc: 'Ragdoll physics playground', url: 'games/sandbox/sandbox.html' },
-            { title: 'Pick One', desc: 'Erase one event from history', url: 'games/Pickone/pickone.html' },
-            { title: 'Tower Defense', desc: 'Defend your tower', url: 'games/actaselonmusk/towerdefense.html' }
+            { id: 'homework', title: 'The Homework Game', desc: 'Complete 50 impossible rules', url: 'games/passwordgame/dywyt.html' },
+            { id: 'robot', title: 'Are you a robot?', desc: '100 levels of verification', url: 'games/99thday/99thday.html' },
+            { id: 'asteroid', title: 'Asteroid Clicker', desc: 'Click to destroy the world', url: 'spendatrillionairesmoney/mapsurvallancesytem.html' },
+            { id: 'typer', title: 'Unfair Typer', desc: 'Type fast, the game fights back', url: 'games/unfairtyper/unfairtyper.html' },
+            { id: 'distractions', title: 'Distractions', desc: 'Get smarter with brainrot', url: 'games/distractions/distractions.html' },
+            { id: 'report', title: 'Report Card', desc: "It's sad", url: 'games/report/reportcard.html' },
+            { id: 'sandbox', title: 'The Sandbox', desc: 'Ragdoll physics playground', url: 'games/sandbox/sandbox.html' },
+            { id: 'pickone', title: 'Pick One', desc: 'Erase one event from history', url: 'games/Pickone/pickone.html' },
+            { id: 'tower', title: 'Tower Defense', desc: 'Defend your tower', url: 'games/actaselonmusk/towerdefense.html' }
         ];
+
+        let currentGameId = null;
+
+        // SVG Icons
+        const heartIcon = `<svg viewBox="0 0 24 24" fill="none"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>`;
+        const commentIcon = `<svg viewBox="0 0 24 24" fill="none"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>`;
+        const shareIcon = `<svg viewBox="0 0 24 24" fill="none"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line></svg>`;
+
+        // Get/Set likes and comments from localStorage
+        function getGameData(gameId) {
+            const data = localStorage.getItem(`game_${gameId}`);
+            return data ? JSON.parse(data) : { likes: 0, comments: [], likedBy: [] };
+        }
+
+        function saveGameData(gameId, data) {
+            localStorage.setItem(`game_${gameId}`, JSON.stringify(data));
+        }
+
+        function getUserId() {
+            let userId = localStorage.getItem('userId');
+            if (!userId) {
+                userId = 'user_' + Math.random().toString(36).substr(2, 9);
+                localStorage.setItem('userId', userId);
+            }
+            return userId;
+        }
+
+        function toggleLike(gameId, button) {
+            const data = getGameData(gameId);
+            const userId = getUserId();
+            const likeCount = button.querySelector('.action-count');
+            
+            if (data.likedBy.includes(userId)) {
+                // Unlike
+                data.likes--;
+                data.likedBy = data.likedBy.filter(id => id !== userId);
+                button.classList.remove('liked');
+            } else {
+                // Like
+                data.likes++;
+                data.likedBy.push(userId);
+                button.classList.add('liked');
+            }
+            
+            saveGameData(gameId, data);
+            likeCount.textContent = formatCount(data.likes);
+        }
+
+        function formatCount(num) {
+            if (num >= 1000000) return (num / 1000000).toFixed(1) + 'M';
+            if (num >= 1000) return (num / 1000).toFixed(1) + 'K';
+            return num.toString();
+        }
+
+        function openComments(gameId) {
+            currentGameId = gameId;
+            const data = getGameData(gameId);
+            
+            document.getElementById('modal-backdrop').classList.add('active');
+            document.getElementById('comment-modal').classList.add('active');
+            document.getElementById('comment-count').textContent = data.comments.length;
+            
+            renderComments(data.comments);
+        }
+
+        function renderComments(comments) {
+            const commentsList = document.getElementById('comments-list');
+            
+            if (comments.length === 0) {
+                commentsList.innerHTML = '<p style="text-align: center; color: #999; padding: 40px 0;">No comments yet. Be the first!</p>';
+                return;
+            }
+            
+            commentsList.innerHTML = comments.map(comment => `
+                <div class="comment-item">
+                    <div class="comment-author">${comment.author}</div>
+                    <div class="comment-text">${comment.text}</div>
+                    <div class="comment-time">${comment.time}</div>
+                </div>
+            `).reverse().join('');
+        }
+
+        function postComment() {
+            const input = document.getElementById('comment-input');
+            const text = input.value.trim();
+            
+            if (!text || !currentGameId) return;
+            
+            const data = getGameData(currentGameId);
+            const comment = {
+                author: 'Player ' + Math.floor(Math.random() * 9999),
+                text: text,
+                time: 'Just now'
+            };
+            
+            data.comments.push(comment);
+            saveGameData(currentGameId, data);
+            
+            input.value = '';
+            document.getElementById('comment-count').textContent = data.comments.length;
+            renderComments(data.comments);
+            
+            // Update comment count in the game slide
+            const commentBtn = document.querySelector(`[data-game-id="${currentGameId}"] .comment-btn .action-count`);
+            if (commentBtn) {
+                commentBtn.textContent = formatCount(data.comments.length);
+            }
+        }
+
+        window.closeComments = function() {
+            document.getElementById('modal-backdrop').classList.remove('active');
+            document.getElementById('comment-modal').classList.remove('active');
+            currentGameId = null;
+        };
+
+        document.getElementById('send-comment-btn').addEventListener('click', postComment);
+        document.getElementById('comment-input').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') postComment();
+        });
 
         function isMobileDevice() {
             return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) 
@@ -883,8 +1166,13 @@
                 scrollContainer.innerHTML = '';
                 
                 games.forEach((game, index) => {
+                    const data = getGameData(game.id);
+                    const userId = getUserId();
+                    const isLiked = data.likedBy.includes(userId);
+                    
                     const slide = document.createElement('div');
                     slide.className = 'game-slide';
+                    slide.setAttribute('data-game-id', game.id);
                     slide.innerHTML = `
                         <button class="close-scroll-overlay" onclick="closeMobileScroll()">✕ Close</button>
                         <iframe src="${game.url}" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
@@ -893,16 +1181,16 @@
                             <div class="game-description">${game.desc}</div>
                         </div>
                         <div class="side-actions">
-                            <button class="action-btn">
-                                <div class="action-icon">❤️</div>
-                                <div class="action-count">${Math.floor(Math.random() * 100)}K</div>
+                            <button class="action-btn like-btn ${isLiked ? 'liked' : ''}" onclick="toggleLike('${game.id}', this)">
+                                <div class="action-icon">${heartIcon}</div>
+                                <div class="action-count">${formatCount(data.likes)}</div>
                             </button>
-                            <button class="action-btn">
-                                <div class="action-icon">💬</div>
-                                <div class="action-count">${Math.floor(Math.random() * 50)}K</div>
+                            <button class="action-btn comment-btn" onclick="openComments('${game.id}')">
+                                <div class="action-icon">${commentIcon}</div>
+                                <div class="action-count">${formatCount(data.comments.length)}</div>
                             </button>
-                            <button class="action-btn">
-                                <div class="action-icon">🔗</div>
+                            <button class="action-btn share-btn" onclick="shareGame('${game.title}', '${game.url}')">
+                                <div class="action-icon">${shareIcon}</div>
                                 <div class="action-count">Share</div>
                             </button>
                         </div>
@@ -914,6 +1202,26 @@
                 document.body.style.overflow = 'hidden';
             });
         }
+
+        window.toggleLike = function(gameId, button) {
+            toggleLike(gameId, button);
+        };
+
+        window.openComments = function(gameId) {
+            openComments(gameId);
+        };
+
+        window.shareGame = function(title, url) {
+            if (navigator.share) {
+                navigator.share({
+                    title: title,
+                    text: `Check out ${title} on Catagame!`,
+                    url: window.location.origin + '/' + url
+                });
+            } else {
+                alert('Share: ' + window.location.origin + '/' + url);
+            }
+        };
 
         window.closeMobileScroll = function() {
             const scrollContainer = document.getElementById('mobile-scroll-container');
