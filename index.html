@@ -351,6 +351,7 @@
             scroll-snap-type: y mandatory;
             -webkit-overflow-scrolling: touch;
             scrollbar-width: none;
+            overscroll-behavior: contain;
         }
 
         .mobile-scroll-container::-webkit-scrollbar {
@@ -376,6 +377,8 @@
             position: absolute;
             top: 0;
             left: 0;
+            touch-action: pan-y;
+            pointer-events: auto;
         }
 
         .game-overlay {
@@ -633,56 +636,6 @@
         }
 
         /* --- Custom Animations --- */
-        
-        /* Progress bar animations */
-        @keyframes fillToFull {
-            0% { width: 0%; }
-            100% { width: 100%; }
-        }
-
-        @keyframes drainToActual {
-            0% { width: 100%; }
-            100% { width: var(--actual-width); }
-        }
-
-        #progress-bar {
-            position: relative;
-            overflow: visible !important;
-        }
-
-        /* Coffee animation */
-        #hero-coffee {
-            position: fixed;
-            width: 32px;
-            height: 32px;
-            z-index: 9999;
-            pointer-events: none;
-            opacity: 0;
-            filter: invert(18%) sepia(40%) saturate(600%) hue-rotate(340deg);
-        }
-
-        @keyframes coffeeJourney {
-            0% {
-                transform: translate(0, 0) scale(1) rotate(0deg);
-                opacity: 1;
-            }
-            25% {
-                transform: translate(calc(70vw), calc(30vh)) scale(8) rotate(360deg);
-                opacity: 1;
-            }
-            50% {
-                transform: translate(calc(70vw), calc(30vh)) scale(8) rotate(720deg);
-                opacity: 1;
-            }
-            75% {
-                transform: translate(0, 0) scale(1) rotate(1080deg);
-                opacity: 1;
-            }
-            100% {
-                transform: translate(0, 0) scale(1) rotate(1440deg);
-                opacity: 0;
-            }
-        }
 
         /* Text to icon hover effects */
         .morph-text {
@@ -803,9 +756,6 @@
     <!-- Mobile Play Button -->
     <button class="mobile-play-btn" id="mobile-play-btn">Play on Scroll</button>
 
-    <!-- Animated coffee icon -->
-    <img id="hero-coffee" src="assets/coffee-icon-svgrepo-com.svg" alt="coffee">
-
     <header>
         <a class="logo" href="#">
             <img src="assets/coffee-icon-svgrepo-com.svg" alt="coffee">
@@ -813,9 +763,6 @@
         </a>
         <nav>
             <a href="games/shop/shop.html">Shop</a>
-            <a href="games/myblog.html">Blog</a>
-            <a href="#">My Story</a>
-            <a href="#">Contact</a>
         </nav>
         <span class="catabux" id="catabux-display">
             <span class="catabux-text">0 Catabux</span>
@@ -830,19 +777,6 @@
             <img class="icon-text" src="assets/coffee-icon-svgrepo-com.svg" alt="coffee">
         </h1>
         <p>Explore weird experiments, build strange things, and share them with the world.</p>
-        
-        <div style="width: 100%; max-width: 500px; margin: 0 auto;">
-            <div style="background: var(--accent); border: 3px solid var(--border); border-radius: 50px; padding: 8px; position: relative; overflow: hidden;">
-                <div id="progress-bar" style="background: var(--border); height: 40px; border-radius: 50px; width: 0%; transition: width 0.3s;"></div>
-                <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-weight: 700; color: var(--border); font-size: 14px; z-index: 10;">
-                    <span id="progress-text">$0 / $25</span>
-                </div>
-            </div>
-            <p style="font-size: 13px; color: var(--muted); margin-top: 12px; text-align: center;">
-                Support us with $25 to unlock game creation tools! 
-                <a href="https://buymeacoffee.com/oseeke" target="_blank" style="color: var(--border); font-weight: 700; text-decoration: underline;">Donate here</a>
-            </p>
-        </div>
     </div>
 
     <div class="divider">
@@ -960,56 +894,6 @@
             // Removed - no longer needed
         }
 
-        // Animate progress bar: fill to 100%, then drain to actual amount
-        function animateProgressBar() {
-            const progressBar = document.getElementById('progress-bar');
-            const actualPercentage = Math.min((currentDonation / donationGoal) * 100, 100);
-            
-            // Set the actual width as CSS variable
-            progressBar.style.setProperty('--actual-width', actualPercentage + '%');
-            
-            // First animation: fill to 100%
-            progressBar.style.animation = 'fillToFull 1.5s ease-out forwards';
-            
-            // Second animation: drain to actual amount after 1 second
-            setTimeout(() => {
-                progressBar.style.animation = 'drainToActual 1s ease-in-out forwards';
-            }, 2500); // 1.5s fill + 1s wait
-        }
-
-        // Coffee animation on page load
-        function animateCoffee() {
-            const heroCoffee = document.getElementById('hero-coffee');
-            const logoImg = document.querySelector('.logo img');
-            
-            if (!heroCoffee || !logoImg) return;
-            
-            // Get logo position
-            const logoRect = logoImg.getBoundingClientRect();
-            heroCoffee.style.left = logoRect.left + 'px';
-            heroCoffee.style.top = logoRect.top + 'px';
-            heroCoffee.style.opacity = '1';
-            
-            // Start animation
-            heroCoffee.style.animation = 'coffeeJourney 3s ease-in-out forwards';
-            
-            // Hide after animation
-            setTimeout(() => {
-                heroCoffee.style.opacity = '0';
-            }, 3000);
-        }
-
-        // Initialize on page load
-        window.addEventListener('load', () => {
-            setTimeout(() => {
-                animateProgressBar();
-            }, 500);
-            
-            setTimeout(() => {
-                animateCoffee();
-            }, 800);
-        });
-
         document.getElementById('featured-game').addEventListener('click', () => {
             setCatabux(getCatabux() + 10);
             window.location.href = 'games/passwordgame/dywyt.html';
@@ -1017,15 +901,15 @@
 
         // Mobile Scroll-to-Play Feature
         const games = [
-            { id: 'homework', title: 'The Homework Game', desc: 'Complete 50 impossible rules', url: 'games/passwordgame/dywyt.html' },
-            { id: 'robot', title: 'Are you a robot?', desc: '100 levels of verification', url: 'games/99thday/99thday.html' },
-            { id: 'asteroid', title: 'Asteroid Clicker', desc: 'Click to destroy the world', url: 'spendatrillionairesmoney/mapsurvallancesytem.html' },
-            { id: 'typer', title: 'Unfair Typer', desc: 'Type fast, the game fights back', url: 'games/unfairtyper/unfairtyper.html' },
-            { id: 'distractions', title: 'Distractions', desc: 'Get smarter with brainrot', url: 'games/distractions/distractions.html' },
-            { id: 'report', title: 'Report Card', desc: "It's sad", url: 'games/report/reportcard.html' },
-            { id: 'sandbox', title: 'The Sandbox', desc: 'Ragdoll physics playground', url: 'games/sandbox/sandbox.html' },
-            { id: 'pickone', title: 'Pick One', desc: 'Erase one event from history', url: 'games/Pickone/pickone.html' },
-            { id: 'tower', title: 'Tower Defense', desc: 'Defend your tower', url: 'games/actaselonmusk/towerdefense.html' }
+            { id: 'homework', title: 'The Homework Game', desc: 'Complete your homework with 50 impossible rules', url: 'games/passwordgame/dywyt.html' },
+            { id: 'robot', title: 'Are you a robot?', desc: 'Prove you are human through 100 verification levels', url: 'games/99thday/99thday.html' },
+            { id: 'asteroid', title: 'Asteroid Clicker', desc: 'Launch asteroids and destroy cities around the world', url: 'spendatrillionairesmoney/mapsurvallancesytem.html' },
+            { id: 'typer', title: 'Unfair Typer', desc: 'Type the words before the game sabotages you', url: 'games/unfairtyper/unfairtyper.html' },
+            { id: 'distractions', title: 'Distractions', desc: 'Answer questions while chaos unfolds around you', url: 'games/distractions/distractions.html' },
+            { id: 'report', title: 'Report Card', desc: 'View the worst report card ever created', url: 'games/report/reportcard.html' },
+            { id: 'sandbox', title: 'The Sandbox', desc: 'Create chaos with ragdoll physics and weapons', url: 'games/sandbox/sandbox.html' },
+            { id: 'pickone', title: 'Pick One', desc: 'Choose which historical event to erase forever', url: 'games/Pickone/pickone.html' },
+            { id: 'tower', title: 'Tower Defense', desc: 'Defend your tower from endless waves of enemies', url: 'games/actaselonmusk/towerdefense.html' }
         ];
 
         let currentGameId = null;
