@@ -1056,7 +1056,7 @@
         </a>
         <nav>
             <a href="games/shop/shop.html">Shop</a>
-            <a href="public/game-creator.html" id="game-creator-link" style="display: none; margin-left: 20px;">Create Game</a>
+            <a href="#" id="game-creator-link" style="display: none; margin-left: 20px; cursor: pointer;" onclick="goToGameCreator(event)">Create Game</a>
         </nav>
         <div class="header-right">
             <span class="catabux" id="catabux-display">
@@ -1710,6 +1710,12 @@
             setTimeout(() => {
                 closeRedeemModal();
             }, 2000);
+        };
+
+        // Navigate to game creator
+        window.goToGameCreator = function(e) {
+            e.preventDefault();
+            window.location.href = window.location.origin + '/public/game-creator.html';
         };
     </script>
 

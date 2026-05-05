@@ -409,7 +409,7 @@
             <a href="../../index.html">Home</a>
             <a href="shop.html">Shop</a>
             <a href="../myblog.html">Blog</a>
-            <a href="../game-creator.html" id="game-creator-link" style="display: none; margin-left: 20px;">Create Game</a>
+            <a href="#" id="game-creator-link" style="display: none; margin-left: 20px; cursor: pointer;" onclick="goToGameCreator(event)">Create Game</a>
         </nav>
         <div class="catabux-display" id="catabux-display">0 Catabux</div>
     </header>
@@ -929,6 +929,12 @@
 
         // Initialize
         updateDisplay();
+
+        // Navigate to game creator
+        window.goToGameCreator = function(e) {
+            e.preventDefault();
+            window.location.href = window.location.origin + '/public/game-creator.html';
+        };
     </script>
 
 </body>
