@@ -1606,10 +1606,19 @@
             console.log('Games array:', games);
             
             // Check if user has purchased Game Creator Access
-            const purchasedItems = JSON.parse(localStorage.getItem('purchased_items') || '[]');
-            if (purchasedItems.includes('game-creator')) {
-                document.getElementById('game-creator-link').style.display = 'inline-block';
-            }
+            const checkGameCreatorLink = () => {
+                const link = document.getElementById('game-creator-link');
+                if (!link) {
+                    setTimeout(checkGameCreatorLink, 100);
+                    return;
+                }
+                
+                const purchasedItems = JSON.parse(localStorage.getItem('purchased_items') || '[]');
+                if (purchasedItems.includes('game-creator')) {
+                    link.style.display = 'inline-block';
+                }
+            };
+            checkGameCreatorLink();
             
             // No need to initialize - Supabase handles data storage
 

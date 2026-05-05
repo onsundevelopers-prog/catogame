@@ -247,16 +247,19 @@
 
         function finish() {
             // Give Catabux for completing typing
+            const reward = Math.max(5, Math.floor(typedIdx / 10)); // More Catabux for longer words
             if (window.addCatabux) {
-                const reward = Math.max(5, Math.floor(typedIdx / 10)); // More Catabux for longer words
                 window.addCatabux(reward, 'Typing Complete');
+            } else {
+                // Fallback if addCatabux is not available
+                const current = parseInt(localStorage.getItem('catabux')) || 0;
+                localStorage.setItem('catabux', current + reward);
             }
             
             const elapsed = (Date.now() - startTime) / 60000;
             const wpm = Math.round((typedIdx / 5) / elapsed);
             
             // Award Catabux
-            const reward = 15;
             const currentCatabux = parseInt(localStorage.getItem('catabux')) || 0;
             localStorage.setItem('catabux', currentCatabux + reward);
             

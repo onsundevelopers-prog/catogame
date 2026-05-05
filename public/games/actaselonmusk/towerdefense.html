@@ -248,6 +248,9 @@
                         // Give Catabux for killing enemy
                         if (window.addCatabux) {
                             window.addCatabux(1, 'Enemy Defeated');
+                        } else {
+                            const current = parseInt(localStorage.getItem('catabux')) || 0;
+                            localStorage.setItem('catabux', current + 1);
                         }
                     }
                     enemies.splice(i,1); 

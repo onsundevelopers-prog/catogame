@@ -123,6 +123,9 @@
             // Give Catabux for spawning
             if (window.addCatabux) {
                 window.addCatabux(2, 'Spawn Stickman');
+            } else {
+                const current = parseInt(localStorage.getItem('catabux')) || 0;
+                localStorage.setItem('catabux', current + 2);
             }
             
             // Limit total stickmen for performance
@@ -160,6 +163,9 @@
             // Give Catabux for spawning gun
             if (window.addCatabux) {
                 window.addCatabux(4, 'Spawn Gun');
+            } else {
+                const current = parseInt(localStorage.getItem('catabux')) || 0;
+                localStorage.setItem('catabux', current + 4);
             }
             
             const x = Math.random() * window.innerWidth;
@@ -208,6 +214,9 @@
             // Give Catabux for spawning TNT
             if (window.addCatabux) {
                 window.addCatabux(3, 'Spawn TNT');
+            } else {
+                const current = parseInt(localStorage.getItem('catabux')) || 0;
+                localStorage.setItem('catabux', current + 3);
             }
             
             const tnt = Bodies.rectangle(Math.random()*window.innerWidth, 50, 30, 30, {
@@ -220,6 +229,9 @@
             // Give Catabux for spawning box
             if (window.addCatabux) {
                 window.addCatabux(1, 'Spawn Box');
+            } else {
+                const current = parseInt(localStorage.getItem('catabux')) || 0;
+                localStorage.setItem('catabux', current + 1);
             }
             
             Composite.add(world, Bodies.rectangle(Math.random()*window.innerWidth, 50, 40, 40, { render: { fillStyle: '#5d4037' } }));

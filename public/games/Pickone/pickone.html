@@ -220,6 +220,9 @@
       // Give Catabux for making a choice
       if (window.addCatabux) {
         window.addCatabux(3, 'Historical Choice');
+      } else {
+        const current = parseInt(localStorage.getItem('catabux')) || 0;
+        localStorage.setItem('catabux', current + 3);
       }
       
       document.querySelectorAll('#events button').forEach(b => {

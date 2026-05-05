@@ -343,6 +343,9 @@
             // Give Catabux for exploring
             if (window.addCatabux) {
                 window.addCatabux(1, 'Explored Content');
+            } else {
+                const current = parseInt(localStorage.getItem('catabux')) || 0;
+                localStorage.setItem('catabux', current + 1);
             }
             
             const element = document.getElementById(id);

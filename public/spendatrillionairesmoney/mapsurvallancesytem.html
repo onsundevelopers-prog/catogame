@@ -328,9 +328,12 @@
             launchBtn.disabled = true;
             
             // Give Catabux for launching asteroid
+            const reward = Math.floor(Math.random() * 8) + 3; // 3-10 Catabux per launch
             if (window.addCatabux) {
-                const reward = Math.floor(Math.random() * 8) + 3; // 3-10 Catabux per launch
                 window.addCatabux(reward, 'Asteroid Launch');
+            } else {
+                const current = parseInt(localStorage.getItem('catabux')) || 0;
+                localStorage.setItem('catabux', current + reward);
             }
             
             const targetPos = map.latLngToContainerPoint(targetMarker.getLatLng());
