@@ -1,0 +1,19 @@
+services:
+  - type: web
+    name: catogame
+    env: static
+    buildCommand: npm run build
+    staticPublishPath: ./dist
+    routes:
+      - path: /
+        methods:
+          - GET
+        dest: /index.html
+      - path: /game-creator.html
+        methods:
+          - GET
+        dest: /game-creator.html
+      - path: /public/*
+        methods:
+          - GET
+        dest: /$1
