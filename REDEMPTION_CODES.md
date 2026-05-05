@@ -1,0 +1,132 @@
+# Catagame Redemption Codes
+
+## 🎯 Special Premium Codes (3,000 Catabux each)
+These are the ultra-rare codes worth 3,000 Catabux each:
+
+1. `MEGA-PREMIUM-001` - 3,000 Catabux
+2. `ULTRA-BOOST-002` - 3,000 Catabux  
+3. `ELITE-MASTER-003` - 3,000 Catabux
+
+## 💎 Starter Pack Codes (150 Catabux each)
+50 codes worth 150 Catabux each:
+
+1. `STARTER-PACK-001`
+2. `STARTER-PACK-002`
+3. `STARTER-PACK-003`
+4. `STARTER-PACK-004`
+5. `STARTER-PACK-005`
+6. `STARTER-PACK-006`
+7. `STARTER-PACK-007`
+8. `STARTER-PACK-008`
+9. `STARTER-PACK-009`
+10. `STARTER-PACK-010`
+11. `STARTER-PACK-011`
+12. `STARTER-PACK-012`
+13. `STARTER-PACK-013`
+14. `STARTER-PACK-014`
+15. `STARTER-PACK-015`
+16. `STARTER-PACK-016`
+17. `STARTER-PACK-017`
+18. `STARTER-PACK-018`
+19. `STARTER-PACK-019`
+20. `STARTER-PACK-020`
+21. `STARTER-PACK-021`
+22. `STARTER-PACK-022`
+23. `STARTER-PACK-023`
+24. `STARTER-PACK-024`
+25. `STARTER-PACK-025`
+26. `STARTER-PACK-026`
+27. `STARTER-PACK-027`
+28. `STARTER-PACK-028`
+29. `STARTER-PACK-029`
+30. `STARTER-PACK-030`
+31. `STARTER-PACK-031`
+32. `STARTER-PACK-032`
+33. `STARTER-PACK-033`
+34. `STARTER-PACK-034`
+35. `STARTER-PACK-035`
+36. `STARTER-PACK-036`
+37. `STARTER-PACK-037`
+38. `STARTER-PACK-038`
+39. `STARTER-PACK-039`
+40. `STARTER-PACK-040`
+41. `STARTER-PACK-041`
+42. `STARTER-PACK-042`
+43. `STARTER-PACK-043`
+44. `STARTER-PACK-044`
+45. `STARTER-PACK-045`
+46. `STARTER-PACK-046`
+47. `STARTER-PACK-047`
+48. `STARTER-PACK-048`
+49. `STARTER-PACK-049`
+50. `STARTER-PACK-050`
+
+## 🚀 Pro Pack Codes (500 Catabux each)
+47 codes worth 500 Catabux each:
+
+1. `PRO-PACK-001`
+2. `PRO-PACK-002`
+3. `PRO-PACK-003`
+4. `PRO-PACK-004`
+5. `PRO-PACK-005`
+6. `PRO-PACK-006`
+7. `PRO-PACK-007`
+8. `PRO-PACK-008`
+9. `PRO-PACK-009`
+10. `PRO-PACK-010`
+11. `PRO-PACK-011`
+12. `PRO-PACK-012`
+13. `PRO-PACK-013`
+14. `PRO-PACK-014`
+15. `PRO-PACK-015`
+16. `PRO-PACK-016`
+17. `PRO-PACK-017`
+18. `PRO-PACK-018`
+19. `PRO-PACK-019`
+20. `PRO-PACK-020`
+21. `PRO-PACK-021`
+22. `PRO-PACK-022`
+23. `PRO-PACK-023`
+24. `PRO-PACK-024`
+25. `PRO-PACK-025`
+26. `PRO-PACK-026`
+27. `PRO-PACK-027`
+28. `PRO-PACK-028`
+29. `PRO-PACK-029`
+30. `PRO-PACK-030`
+31. `PRO-PACK-031`
+32. `PRO-PACK-032`
+33. `PRO-PACK-033`
+34. `PRO-PACK-034`
+35. `PRO-PACK-035`
+36. `PRO-PACK-036`
+37. `PRO-PACK-037`
+38. `PRO-PACK-038`
+39. `PRO-PACK-039`
+40. `PRO-PACK-040`
+41. `PRO-PACK-041`
+42. `PRO-PACK-042`
+43. `PRO-PACK-043`
+44. `PRO-PACK-044`
+45. `PRO-PACK-045`
+46. `PRO-PACK-046`
+47. `PRO-PACK-047`
+
+## 📊 Summary
+- **Total Codes**: 100
+- **Special Premium (3,000 Catabux)**: 3 codes
+- **Starter Pack (150 Catabux)**: 50 codes  
+- **Pro Pack (500 Catabux)**: 47 codes
+- **Total Catabux Value**: 32,500 Catabux
+
+## 🎮 How to Use
+1. Go to the Catagame website
+2. Click the "+ Redeem Code" button in the header
+3. Enter any of the codes above
+4. Enjoy your Catabux!
+
+## 🔒 Security Notes
+- Each code can only be used once
+- Codes are case-sensitive
+- Used codes are tracked in localStorage
+- All codes are immediately active and ready to use
