@@ -276,6 +276,10 @@
     function earn(amt) {
         money += amt;
         document.getElementById('balance').innerText = `CREDITS: $${money.toFixed(2)}`;
+        // Give Catabux for earning money
+        if (window.addCatabux) {
+            window.addCatabux(Math.floor(amt / 10), 'Email Task Completed');
+        }
     }
 
     function terminate(reason) {

@@ -27,13 +27,14 @@ class CatabuxRewards {
     }
 
     setCatabux(value) {
+        const oldValue = this.getCatabux();
         localStorage.setItem(this.catabuxKey, value);
         this.updateDisplay();
         
         // Track analytics if available
         if (window.catagameAnalytics) {
             window.catagameAnalytics.trackEvent('catabux_earned', {
-                amount: value - this.getCatabux(),
+                amount: value - oldValue,
                 source: 'game_reward',
                 game: this.getGameName()
             });
@@ -72,41 +73,51 @@ class CatabuxRewards {
         // Check if display already exists
         if (document.getElementById('catabux-game-display')) return;
 
-        const display = document.createElement('div');
-        display.id = 'catabux-game-display';
-        display.style.cssText = `
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            background: #feeacf;
-            border: 3px solid #4d3529;
-            border-radius: 20px;
-            padding: 10px 20px;
-            font-family: 'Inter', Arial, sans-serif;
-            font-weight: 700;
-            font-size: 16px;
-            color: #4d3529;
-            z-index: 10000;
-            box-shadow: 6px 6px 0px #291b14;
-            cursor: pointer;
-            transition: all 0.2s;
-        `;
+        // Wait for body to be ready
+        const createDisplay = () => {
+            if (!document.body) {
+                setTimeout(createDisplay, 100);
+                return;
+            }
+
+            const display = document.createElement('div');
+            display.id = 'catabux-game-display';
+            display.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                background: #feeacf;
+                border: 3px solid #4d3529;
+                border-radius: 20px;
+                padding: 10px 20px;
+                font-family: 'Inter', Arial, sans-serif;
+                font-weight: 700;
+                font-size: 16px;
+                color: #4d3529;
+                z-index: 10000;
+                box-shadow: 6px 6px 0px #291b14;
+                cursor: pointer;
+                transition: all 0.2s;
+            `;
+            
+            display.addEventListener('mouseenter', () => {
+                display.style.transform = 'translate(-3px, -3px)';
+                display.style.boxShadow = '10px 10px 0px #291b14';
+            });
+            
+            display.addEventListener('mouseleave', () => {
+                display.style.transform = 'translate(0, 0)';
+                display.style.boxShadow = '6px 6px 0px #291b14';
+            });
+            
+            display.addEventListener('click', () => {
+                window.location.href = window.location.origin + '/index.html';
+            });
+            
+            document.body.appendChild(display);
+        };
         
-        display.addEventListener('mouseenter', () => {
-            display.style.transform = 'translate(-3px, -3px)';
-            display.style.boxShadow = '10px 10px 0px #291b14';
-        });
-        
-        display.addEventListener('mouseleave', () => {
-            display.style.transform = 'translate(0, 0)';
-            display.style.boxShadow = '6px 6px 0px #291b14';
-        });
-        
-        display.addEventListener('click', () => {
-            window.open('../../index.html', '_blank');
-        });
-        
-        document.body.appendChild(display);
+        createDisplay();
     }
 
     updateDisplay() {

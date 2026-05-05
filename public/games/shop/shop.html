@@ -409,6 +409,7 @@
             <a href="../../index.html">Home</a>
             <a href="shop.html">Shop</a>
             <a href="../myblog.html">Blog</a>
+            <a href="../../public/game-creator.html" id="game-creator-link" style="display: none;">Create Game</a>
         </nav>
         <div class="catabux-display" id="catabux-display">0 Catabux</div>
     </header>
@@ -661,6 +662,13 @@
             
             // Update button states
             const purchased = getPurchasedItems();
+            
+            // Show Game Creator link if purchased
+            const gameCreatorLink = document.getElementById('game-creator-link');
+            if (gameCreatorLink && purchased.includes('game-creator')) {
+                gameCreatorLink.style.display = 'inline-block';
+            }
+            
             document.querySelectorAll('.shop-card').forEach(card => {
                 const item = card.dataset.item;
                 const price = parseInt(card.dataset.price);
@@ -727,6 +735,13 @@
             
             pendingPurchase = null;
             updateDisplay();
+            
+            // Redirect to game creator if purchased
+            if (item === 'game-creator') {
+                setTimeout(() => {
+                    window.location.href = '../../game-creator.html';
+                }, 2000);
+            }
         }
 
         function sendPurchaseEmail(item, price) {

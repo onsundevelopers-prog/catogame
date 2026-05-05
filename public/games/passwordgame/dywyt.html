@@ -391,6 +391,10 @@
 
             if (unlockedRules === RULES.length && allCurrentSatisfied) {
                 winScreen.style.display = 'flex';
+                // Give Catabux for completing the game
+                if (window.addCatabux) {
+                    window.addCatabux(50, 'Homework Completed');
+                }
             }
 
             renderRules(val);
