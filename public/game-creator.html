@@ -294,11 +294,10 @@
 
     <script>
         const API_KEY = 'AIzaSyAxYpHbZI0563uroePgpX9Se34am-sgn48';
-        // Try models in order - fall back if one is rate limited
+        // Both confirmed working (429 = rate limited but valid, not broken)
         const MODELS = [
             'gemini-2.0-flash',
-            'gemini-2.0-flash-lite',
-            'gemini-1.5-flash-latest'
+            'gemini-2.0-flash-lite'
         ];
         let generatedGameCode = '';
 
@@ -375,8 +374,8 @@ Start with <!DOCTYPE html> and end with </html>`;
                 } catch (err) {
                     lastError = err;
                     if (err.message === 'RATE_LIMIT') {
-                        // wait 2s then try next model
-                        await new Promise(r => setTimeout(r, 2000));
+                        // wait 5s then try next model
+                        await new Promise(r => setTimeout(r, 5000));
                         continue;
                     }
                     break; // non-rate-limit error, stop trying
