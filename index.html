@@ -1,6 +1,14 @@
 ﻿<!DOCTYPE html>
 <html lang="en">
 <head>
+    <!-- Google Tag Manager -->
+    <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+    new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+    j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+    'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+    })(window,document,'script','dataLayer','GTM-XXXXXXX');</script>
+    <!-- End Google Tag Manager -->
+    
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Catagame | Create and Play</title>
@@ -992,8 +1000,15 @@
     
     <!-- Supabase Client -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    
+    <!-- Catagame Analytics -->
+    <script src="src/analytics.js"></script>
 </head>
 <body>
+    <!-- Google Tag Manager (noscript) -->
+    <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-XXXXXXX"
+    height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+    <!-- End Google Tag Manager (noscript) -->
 
     <!-- Mobile Scroll-to-Play Container -->
     <div class="mobile-scroll-container" id="mobile-scroll-container"></div>
@@ -1188,9 +1203,16 @@
             }
         }
         
-        updateProgressBar(); document.getElementById('featured-game').addEventListener('click', () => {
+        updateProgressBar(); 
+        
+        document.getElementById('featured-game').addEventListener('click', () => {
             setCatabux(getCatabux() + 10);
+            // Track analytics
+            if (window.catagameAnalytics) {
+                window.catagameAnalytics.trackGameStart('The Homework Game');
+            }
             window.location.href = 'games/passwordgame/dywyt.html';
+        });
         });
 
         // Mobile Scroll-to-Play Feature

@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <!-- Google Tag Manager -->
+    <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+    new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+    j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+    'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+    })(window,document,'script','dataLayer','GTM-XXXXXXX');</script>
+    <!-- End Google Tag Manager -->
+    
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Size of Wealth</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Inter', -apple-system, sans-serif;
+            background-color: #fff;
+            color: #000;
+            overflow-x: hidden;
+        }
+
+        /* Neal.fun Minimalist Ruff UI */
+        .ui-layer {
+            position: relative;
+            z-index: 10;
+            pointer-events: none;
+        }
+
+        section {
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            padding-left: 5%;
+        }
+
+        .card {
+            background: white;
+            border: 5px solid #000;
+            padding: 30px;
+            max-width: 450px;
+            box-shadow: 12px 12px 0px #000; /* The "Ruff" look */
+            pointer-events: auto;
+        }
+
+        h1 { font-size: 3.5rem; margin: 0; text-transform: uppercase; letter-spacing: -2px; line-height: 0.9; }
+        h2 { font-size: 1.8rem; margin: 10px 0; }
+        .amount-badge {
+            display: inline-block;
+            background: #00ff00;
+            border: 3px solid #000;
+            padding: 5px 15px;
+            font-weight: 900;
+            font-size: 1.5rem;
+            margin-bottom: 15px;
+        }
+        p { font-size: 1.1rem; line-height: 1.5; font-weight: 500; }
+
+        /* 3D Canvas */
+        #canvas-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+
+        .human-label {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: #fff;
+            border: 3px solid #000;
+            padding: 10px;
+            font-weight: bold;
+            z-index: 100;
+            box-shadow: 5px 5px 0px #000;
+        }
+
+        .helper-text {
+            text-transform: uppercase;
+            font-size: 0.8rem;
+            letter-spacing: 1px;
+            color: #666;
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Google Tag Manager (noscript) -->
+    <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-XXXXXXX"
+    height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+    <!-- End Google Tag Manager (noscript) -->
+    
+
+    <div class="human-label">GREEN DOT = 1 HUMAN SCALE</div>
+
+    <div id="canvas-container"></div>
+
+    <div class="ui-layer">
+        <section>
+            <div class="card">
+                <p class="helper-text">Visualizing History</p>
+                <h1>The Scale of Money</h1>
+                <p>What does trillions of dollars actually look like? Scroll down to see the physical volume of history's richest people in $100 bills.</p>
+                <div style="font-weight: bold; margin-top: 20px;">Scroll to begin ↓</div>
+            </div>
+        </section>
+
+        <section>
+            <div class="card">
+                <div class="amount-badge">$561.2 BILLION</div>
+                <h2>John D. Rockefeller</h2>
+                <p>The money here is roughly the size of a large city skyscraper. Even at "just" half a trillion, a human is already microscopic.</p>
+            </div>
+        </section>
+
+        <section>
+            <div class="card">
+                <div class="amount-badge">$2 TRILLION</div>
+                <h2>Catherine the Great</h2>
+                <p>This cube of $100 bills would cover a several city blocks and stand hundreds of feet high.</p>
+            </div>
+        </section>
+
+        <section>
+            <div class="card">
+                <div class="amount-badge">$5.8 TRILLION</div>
+                <h2>Augustus Caesar</h2>
+                <p>The first Roman Emperor. His wealth in cash would dwarf the Great Pyramids of Giza.</p>
+            </div>
+        </section>
+
+        <section>
+            <div class="card">
+                <div class="amount-badge">$25 TRILLION</div>
+                <h2>Empress Wu Zetian</h2>
+                <p>At 25 Trillion, the volume of cash is so large it creates a mountain of money that can be seen from space.</p>
+            </div>
+        </section>
+
+        <section>
+            <div class="card">
+                <div class="amount-badge">$120 TRILLION</div>
+                <h2>Genghis Khan</h2>
+                <p>The ruler of the Mongol Empire. This pile represents more money than exists in the entire modern world's stock markets combined.</p>
+            </div>
+        </section>
+    </div>
+
+    <script>
+        // --- THREE.JS ENGINE ---
+        const scene = new THREE.Scene();
+        scene.background = new THREE.Color(0xffffff);
+
+        const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 50000);
+        const renderer = new THREE.WebGLRenderer({ antialias: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        document.getElementById('canvas-container').appendChild(renderer.domElement);
+
+        // Lighting
+        const ambientLight = new THREE.AmbientLight(0xffffff, 0.8);
+        scene.add(ambientLight);
+        const dirLight = new THREE.DirectionalLight(0xffffff, 0.5);
+        dirLight.position.set(10, 20, 10);
+        scene.add(dirLight);
+
+        // TEXTURES
+        const loader = new THREE.TextureLoader();
+        // Using high-quality bill textures
+        const billTop = loader.load('https://i.imgur.com/39pYfAt.png'); // $100 Front
+        const billSide = loader.load('https://i.imgur.com/9O0Zp7O.png'); // Stack Side
+        
+        // Make textures tile
+        [billTop, billSide].forEach(t => {
+            t.wrapS = THREE.RepeatWrapping;
+            t.wrapT = THREE.RepeatWrapping;
+        });
+
+        const materials = [
+            new THREE.MeshLambertMaterial({ map: billSide }), // right
+            new THREE.MeshLambertMaterial({ map: billSide }), // left
+            new THREE.MeshLambertMaterial({ map: billTop }),  // top
+            new THREE.MeshLambertMaterial({ map: billTop }),  // bottom
+            new THREE.MeshLambertMaterial({ map: billSide }), // front
+            new THREE.MeshLambertMaterial({ map: billSide }), // back
+        ];
+
+        // Money Cube
+        const geo = new THREE.BoxGeometry(1, 1, 1);
+        const moneyCube = new THREE.Mesh(geo, materials);
+        moneyCube.position.y = 0.5;
+        scene.add(moneyCube);
+
+        // Human Reference (1.8m tall)
+        const human = new THREE.Mesh(
+            new THREE.SphereGeometry(0.9, 16, 16),
+            new THREE.MeshBasicMaterial({ color: 0x00ff00 })
+        );
+        human.position.set(5, 0.9, 5);
+        scene.add(human);
+
+        // Ground
+        const grid = new THREE.GridHelper(10000, 200, 0x000000, 0xdddddd);
+        scene.add(grid);
+
+        // Animation Data
+        // 1 Trillion in $100s is roughly a cube 3.6 meters wide
+        const scales = [0.01, 28, 48, 65, 110, 200]; 
+        let currentScale = 0.01;
+        let targetScale = 0.01;
+
+        window.addEventListener('scroll', () => {
+            const scrollPercent = window.scrollY / (document.body.scrollHeight - window.innerHeight);
+            const index = Math.min(Math.floor(scrollPercent * scales.length), scales.length - 1);
+            const nextIndex = Math.min(index + 1, scales.length - 1);
+            const subPercent = (scrollPercent * scales.length) % 1;
+            
+            targetScale = scales[index] + (scales[nextIndex] - scales[index]) * subPercent;
+        });
+
+        function animate() {
+            requestAnimationFrame(animate);
+
+            // Smooth scaling
+            currentScale += (targetScale - currentScale) * 0.05;
+            moneyCube.scale.set(currentScale, currentScale, currentScale);
+            moneyCube.position.y = currentScale / 2;
+
+            // DYNAMIC TILING: This makes it look like real stacks
+            // We increase repeats as the box grows so bills stay the same size
+            const repeatFactor = currentScale * 2; 
+            materials.forEach((mat, i) => {
+                if(mat.map) mat.map.repeat.set(repeatFactor, repeatFactor);
+            });
+
+            // Camera follow
+            const dist = currentScale * 2.5 + 15;
+            camera.position.lerp(new THREE.Vector3(dist, currentScale * 1.2 + 5, dist), 0.05);
+            camera.lookAt(0, currentScale / 2, 0);
+
+            renderer.render(scene, camera);
+        }
+
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+
+        animate();
+    </script>
+</body>
+</html>

@@ -1,6 +1,14 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <!-- Google Tag Manager -->
+    <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+    new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+    j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+    'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+    })(window,document,'script','dataLayer','GTM-XXXXXXX');</script>
+    <!-- End Google Tag Manager -->
+    
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>PIXEL DEFENSE</title>
@@ -50,6 +58,11 @@
     </style>
 </head>
 <body>
+    <!-- Google Tag Manager (noscript) -->
+    <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-XXXXXXX"
+    height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+    <!-- End Google Tag Manager (noscript) -->
+    
 
     <div id="game-container">
         <canvas id="gameCanvas"></canvas>
@@ -248,7 +261,21 @@
 
             document.getElementById('gold').innerText = gold;
             document.getElementById('lives').innerText = lives;
-            if(lives <= 0) { alert("GAME OVER"); location.reload(); }
+            if(lives <= 0) { 
+                // Only show alert if not in iframe
+                if (window.self === window.top) {
+                    alert("GAME OVER"); 
+                    location.reload(); 
+                } else {
+                    // In iframe, just reset the game silently
+                    lives = 10;
+                    gold = 100;
+                    enemies = [];
+                    towers = [];
+                    bullets = [];
+                    particles = [];
+                }
+            }
 
             requestAnimationFrame(loop);
         }

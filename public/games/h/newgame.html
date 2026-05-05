@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <!-- Google Tag Manager -->
+    <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+    new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+    j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+    'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+    })(window,document,'script','dataLayer','GTM-XXXXXXX');</script>
+    <!-- End Google Tag Manager -->
+    
+    <meta charset="UTF-8">
+    <title>Gmail - Inbox (1,000+ messages)</title>
+    <style>
+        :root {
+            --bg-gray: #f6f8fc;
+            --active-blue: #c2e7ff;
+            --text-dark: #1f1f1f;
+            --text-gray: #5e5e5e;
+            --border: #e0e0e0;
+        }
+
+        body, html {
+            margin: 0; padding: 0; height: 100%;
+            font-family: 'Google Sans', Roboto, Arial, sans-serif;
+            background-color: var(--bg-gray); color: var(--text-dark);
+            overflow: hidden;
+        }
+
+        /* TERMINATION SCREEN */
+        #termination {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: #fff; z-index: 10000; display: none;
+            flex-direction: column; justify-content: center; align-items: center;
+            text-align: center;
+        }
+        #termination h1 { color: #d93025; font-size: 48px; margin-bottom: 10px; }
+
+        .app-container { display: flex; flex-direction: column; height: 100vh; }
+
+        /* HEADER */
+        header {
+            display: flex; align-items: center; padding: 8px 16px;
+            background: var(--bg-gray); gap: 20px;
+        }
+        .search-bar {
+            flex-grow: 1; max-width: 720px; background: #eaf1fb;
+            border-radius: 24px; padding: 12px 20px; display: flex; align-items: center;
+        }
+        .search-bar input { background: none; border: none; width: 100%; outline: none; font-size: 16px; }
+
+        /* MAIN */
+        .main-content { display: flex; flex-grow: 1; overflow: hidden; }
+
+        /* SIDEBAR */
+        nav { width: 250px; padding: 10px; display: flex; flex-direction: column; gap: 4px; }
+        .compose-btn {
+            width: 140px; height: 56px; background: var(--active-blue);
+            border-radius: 16px; display: flex; align-items: center;
+            justify-content: center; margin-bottom: 16px; cursor: pointer;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.2); font-weight: 500;
+        }
+        .nav-item {
+            padding: 10px 24px; border-radius: 20px; cursor: pointer;
+            display: flex; justify-content: space-between; font-size: 14px;
+        }
+        .nav-item:hover { background: #e1e3e1; }
+        .nav-item.active { background: #d3e3fd; font-weight: bold; color: #001d35; }
+
+        /* EMAIL LIST AREA */
+        .email-view {
+            flex-grow: 1; background: white; margin: 0 16px 16px 0;
+            border-radius: 16px; overflow: hidden; display: flex; flex-direction: column;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+        }
+
+        .tabs { display: flex; border-bottom: 1px solid var(--border); }
+        .tab {
+            padding: 15px 30px; font-size: 14px; font-weight: 500;
+            color: var(--text-gray); border-bottom: 3px solid transparent; cursor: pointer;
+        }
+        .tab.active { color: #0b57d0; border-bottom-color: #0b57d0; }
+
+        /* SCROLLABLE LIST */
+        #list-view { flex-grow: 1; overflow-y: auto; position: relative; }
+        
+        .email-row {
+            display: grid; grid-template-columns: 40px 40px 200px 1fr 100px;
+            align-items: center; padding: 0 16px; height: 40px;
+            border-bottom: 1px solid var(--border); cursor: pointer; font-size: 14px;
+        }
+        .email-row:hover { box-shadow: inset 1px 0 0 #dadce0, inset -1px 0 0 #dadce0, 0 1px 2px 0 rgba(60,64,67,.3); z-index: 1; }
+        .unread { font-weight: bold; background: #fff; }
+        .star { cursor: pointer; color: #ccc; font-size: 20px; transition: 0.1s; }
+        .star.starred { color: #f4b400; }
+        
+        .sender { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; padding-right: 10px; }
+        .subject-snippet { color: var(--text-gray); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+        /* DETAIL VIEW */
+        #email-detail { padding: 24px; display: none; overflow-y: auto; height: 100%; box-sizing: border-box; }
+        .detail-header { font-size: 22px; margin-bottom: 20px; display: flex; justify-content: space-between; }
+        .email-body { line-height: 1.6; color: #333; margin-top: 30px; border-top: 1px solid #eee; padding-top: 20px; }
+        .link { color: #1a73e8; text-decoration: underline; cursor: pointer; }
+
+        .action-footer { margin-top: 40px; display: flex; gap: 10px; }
+        .btn {
+            border: 1px solid var(--border); background: white; padding: 10px 24px;
+            border-radius: 20px; cursor: pointer; font-family: inherit; font-weight: 500;
+        }
+        .btn-report:hover { background: #fce8e6; color: #d93025; border-color: #d93025; }
+    </style>
+</head>
+<body>
+    <!-- Google Tag Manager (noscript) -->
+    <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-XXXXXXX"
+    height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+    <!-- End Google Tag Manager (noscript) -->
+    
+
+<div id="termination">
+    <img src="https://upload.wikimedia.org/wikipedia/commons/a/ab/Gmail_Icon.svg" width="80">
+    <h1>ACCOUNT TERMINATED</h1>
+    <p id="reason" style="max-width: 500px;">Reason: Security Violation</p>
+    <button class="btn" onclick="location.reload()" style="margin-top:20px; background: #1a73e8; color: white;">Submit Appeal</button>
+</div>
+
+<div class="app-container">
+    <header>
+        <div style="width: 230px;"><img src="https://ssl.gstatic.com/ui/v1/icons/mail/rfr/logo_gmail_lockup_default_1x_r5.png" height="24"></div>
+        <div class="search-bar"><input type="text" placeholder="Search mail"></div>
+        <div id="balance" style="font-weight: 500; color: #1e8e3e;">CREDITS: $0.00</div>
+    </header>
+
+    <div class="main-content">
+        <nav>
+            <div class="compose-btn">✏️ Compose</div>
+            <div class="nav-item active" onclick="setFilter('all', this)"><span>📥 Inbox</span> <span id="count-all">1000</span></div>
+            <div class="nav-item" onclick="setFilter('starred', this)"><span>⭐ Starred</span> <span id="count-starred">0</span></div>
+            <div class="nav-item"><span>📄 Drafts</span> <span>30</span></div>
+        </nav>
+
+        <div class="email-view">
+            <div class="tabs">
+                <div class="tab active">Primary</div>
+                <div class="tab">Promotions</div>
+                <div class="tab">Social</div>
+            </div>
+
+            <div id="list-view"></div>
+
+            <div id="email-detail">
+                <div class="detail-header">
+                    <span id="d-subject">Subject</span>
+                    <button class="btn" onclick="backToList()">← Back</button>
+                </div>
+                <div id="d-from" style="font-weight: bold;"></div>
+                <div class="email-body" id="d-body"></div>
+                <div class="action-footer">
+                    <button class="btn" onclick="gameAction('archive')">📦 Archive (Legit)</button>
+                    <button class="btn" onclick="gameAction('reply')">↩️ Reply</button>
+                    <button class="btn btn-report" onclick="gameAction('report')">⚠️ Report Phishing</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    let money = 0;
+    let currentEmail = null;
+    let emails = [];
+    let currentFilter = 'all';
+
+    const phishSeeds = [
+        { from: "IT Desk", email: "support@google-verify.net", sub: "Action Required: Account Sync", body: "We found a sync error. <span class='link' onclick='terminate(\"MALWARE_EXECUTION\")'>Update your credentials here</span> immediately.", phish: true },
+        { from: "Netflix Billing", email: "info@payments-netflix.cc", sub: "Payment Declined", body: "Your membership is on hold. <span class='link' onclick='terminate(\"PHISHING_REDIRECT\")'>Update payment method</span> to avoid cancellation.", phish: true },
+        { from: "CEO", email: "ceo.urgent@gmail.com", sub: "Quick Task", body: "I'm in a meeting. Buy 10 $100 Gift Cards and send the codes. <span class='link' onclick='terminate(\"SCAM_ENGAGEMENT\")'>Submit Codes Here</span>.", phish: true }
+    ];
+
+    const legitSeeds = [
+        { from: "HR Dept", email: "hr@company.com", sub: "Weekend Policy", body: "Hi team, please note the new policy regarding office access on Sundays.", phish: false },
+        { from: "David from Submagic", email: "david@submagic.co", sub: "Your video is ready!", body: "Great news! Your video has finished processing. You can view it in your dashboard.", phish: false },
+        { from: "Starter Story", email: "pat@starterstory.com", sub: "Solopreneur Insights", body: "This week we talk to a founder making $50k/mo with a simple plugin.", phish: false }
+    ];
+
+    // Generate 1000 emails
+    function generateEmails() {
+        for(let i=0; i<1000; i++) {
+            let isPhish = Math.random() < 0.15; // 15% are scams
+            let seed = isPhish ? phishSeeds[Math.floor(Math.random() * phishSeeds.length)] 
+                               : legitSeeds[Math.floor(Math.random() * legitSeeds.length)];
+            emails.push({
+                ...seed,
+                id: i,
+                starred: false,
+                read: false,
+                time: `${Math.floor(Math.random()*12+1)}:${Math.floor(Math.random()*50+10)} AM`
+            });
+        }
+    }
+
+    function renderList() {
+        const list = document.getElementById('list-view');
+        list.innerHTML = '';
+        
+        const filtered = currentFilter === 'starred' ? emails.filter(e => e.starred) : emails;
+        
+        filtered.forEach(m => {
+            const row = document.createElement('div');
+            row.className = `email-row ${m.read ? '' : 'unread'}`;
+            row.innerHTML = `
+                <input type="checkbox">
+                <span class="star ${m.starred ? 'starred' : ''}" onclick="toggleStar(event, ${m.id})">★</span>
+                <div class="sender">${m.from}</div>
+                <div class="subject-snippet"><b>${m.sub}</b> - ${m.body.replace(/<[^>]*>?/gm, '').substring(0, 60)}...</div>
+                <div style="text-align:right; color:#5e5e5e;">${m.time}</div>
+            `;
+            row.onclick = () => openMail(m);
+            list.appendChild(row);
+        });
+
+        document.getElementById('count-starred').innerText = emails.filter(e => e.starred).length;
+    }
+
+    function toggleStar(e, id) {
+        e.stopPropagation();
+        const mail = emails.find(x => x.id === id);
+        mail.starred = !mail.starred;
+        renderList();
+    }
+
+    function setFilter(type, el) {
+        currentFilter = type;
+        document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+        el.classList.add('active');
+        backToList();
+    }
+
+    function openMail(m) {
+        currentEmail = m;
+        m.read = true;
+        document.getElementById('list-view').style.display = 'none';
+        document.getElementById('email-detail').style.display = 'block';
+        document.getElementById('d-subject').innerText = m.sub;
+        document.getElementById('d-from').innerText = `${m.from} <${m.email}>`;
+        document.getElementById('d-body').innerHTML = m.body;
+    }
+
+    function backToList() {
+        document.getElementById('list-view').style.display = 'block';
+        document.getElementById('email-detail').style.display = 'none';
+        renderList();
+    }
+
+    function gameAction(type) {
+        if (type === 'archive') {
+            if (currentEmail.phish) terminate("SECURITY OMISSION: You archived a phishing threat, leaving our network vulnerable to latent attacks.");
+            else earn(25);
+        } else if (type === 'report') {
+            if (!currentEmail.phish) terminate("FALSE ACCUSATION: You reported a legitimate business contact. This has damaged our professional reputation.");
+            else earn(100);
+        } else if (type === 'reply') {
+            if (currentEmail.phish) terminate("SCAM ENGAGEMENT: You responded to a malicious actor. Social engineering complete. You are fired.");
+            else earn(10);
+        }
+        
+        // Remove email from list after processing
+        emails = emails.filter(e => e.id !== currentEmail.id);
+        backToList();
+    }
+
+    function earn(amt) {
+        money += amt;
+        document.getElementById('balance').innerText = `CREDITS: $${money.toFixed(2)}`;
+    }
+
+    function terminate(reason) {
+        document.getElementById('termination').style.display = 'flex';
+        document.getElementById('reason').innerText = "PROBATION TERMINATED: " + reason;
+    }
+
+    generateEmails();
+    renderList();
+</script>
+
+</body>
+</html>
