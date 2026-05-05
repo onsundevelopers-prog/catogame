@@ -9,6 +9,9 @@
     })(window,document,'script','dataLayer','GTM-XXXXXXX');</script>
     <!-- End Google Tag Manager -->
     
+    <!-- Catabux Rewards System -->
+    <script src="../catabux-system.js"></script>
+    
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>The Next Door</title>
@@ -314,6 +317,12 @@
         function openDoor() {
             canOpen = false;
             doorCount++;
+            
+            // Give Catabux for opening doors
+            if (window.addCatabux) {
+                window.addCatabux(2, 'Door Opened');
+            }
+            
             document.getElementById('door-count').innerText = doorCount;
             door.classList.add('open-anim');
 

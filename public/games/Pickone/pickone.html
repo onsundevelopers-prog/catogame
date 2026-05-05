@@ -9,6 +9,9 @@
     })(window,document,'script','dataLayer','GTM-XXXXXXX');</script>
     <!-- End Google Tag Manager -->
     
+    <!-- Catabux Rewards System -->
+    <script src="../catabux-system.js"></script>
+    
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Pick One</title>
@@ -214,6 +217,11 @@
     }
 
     function pickEvent(eventText, clickedBtn) {
+      // Give Catabux for making a choice
+      if (window.addCatabux) {
+        window.addCatabux(3, 'Historical Choice');
+      }
+      
       document.querySelectorAll('#events button').forEach(b => {
         b.disabled = true;
         b.style.opacity = '0.45';

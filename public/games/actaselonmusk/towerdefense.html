@@ -9,6 +9,9 @@
     })(window,document,'script','dataLayer','GTM-XXXXXXX');</script>
     <!-- End Google Tag Manager -->
     
+    <!-- Catabux Rewards System -->
+    <script src="../catabux-system.js"></script>
+    
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>PIXEL DEFENSE</title>
@@ -239,7 +242,16 @@
 
             enemies.forEach((e, i) => {
                 e.update(); e.draw();
-                if(e.hp <= 0) { if(!e.isSoldier) gold += 15; enemies.splice(i,1); }
+                if(e.hp <= 0) { 
+                    if(!e.isSoldier) {
+                        gold += 15;
+                        // Give Catabux for killing enemy
+                        if (window.addCatabux) {
+                            window.addCatabux(1, 'Enemy Defeated');
+                        }
+                    }
+                    enemies.splice(i,1); 
+                }
                 if(e.remove) enemies.splice(i,1);
             });
 

@@ -9,6 +9,9 @@
     })(window,document,'script','dataLayer','GTM-XXXXXXX');</script>
     <!-- End Google Tag Manager -->
     
+    <!-- Catabux Rewards System -->
+    <script src="../catabux-system.js"></script>
+    
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Unfair Typer</title>
@@ -243,6 +246,12 @@
         }
 
         function finish() {
+            // Give Catabux for completing typing
+            if (window.addCatabux) {
+                const reward = Math.max(5, Math.floor(typedIdx / 10)); // More Catabux for longer words
+                window.addCatabux(reward, 'Typing Complete');
+            }
+            
             const elapsed = (Date.now() - startTime) / 60000;
             const wpm = Math.round((typedIdx / 5) / elapsed);
             

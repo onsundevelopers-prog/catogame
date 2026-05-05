@@ -9,6 +9,9 @@
     })(window,document,'script','dataLayer','GTM-XXXXXXX');</script>
     <!-- End Google Tag Manager -->
     
+    <!-- Catabux Rewards System -->
+    <script src="../catabux-system.js"></script>
+    
     <meta charset="UTF-8">
     <title>CHAOS LAB: Minimal Edition</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/matter-js/0.19.0/matter.min.js"></script>
@@ -117,6 +120,11 @@
 
         // --- STICKMAN (Ragdoll + Stand Logic) ---
         function spawnStickman() {
+            // Give Catabux for spawning
+            if (window.addCatabux) {
+                window.addCatabux(2, 'Spawn Stickman');
+            }
+            
             // Limit total stickmen for performance
             if (stickmen.length >= 5) {
                 alert('Maximum 5 stickmen allowed!');
@@ -149,6 +157,11 @@
 
         // --- GUNS (Compound Bodies) ---
         function spawnGun() {
+            // Give Catabux for spawning gun
+            if (window.addCatabux) {
+                window.addCatabux(4, 'Spawn Gun');
+            }
+            
             const x = Math.random() * window.innerWidth;
             const barrel = Bodies.rectangle(x, 100, 40, 12, { render: { fillStyle: '#555' }, label: 'gun' });
             const grip = Bodies.rectangle(x-15, 110, 12, 25, { render: { fillStyle: '#444' }, label: 'gun' });
@@ -192,6 +205,11 @@
         }
 
         function spawnTNT() {
+            // Give Catabux for spawning TNT
+            if (window.addCatabux) {
+                window.addCatabux(3, 'Spawn TNT');
+            }
+            
             const tnt = Bodies.rectangle(Math.random()*window.innerWidth, 50, 30, 30, {
                 label: 'tnt', render: { fillStyle: '#f44336' }
             });
@@ -199,6 +217,11 @@
         }
 
         function spawnBox() {
+            // Give Catabux for spawning box
+            if (window.addCatabux) {
+                window.addCatabux(1, 'Spawn Box');
+            }
+            
             Composite.add(world, Bodies.rectangle(Math.random()*window.innerWidth, 50, 40, 40, { render: { fillStyle: '#5d4037' } }));
         }
 
