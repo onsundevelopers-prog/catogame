@@ -12,6 +12,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Catagame | Create and Play</title>
+    <link rel="icon" href="public/favicon.svg" type="image/svg+xml">
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Inter:wght@400;600;700&display=swap');
 
@@ -1002,7 +1003,7 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     
     <!-- Catagame Analytics -->
-    <script src="src/analytics.js"></script>
+    <script src="analytics.js"></script>
 </head>
 <body>
     <!-- Google Tag Manager (noscript) -->
@@ -1212,7 +1213,6 @@
                 window.catagameAnalytics.trackGameStart('The Homework Game');
             }
             window.location.href = 'games/passwordgame/dywyt.html';
-        });
         });
 
         // Mobile Scroll-to-Play Feature
@@ -1613,6 +1613,14 @@
             } catch (error) {
                 console.error('Error initializing:', error);
             }
+            
+            // Allow Enter key to redeem
+            const redeemInput = document.getElementById('redeem-code-input');
+            if (redeemInput) {
+                redeemInput.addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter') redeemCode();
+                });
+            }
         });
 
         // Redeem Code System
@@ -1692,16 +1700,6 @@
                 closeRedeemModal();
             }, 2000);
         };
-
-        // Allow Enter key to redeem
-        document.addEventListener('DOMContentLoaded', () => {
-            const redeemInput = document.getElementById('redeem-code-input');
-            if (redeemInput) {
-                redeemInput.addEventListener('keypress', (e) => {
-                    if (e.key === 'Enter') redeemCode();
-                });
-            }
-        });
     </script>
 
 </body>
