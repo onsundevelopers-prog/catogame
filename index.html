@@ -1646,9 +1646,9 @@
         // 
         // Valid codes with their Catabux values
         const validCodes = {
-            // Demo codes for testing
-            'DEMO-150-1234': { amount: 150, description: '150 Catabux Pack' },
-            'DEMO-500-5678': { amount: 500, description: '500 Catabux Pack' }
+            // Demo codes - reusable for testing
+            'DEMO-150-1234': { amount: 150, description: '150 Catabux Pack', reusable: true },
+            'DEMO-500-5678': { amount: 500, description: '500 Catabux Pack', reusable: true }
         };
 
         function openRedeemModal() {
@@ -1682,9 +1682,9 @@
                 return;
             }
 
-            // Check if code has been used
+            // Check if code has been used (skip check for reusable codes)
             const usedCodes = JSON.parse(localStorage.getItem('usedCodes') || '[]');
-            if (usedCodes.includes(code)) {
+            if (!validCodes[code].reusable && usedCodes.includes(code)) {
                 message.className = 'redeem-message error';
                 message.textContent = 'This code has already been redeemed.';
                 return;
@@ -1695,9 +1695,11 @@
             const currentCatabux = getCatabux();
             setCatabux(currentCatabux + codeData.amount);
             
-            // Mark code as used
-            usedCodes.push(code);
-            localStorage.setItem('usedCodes', JSON.stringify(usedCodes));
+            // Mark code as used (skip for reusable codes)
+            if (!codeData.reusable) {
+                usedCodes.push(code);
+                localStorage.setItem('usedCodes', JSON.stringify(usedCodes));
+            }
 
             // Show success message
             message.className = 'redeem-message success';
