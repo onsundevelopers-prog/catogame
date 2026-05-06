@@ -707,6 +707,117 @@
             document.getElementById('purchase-modal').style.display = 'flex';
         }
 
+        // What each tier unlocks
+        const tierPerks = {
+            'starter': {
+                label: 'Starter',
+                badge: 'STARTER',
+                badgeColor: '#6366f1',
+                gameCreator: true,
+                dailyBonus: 10,
+                perks: [
+                    'Game Creator Access unlocked',
+                    'Early access to new features',
+                    'Basic analytics',
+                    '+10 Catabux daily bonus'
+                ]
+            },
+            'pro': {
+                label: 'Pro',
+                badge: 'PRO',
+                badgeColor: '#f59e0b',
+                gameCreator: true,
+                dailyBonus: 25,
+                perks: [
+                    'Everything in Starter',
+                    'Advanced analytics',
+                    'Trending & launch boosts',
+                    'Priority support',
+                    '+25 Catabux daily bonus'
+                ]
+            },
+            'creator-plus': {
+                label: 'Creator+',
+                badge: 'CREATOR+',
+                badgeColor: '#10b981',
+                gameCreator: true,
+                dailyBonus: 50,
+                perks: [
+                    'Everything in Pro',
+                    'Monetization tools',
+                    'AI-powered game suggestions',
+                    'Revenue sharing opportunities',
+                    '+50 Catabux daily bonus'
+                ]
+            },
+            'elite': {
+                label: 'Elite',
+                badge: 'ELITE',
+                badgeColor: '#ef4444',
+                gameCreator: true,
+                dailyBonus: 100,
+                perks: [
+                    'Everything in Creator+',
+                    'Full platform control',
+                    'Maximum exposure',
+                    'Partnership status',
+                    'Exclusive Elite badge',
+                    '+100 Catabux daily bonus'
+                ]
+            }
+        };
+
+        function applyTierPerks(item) {
+            const tier = tierPerks[item];
+            if (!tier) return;
+
+            // Save tier to localStorage
+            localStorage.setItem('user_tier', item);
+            localStorage.setItem('user_badge', tier.badge);
+            localStorage.setItem('user_badge_color', tier.badgeColor);
+            localStorage.setItem('daily_bonus', tier.dailyBonus);
+
+            // Unlock game creator if included
+            if (tier.gameCreator) {
+                const purchased = getPurchasedItems();
+                if (!purchased.includes('game-creator')) {
+                    purchased.push('game-creator');
+                    localStorage.setItem('purchased_items', JSON.stringify(purchased));
+                }
+            }
+
+            // Give daily bonus immediately
+            setCatabux(getCatabux() + tier.dailyBonus);
+
+            // Show badge in header
+            updateBadge();
+        }
+
+        function updateBadge() {
+            const badge = localStorage.getItem('user_badge');
+            const color = localStorage.getItem('user_badge_color');
+            if (!badge) return;
+
+            let badgeEl = document.getElementById('user-tier-badge');
+            if (!badgeEl) {
+                badgeEl = document.createElement('span');
+                badgeEl.id = 'user-tier-badge';
+                badgeEl.style.cssText = `
+                    font-weight: 700;
+                    font-size: 11px;
+                    padding: 4px 10px;
+                    border-radius: 20px;
+                    color: white;
+                    letter-spacing: 1px;
+                    margin-left: 8px;
+                `;
+                const catabuxDisplay = document.getElementById('catabux-display');
+                if (catabuxDisplay) catabuxDisplay.after(badgeEl);
+            }
+            badgeEl.textContent = badge;
+            badgeEl.style.background = color;
+        }
+
         function confirmPurchase() {
             if (!pendingPurchase) return;
 
@@ -714,6 +825,9 @@
             
             setCatabux(getCatabux() - price);
             addPurchasedItem(item);
+            
+            // Apply tier perks if it's a tier purchase
+            applyTierPerks(item);
             
             // Track analytics
             if (window.catagameAnalytics) {
@@ -725,18 +839,35 @@
             
             closeModal();
             
+            // Build success message based on item
             let message = 'Thank you for your purchase!';
-            if (item === 'dm' || item === 'qa' || item === 'website' || item === 'partnership') {
-                message += ' Check your email for next steps or contact us at onsundevelopers@gmail.com';
+            const tier = tierPerks[item];
+
+            if (tier) {
+                message = `You unlocked ${tier.label}! Here's what you got:\n• ${tier.perks.join('\n• ')}`;
+                document.getElementById('success-message').innerHTML = `
+                    <div style="text-align:left;">
+                        <strong style="font-size:18px; color: var(--border);">You unlocked ${tier.label}!</strong>
+                        <ul style="margin: 12px 0; padding-left: 20px; color: var(--muted); line-height: 1.8;">
+                            ${tier.perks.map(p => `<li>${p}</li>`).join('')}
+                        </ul>
+                        ${tier.gameCreator ? '<p style="margin:0; font-weight:700; color: var(--border);">Game Creator is now in your nav menu!</p>' : ''}
+                    </div>
+                `;
+            } else if (item === 'dm' || item === 'qa' || item === 'website' || item === 'partnership') {
+                document.getElementById('success-message').textContent = message + ' Contact us on Discord: OnSun or at onsundevelopers@gmail.com';
+            } else if (item === 'game-creator') {
+                document.getElementById('success-message').textContent = 'Game Creator unlocked! Redirecting you now...';
+            } else {
+                document.getElementById('success-message').textContent = message;
             }
-            
-            document.getElementById('success-message').textContent = message;
+
             document.getElementById('success-modal').style.display = 'flex';
             
             pendingPurchase = null;
             updateDisplay();
             
-            // Redirect to game creator if purchased
+            // Redirect to game creator if purchased directly
             if (item === 'game-creator') {
                 setTimeout(() => {
                     window.location.href = '/game-creator.html';
@@ -929,6 +1060,7 @@
 
         // Initialize
         updateDisplay();
+        updateBadge();
 
         // Navigate to game creator
         window.goToGameCreator = function(e) {
