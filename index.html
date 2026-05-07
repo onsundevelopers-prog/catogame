@@ -664,19 +664,134 @@
             padding: 3px 8px;
             border-radius: 10px;
         }
+        /* Hamburger — hidden on desktop */
+        .hamburger { display: none; }
+
         .game-card.hidden { display: none; }
 
-        @media (max-width: 768px) {
-            .hero-banner { height: 280px; }
+        /* ─── RESPONSIVE ─── */
+
+        /* Tablet (768px - 1024px) */
+        @media (max-width: 1024px) {
+            header { padding: 12px 4%; gap: 16px; }
+            nav a { font-size: 13px; padding: 5px 8px; }
+            .search-bar input { width: 120px; }
+            .hero-banner { height: 360px; }
             .hero-banner-thumbnails { display: none; }
-            .hero-banner-content { left: 5%; max-width: 90%; }
-            .stats-bar { gap: 16px; }
-            .support-bar-inline { flex-wrap: wrap; }
-            .bento-grid { grid-template-columns: repeat(2, 1fr); gap: 12px; }
-            .search-bar { display: none; }
+            .bento-grid { grid-template-columns: repeat(3, 1fr); gap: 16px; }
+            .stats-bar { gap: 20px; }
+            .support-progress-wrap { max-width: 140px; }
         }
-        @media (max-width: 480px) {
-            .bento-grid { grid-template-columns: 1fr; }
+
+        /* Mobile (max 768px) */
+        @media (max-width: 768px) {
+            /* Header: logo + hamburger only */
+            header {
+                padding: 12px 5%;
+                gap: 12px;
+                flex-wrap: wrap;
+                position: relative;
+            }
+            .logo { font-size: 20px; }
+            nav {
+                display: none;
+                flex-direction: column;
+                width: 100%;
+                background: var(--card-bg);
+                border-top: 2px solid var(--border);
+                padding: 8px 0;
+                gap: 2px;
+                order: 3;
+            }
+            nav.open { display: flex; }
+            nav a {
+                padding: 10px 16px;
+                border-radius: 0;
+                font-size: 15px;
+                border-bottom: 1px solid var(--accent);
+            }
+            nav a:last-child { border-bottom: none; }
+            .header-right { gap: 8px; }
+            .search-bar { display: none; }
+            .catabux { font-size: 12px; padding: 6px 10px; }
+            .redeem-code-btn { font-size: 11px; padding: 5px 10px; }
+
+            /* Hamburger button */
+            .hamburger {
+                display: flex;
+                flex-direction: column;
+                gap: 5px;
+                cursor: pointer;
+                padding: 6px;
+                background: none;
+                border: none;
+                margin-left: auto;
+            }
+            .hamburger span {
+                display: block;
+                width: 22px;
+                height: 2px;
+                background: var(--border);
+                border-radius: 2px;
+                transition: all 0.2s;
+            }
+
+            /* Hero */
+            .hero-banner { height: 260px; }
+            .hero-banner-thumbnails { display: none; }
+            .hero-banner-content {
+                left: 5%;
+                max-width: 85%;
+                top: 50%;
+            }
+            .hero-banner-content h1 { font-size: clamp(22px, 6vw, 36px); }
+            .hero-banner-content p { font-size: 13px; margin-bottom: 16px; }
+            .play-now-btn { padding: 10px 20px; font-size: 13px; }
+            .hero-reward { font-size: 11px; padding: 6px 10px; }
+            .hero-actions { gap: 10px; }
+
+            /* Category bar */
+            .category-bar { padding: 12px 4%; gap: 8px; }
+            .cat-pill { padding: 8px 14px; font-size: 12px; }
+
+            /* Stats bar */
+            .stats-bar {
+                gap: 12px;
+                padding: 14px 0;
+                margin-bottom: 20px;
+                justify-content: space-between;
+            }
+            .stat-num { font-size: 18px; }
+            .stat-label { font-size: 10px; }
+            .stat-divider { display: none; }
+            .support-bar-inline {
+                width: 100%;
+                flex-basis: 100%;
+                gap: 8px;
+            }
+            .support-progress-wrap { max-width: none; flex: 1; }
+
+            /* Game grid */
+            .bento-grid { grid-template-columns: repeat(2, 1fr); gap: 12px; }
+            .game-card .icon-box { height: 100px; }
+            .game-card-info { padding: 10px 10px; }
+            .game-card-info h4 { font-size: 13px; }
+
+            /* Container padding */
+            .container { padding: 0 14px 60px; }
+            .section-heading { font-size: 18px; }
+        }
+
+        /* Small mobile (max 420px) */
+        @media (max-width: 420px) {
+            .hero-banner { height: 220px; }
+            .hero-banner-content h1 { font-size: 20px; }
+            .hero-banner-content p { display: none; }
+            .bento-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+            .game-card .icon-box { height: 85px; }
+            .game-card-info h4 { font-size: 12px; }
+            .game-card-reward { font-size: 10px; }
+            .header-right .catabux { display: none; }
         }
 
         /* --- Mobile Scroll-to-Play Feature --- */
@@ -1365,7 +1480,7 @@
             <img src="assets/coffee-icon-svgrepo-com.svg" alt="coffee">
             Catagame
         </a>
-        <nav>
+        <nav id="main-nav">
             <a href="#" onclick="browseGames(event)">Browse</a>
             <a href="games/shop/shop.html">Shop</a>
             <a href="#" onclick="showNewReleases(event)">New Releases</a>
@@ -1383,6 +1498,9 @@
                 <span class="catabux-icon"></span>
             </span>
             <button class="redeem-code-btn" onclick="openRedeemModal()">+ Redeem</button>
+            <button class="hamburger" id="hamburger-btn" onclick="toggleNav()" aria-label="Menu">
+                <span></span><span></span><span></span>
+            </button>
         </div>
     </header>
 
@@ -1614,6 +1732,20 @@
                 window.catagameAnalytics.trackGameStart('The Homework Game');
             }
             window.location.href = 'games/passwordgame/dywyt.html';
+        });
+
+        // Hamburger menu toggle
+        window.toggleNav = function() {
+            const nav = document.getElementById('main-nav');
+            nav.classList.toggle('open');
+        };
+        // Close nav when a link is clicked on mobile
+        document.addEventListener('DOMContentLoaded', () => {
+            document.querySelectorAll('#main-nav a').forEach(a => {
+                a.addEventListener('click', () => {
+                    document.getElementById('main-nav').classList.remove('open');
+                });
+            });
         });
 
         // Nav link functions
