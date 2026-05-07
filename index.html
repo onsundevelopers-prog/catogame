@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <!-- Google Tag Manager -->
@@ -599,7 +599,7 @@
             font-weight: 600;
         }
 
-        /* Game Cards — gaming platform style */
+        /* Game Cards  gaming platform style */
         .bento-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
@@ -1330,7 +1330,7 @@
     <div class="comment-modal" id="comment-modal">
         <div class="comment-header">
             <h3><span id="comment-count">0</span> Comments</h3>
-            <button class="close-comments" onclick="closeComments()">×</button>
+            <button class="close-comments" onclick="closeComments()"></button>
         </div>
         <div class="comments-list" id="comments-list"></div>
         <div class="comment-input-area">
@@ -1380,7 +1380,7 @@
             </div>
             <span class="catabux" id="catabux-display">
                 <span class="catabux-text">0 Catabux</span>
-                <span class="catabux-icon">💰</span>
+                <span class="catabux-icon"></span>
             </span>
             <button class="redeem-code-btn" onclick="openRedeemModal()">+ Redeem</button>
         </div>
@@ -1535,7 +1535,7 @@
         </div>
     </div>
 
-    <footer>Catagame — made with curiosity</footer>
+    <footer>Catagame  made with curiosity</footer>
 
     <script>
         const catabuxKey = 'catabux';
@@ -1602,7 +1602,7 @@
             document.getElementById('game-grid').scrollIntoView({ behavior: 'smooth', block: 'start' });
         };
 
-        // New Releases — show all games, reset filters
+        // New Releases  show all games, reset filters
         window.showNewReleases = function(e) {
             e.preventDefault();
             // Reset category filter to all
@@ -1615,7 +1615,7 @@
             document.getElementById('game-grid').scrollIntoView({ behavior: 'smooth', block: 'start' });
         };
 
-        // Top Played — sort by a predefined popularity order
+        // Top Played  sort by a predefined popularity order
         window.showTopPlayed = function(e) {
             e.preventDefault();
             const order = [
@@ -1712,7 +1712,7 @@
                 if (likesError) {
                     console.warn('Likes table error:', likesError.message);
                     if (likesError.message.includes('does not exist')) {
-                        console.error('⚠️ SUPABASE TABLES NOT SET UP! Please run the SQL from supabase-setup.sql');
+                        console.error(' SUPABASE TABLES NOT SET UP! Please run the SQL from supabase-setup.sql');
                     }
                 }
 
@@ -1741,7 +1741,7 @@
                 };
             } catch (error) {
                 console.error('Error fetching game data:', error);
-                console.error('⚠️ Make sure you ran the SQL setup from supabase-setup.sql in your Supabase dashboard!');
+                console.error(' Make sure you ran the SQL setup from supabase-setup.sql in your Supabase dashboard!');
                 return { likes: 0, comments: [], likedBy: [] };
             }
         }
@@ -1956,7 +1956,7 @@
                     slide.className = 'game-slide';
                     slide.setAttribute('data-game-id', game.id);
                     slide.innerHTML = `
-                        <button class="close-scroll-overlay" onclick="closeMobileScroll()">✕ Close</button>
+                        <button class="close-scroll-overlay" onclick="closeMobileScroll()"> Close</button>
                         <button class="pause-btn">
                             <svg viewBox="0 0 24 24">
                                 <rect x="6" y="4" width="4" height="16"></rect>

@@ -611,7 +611,7 @@
     </div>
 
     <footer>
-        <p>Catagame Shop — Spend wisely!</p>
+        <p>Catagame Shop  Spend wisely!</p>
     </footer>
 
     <!-- Purchase Modal -->
@@ -627,7 +627,7 @@
     <!-- Success Modal -->
     <div class="modal" id="success-modal">
         <div class="modal-content">
-            <h2>🎉 Purchase Successful!</h2>
+            <h2> Purchase Successful!</h2>
             <p id="success-message">Your item has been purchased!</p>
             <button class="modal-btn" onclick="closeSuccessModal()">Close</button>
         </div>
@@ -844,7 +844,7 @@
             const tier = tierPerks[item];
 
             if (tier) {
-                message = `You unlocked ${tier.label}! Here's what you got:\n• ${tier.perks.join('\n• ')}`;
+                message = `You unlocked ${tier.label}! Here's what you got:\n ${tier.perks.join('\n ')}`;
                 document.getElementById('success-message').innerHTML = `
                     <div style="text-align:left;">
                         <strong style="font-size:18px; color: var(--border);">You unlocked ${tier.label}!</strong>

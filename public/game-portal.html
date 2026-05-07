@@ -472,9 +472,9 @@
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
-// ─────────────────────────────────────────────
+// 
 // Supabase setup
-// ─────────────────────────────────────────────
+// 
 const SUPABASE_URL = 'https://psydvmqkeenwuxvmdrgj.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_4SLqZQElvgeuG2ZYp88uQw_Z8xg0xrg';
 const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
@@ -486,9 +486,9 @@ function getUploaderId() {
   return id;
 }
 
-// ─────────────────────────────────────────────
+// 
 // Existing games catalogue
-// ─────────────────────────────────────────────
+// 
 const EXISTING_GAMES = [
   { name: "The Homework Game",       path: "/games/passwordgame/dywyt.html" },
   { name: "Are You a Robot?",        path: "/games/99thday/99thday.html" },
@@ -529,9 +529,9 @@ async function downloadExistingGame(name, path) {
   }
 }
 
-// ─────────────────────────────────────────────
-// Upload logic — Supabase Storage + DB
-// ─────────────────────────────────────────────
+// 
+// Upload logic  Supabase Storage + DB
+// 
 var currentFile = null;
 var currentBlobUrl = null;
 var currentHtmlContent = null;
@@ -551,7 +551,7 @@ fileInput.addEventListener('change', function() { if (fileInput.files[0]) setFil
 
 function setFile(file) {
   currentFile = file;
-  fileNameDisplay.textContent = '📄 ' + file.name;
+  fileNameDisplay.textContent = ' ' + file.name;
   successBox.classList.remove('visible');
   currentBlobUrl = null; currentHtmlContent = null;
 }
@@ -586,7 +586,7 @@ document.getElementById('upload-btn').addEventListener('click', async function()
     if (storageError) {
       // If bucket doesn't exist yet, fall back to localStorage
       if (storageError.message && storageError.message.includes('Bucket not found')) {
-        console.warn('Supabase Storage bucket not set up yet — falling back to localStorage');
+        console.warn('Supabase Storage bucket not set up yet  falling back to localStorage');
         saveToLocalStorage({ name, desc, category, fileName: currentFile.name, timestamp: Date.now(), htmlContent: currentHtmlContent });
         currentBlobUrl = createBlobUrl(currentHtmlContent, 'text/html');
         successBox.classList.add('visible');
@@ -614,7 +614,7 @@ document.getElementById('upload-btn').addEventListener('click', async function()
   } catch (e) {
     alert('Upload error: ' + e.message);
   } finally {
-    btn.textContent = '🚀 Upload & Play'; btn.disabled = false;
+    btn.textContent = ' Upload & Play'; btn.disabled = false;
   }
 });
 
@@ -628,9 +628,9 @@ document.getElementById('download-uploaded-btn').addEventListener('click', funct
   }
 });
 
-// ─────────────────────────────────────────────
+// 
 // ZIP extraction
-// ─────────────────────────────────────────────
+// 
 async function extractHtmlFromZip(file) {
   const zip = await JSZip.loadAsync(file);
   const files = Object.keys(zip.files).filter(n => !zip.files[n].dir);
@@ -642,9 +642,9 @@ async function extractHtmlFromZip(file) {
   return await zip.files[target].async('string');
 }
 
-// ─────────────────────────────────────────────
-// Render uploaded games — from Supabase + localStorage fallback
-// ─────────────────────────────────────────────
+// 
+// Render uploaded games  from Supabase + localStorage fallback
+// 
 async function renderUploadedGames() {
   const list = document.getElementById('uploaded-games-list');
   list.innerHTML = '<p class="empty-state">Loading...</p>';
@@ -686,18 +686,18 @@ async function renderUploadedGames() {
     const card = document.createElement('div');
     card.className = 'uploaded-card';
     const date = new Date(game.timestamp).toLocaleDateString();
-    const descSnippet = game.desc ? ' · ' + escHtml(game.desc.slice(0, 60)) + (game.desc.length > 60 ? '…' : '') : '';
+    const descSnippet = game.desc ? '  ' + escHtml(game.desc.slice(0, 60)) + (game.desc.length > 60 ? '' : '') : '';
     const badge = game.source === 'supabase'
       ? '<span style="font-size:11px;background:#d4edda;color:#155724;border:1px solid #c3e6cb;padding:2px 8px;border-radius:10px;margin-left:8px;">Cloud</span>'
       : '<span style="font-size:11px;background:var(--accent);color:var(--muted);border:1px solid var(--border);padding:2px 8px;border-radius:10px;margin-left:8px;">Local</span>';
     card.innerHTML =
       '<div class="info">' +
         '<h4>' + escHtml(game.name) + badge + '</h4>' +
-        '<p>' + escHtml(game.category || 'Uncategorized') + ' · Uploaded ' + date + descSnippet + '</p>' +
+        '<p>' + escHtml(game.category || 'Uncategorized') + '  Uploaded ' + date + descSnippet + '</p>' +
       '</div>' +
       '<div class="actions">' +
-        '<button class="btn btn-sm" onclick="playUploadedGame(' + i + ', ' + JSON.stringify(game) + ')">▶ Play</button>' +
-        '<button class="btn btn-sm" onclick="deleteUploadedGame(' + i + ', \'' + escJs(game.source || 'local') + '\', \'' + escJs(game.id || '') + '\', \'' + escJs(game.storagePath || '') + '\')">🗑 Delete</button>' +
+        '<button class="btn btn-sm" onclick="playUploadedGame(' + i + ', ' + JSON.stringify(game) + ')"> Play</button>' +
+        '<button class="btn btn-sm" onclick="deleteUploadedGame(' + i + ', \'' + escJs(game.source || 'local') + '\', \'' + escJs(game.id || '') + '\', \'' + escJs(game.storagePath || '') + '\')"> Delete</button>' +
       '</div>';
     list.appendChild(card);
   });
@@ -734,9 +734,9 @@ async function getSupabaseCount() {
   } catch(e) { return 0; }
 }
 
-// ─────────────────────────────────────────────
+// 
 // localStorage fallback helpers
-// ─────────────────────────────────────────────
+// 
 const LS_KEY = 'uploaded_games_local';
 function loadFromLocalStorage() {
   try { return JSON.parse(localStorage.getItem(LS_KEY)) || []; } catch(e) { return []; }
@@ -748,9 +748,9 @@ function saveAllToLocalStorage(games) {
   localStorage.setItem(LS_KEY, JSON.stringify(games));
 }
 
-// ─────────────────────────────────────────────
+// 
 // Utility helpers
-// ─────────────────────────────────────────────
+// 
 function readFileAsText(file) {
   return new Promise(function(resolve, reject) {
     const reader = new FileReader();
@@ -779,9 +779,9 @@ function escJs(str) {
   return String(str).replace(/\\/g,'\\\\').replace(/'/g,"\\'");
 }
 
-// ─────────────────────────────────────────────
+// 
 // Init
-// ─────────────────────────────────────────────
+// 
 renderExistingGames();
 renderUploadedGames();
 </script>
