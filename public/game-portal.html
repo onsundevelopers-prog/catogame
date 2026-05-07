@@ -1,0 +1,742 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Game Portal | Catagame</title>
+  <link rel="icon" href="/public/favicon.svg" type="image/svg+xml" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Inter:wght@400;600;700&display=swap');
+
+    :root {
+      --bg: #fdf3e7;
+      --card-bg: #fffaf4;
+      --accent: #feeacf;
+      --border: #4d3529;
+      --text: #2c1a0e;
+      --muted: #7a5c47;
+      --card-shadow: 6px 6px 0px #291b14;
+      --hover-shadow: 10px 10px 0px #291b14;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Inter', -apple-system, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+    }
+
+    /* Header */
+    header {
+      display: flex;
+      align-items: center;
+      padding: 14px 6%;
+      border-bottom: 3px solid var(--border);
+      background: var(--card-bg);
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+      gap: 24px;
+    }
+
+    .logo {
+      font-family: 'Playfair Display', serif;
+      font-weight: 900;
+      font-size: 22px;
+      letter-spacing: -0.5px;
+      color: var(--border);
+      text-decoration: none;
+      flex-shrink: 0;
+    }
+
+    .back-link {
+      margin-left: auto;
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--muted);
+      text-decoration: none;
+      border: 2px solid var(--border);
+      padding: 6px 14px;
+      border-radius: 4px;
+      background: var(--accent);
+      box-shadow: 3px 3px 0 var(--border);
+      transition: box-shadow 0.15s, transform 0.15s;
+    }
+    .back-link:hover {
+      box-shadow: var(--hover-shadow);
+      transform: translate(-2px, -2px);
+    }
+
+    /* Layout */
+    main {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 48px 6% 80px;
+      display: flex;
+      flex-direction: column;
+      gap: 64px;
+    }
+
+    h1.section-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 2rem;
+      font-weight: 900;
+      color: var(--border);
+      margin-bottom: 24px;
+      border-bottom: 3px solid var(--border);
+      padding-bottom: 10px;
+    }
+
+    /* Card */
+    .card {
+      background: var(--card-bg);
+      border: 2.5px solid var(--border);
+      border-radius: 8px;
+      box-shadow: var(--card-shadow);
+      padding: 28px 32px;
+    }
+
+    /* Upload Section */
+    .upload-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 32px;
+    }
+    @media (max-width: 700px) {
+      .upload-grid { grid-template-columns: 1fr; }
+    }
+
+    .drop-zone {
+      border: 3px dashed var(--border);
+      border-radius: 8px;
+      background: var(--accent);
+      padding: 40px 24px;
+      text-align: center;
+      cursor: pointer;
+      transition: background 0.2s, box-shadow 0.2s;
+      position: relative;
+    }
+    .drop-zone.drag-over {
+      background: #fdd9a8;
+      box-shadow: var(--hover-shadow);
+    }
+    .drop-zone input[type="file"] {
+      position: absolute;
+      inset: 0;
+      opacity: 0;
+      cursor: pointer;
+      width: 100%;
+      height: 100%;
+    }
+    .drop-zone .drop-icon {
+      font-size: 48px;
+      display: block;
+      margin-bottom: 12px;
+    }
+    .drop-zone p {
+      font-size: 15px;
+      color: var(--muted);
+      margin-top: 6px;
+    }
+    .drop-zone .file-name {
+      margin-top: 12px;
+      font-weight: 700;
+      color: var(--border);
+      font-size: 14px;
+      word-break: break-all;
+    }
+
+    label.field-label {
+      display: block;
+      font-weight: 700;
+      font-size: 13px;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 6px;
+      margin-top: 18px;
+    }
+    label.field-label:first-child { margin-top: 0; }
+
+    input[type="text"],
+    textarea,
+    select {
+      width: 100%;
+      padding: 10px 14px;
+      border: 2.5px solid var(--border);
+      border-radius: 6px;
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Inter', sans-serif;
+      font-size: 15px;
+      outline: none;
+      transition: box-shadow 0.15s;
+    }
+    input[type="text"]:focus,
+    textarea:focus,
+    select:focus {
+      box-shadow: 4px 4px 0 var(--border);
+    }
+    textarea { resize: vertical; min-height: 90px; }
+
+    .btn {
+      display: inline-block;
+      padding: 12px 28px;
+      font-family: 'Inter', sans-serif;
+      font-weight: 700;
+      font-size: 15px;
+      border: 2.5px solid var(--border);
+      border-radius: 6px;
+      cursor: pointer;
+      transition: box-shadow 0.15s, transform 0.15s;
+      text-decoration: none;
+      background: var(--accent);
+      color: var(--text);
+      box-shadow: var(--card-shadow);
+    }
+    .btn:hover {
+      box-shadow: var(--hover-shadow);
+      transform: translate(-2px, -2px);
+    }
+    .btn:active {
+      box-shadow: 2px 2px 0 var(--border);
+      transform: translate(2px, 2px);
+    }
+    .btn-primary {
+      background: var(--border);
+      color: #fdf3e7;
+    }
+    .btn-sm {
+      padding: 7px 16px;
+      font-size: 13px;
+    }
+    .btn-danger {
+      background: #c0392b;
+      color: #fff;
+      border-color: #7b241c;
+      box-shadow: 4px 4px 0 #7b241c;
+    }
+    .btn-danger:hover {
+      box-shadow: 7px 7px 0 #7b241c;
+    }
+
+    .upload-btn-row {
+      margin-top: 24px;
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    /* Instructions panel */
+    .instructions {
+      background: var(--accent);
+      border: 2px solid var(--border);
+      border-radius: 8px;
+      padding: 20px 24px;
+      margin-top: 24px;
+    }
+    .instructions h3 {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.1rem;
+      margin-bottom: 12px;
+      color: var(--border);
+    }
+    .instructions ul {
+      padding-left: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .instructions li {
+      font-size: 14px;
+      color: var(--text);
+    }
+    .instructions li strong {
+      color: var(--border);
+    }
+
+    /* Success message */
+    .success-box {
+      display: none;
+      background: #e8f5e9;
+      border: 2.5px solid #2e7d32;
+      border-radius: 8px;
+      padding: 20px 24px;
+      margin-top: 24px;
+      box-shadow: 4px 4px 0 #1b5e20;
+    }
+    .success-box.visible { display: block; }
+    .success-box p {
+      font-weight: 700;
+      color: #1b5e20;
+      margin-bottom: 14px;
+    }
+    .success-box .btn-row {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    /* Download Section */
+    .games-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+      gap: 24px;
+    }
+
+    .game-card {
+      background: var(--card-bg);
+      border: 2.5px solid var(--border);
+      border-radius: 8px;
+      box-shadow: var(--card-shadow);
+      padding: 22px 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      transition: box-shadow 0.15s, transform 0.15s;
+    }
+    .game-card:hover {
+      box-shadow: var(--hover-shadow);
+      transform: translate(-2px, -2px);
+    }
+    .game-card h3 {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.05rem;
+      color: var(--border);
+    }
+    .game-card .game-path {
+      font-size: 12px;
+      color: var(--muted);
+      word-break: break-all;
+    }
+    .game-card .card-actions {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-top: auto;
+      padding-top: 8px;
+    }
+
+    /* My Uploaded Games */
+    #uploaded-games-list {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+    .uploaded-card {
+      background: var(--card-bg);
+      border: 2.5px solid var(--border);
+      border-radius: 8px;
+      box-shadow: var(--card-shadow);
+      padding: 18px 22px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+    .uploaded-card .info {
+      flex: 1;
+      min-width: 160px;
+    }
+    .uploaded-card .info h4 {
+      font-family: 'Playfair Display', serif;
+      font-size: 1rem;
+      color: var(--border);
+    }
+    .uploaded-card .info p {
+      font-size: 13px;
+      color: var(--muted);
+      margin-top: 2px;
+    }
+    .uploaded-card .actions {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .empty-state {
+      color: var(--muted);
+      font-size: 15px;
+      padding: 24px 0;
+      text-align: center;
+    }
+
+    .note-bar {
+      background: var(--accent);
+      border: 2px solid var(--border);
+      border-radius: 6px;
+      padding: 12px 20px;
+      font-size: 14px;
+      color: var(--muted);
+      text-align: center;
+    }
+    .note-bar strong { color: var(--border); }
+  </style>
+</head>
+<body>
+
+<!-- Header -->
+<header>
+  <a class="logo" href="/index.html">&#x1F431; Catagame</a>
+  <a class="back-link" href="/index.html">&#x2190; Back to Home</a>
+</header>
+
+<main>
+
+  <!-- SECTION 1: Upload Your Game -->
+  <section>
+    <h1 class="section-title">&#x1F4E4; Upload Your Game</h1>
+
+    <div class="card">
+      <div class="upload-grid">
+
+        <!-- Left: Drop zone + instructions -->
+        <div>
+          <div class="drop-zone" id="drop-zone">
+            <input type="file" id="file-input" accept=".html,.zip" />
+            <span class="drop-icon">&#x1F3AE;</span>
+            <strong>Drag &amp; drop your game here</strong>
+            <p>Accepts <code>.html</code> or <code>.zip</code> files</p>
+            <div class="file-name" id="file-name-display"></div>
+          </div>
+
+          <div class="instructions">
+            <h3>&#x1F4CB; How to upload</h3>
+            <ul>
+              <li><strong>HTML Game:</strong> Upload a single <code>.html</code> file &mdash; works instantly in the browser.</li>
+              <li><strong>Unity WebGL:</strong> Export as WebGL from Unity, zip the <code>Build</code> folder + <code>index.html</code>, upload the zip.</li>
+              <li><strong>Godot HTML5:</strong> Export as HTML5 from Godot, zip the entire export folder, upload the zip.</li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- Right: Metadata fields -->
+        <div>
+          <label class="field-label" for="game-name">Game Name</label>
+          <input type="text" id="game-name" placeholder="My Awesome Game" />
+
+          <label class="field-label" for="game-desc">Description</label>
+          <textarea id="game-desc" placeholder="Describe your game in a few sentences&#x2026;"></textarea>
+
+          <label class="field-label" for="game-category">Category</label>
+          <select id="game-category">
+            <option value="">&#x2014; Select a category &#x2014;</option>
+            <option value="Action">Action</option>
+            <option value="Puzzle">Puzzle</option>
+            <option value="Challenge">Challenge</option>
+            <option value="Simulation">Simulation</option>
+            <option value="Trivia">Trivia</option>
+            <option value="Other">Other</option>
+          </select>
+
+          <div class="upload-btn-row">
+            <button class="btn btn-primary" id="upload-btn">&#x1F680; Upload &amp; Play</button>
+          </div>
+
+          <!-- Success message -->
+          <div class="success-box" id="success-box">
+            <p>&#x2705; Game uploaded successfully!</p>
+            <div class="btn-row">
+              <button class="btn btn-sm" id="play-now-btn">&#x25B6; Play Now</button>
+              <button class="btn btn-sm" id="download-uploaded-btn">&#x2B07; Download</button>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- SECTION 2: Download Existing Games -->
+  <section>
+    <h1 class="section-title">&#x2B07; Download Existing Games</h1>
+    <div class="games-grid" id="existing-games-grid"></div>
+  </section>
+
+  <!-- SECTION 3: My Uploaded Games -->
+  <section>
+    <h1 class="section-title">&#x1F5C2; My Uploaded Games</h1>
+    <div id="uploaded-games-list"></div>
+  </section>
+
+  <!-- Note -->
+  <div class="note-bar">
+    <strong>Note:</strong> Uploaded games are stored in your browser. For permanent hosting, contact <strong>OnSun</strong> on Discord.
+  </div>
+
+</main>
+
+<script>
+// ─────────────────────────────────────────────
+// Existing games catalogue
+// ─────────────────────────────────────────────
+const EXISTING_GAMES = [
+  { name: "The Homework Game",       path: "/games/passwordgame/dywyt.html" },
+  { name: "Are You a Robot?",        path: "/games/99thday/99thday.html" },
+  { name: "Asteroid Clicker",        path: "/spendatrillionairesmoney/mapsurvallancesytem.html" },
+  { name: "What's Behind the Door?", path: "/games/createaperfectcircle/pic.html" },
+  { name: "Tower Defense",           path: "/games/actaselonmusk/towerdefense.html" },
+  { name: "The Sandbox",             path: "/games/sandbox/sandbox.html" },
+  { name: "Pick One",                path: "/games/Pickone/pickone.html" },
+  { name: "Unfair Typer",            path: "/games/unfairtyper/unfairtyper.html" },
+  { name: "Distractions",            path: "/games/distractions/distractions.html" },
+];
+
+// ─────────────────────────────────────────────
+// Render existing games grid
+// ─────────────────────────────────────────────
+function renderExistingGames() {
+  const grid = document.getElementById('existing-games-grid');
+  grid.innerHTML = '';
+  EXISTING_GAMES.forEach(function(game) {
+    const card = document.createElement('div');
+    card.className = 'game-card';
+    card.innerHTML =
+      '<h3>' + escHtml(game.name) + '</h3>' +
+      '<span class="game-path">' + escHtml(game.path) + '</span>' +
+      '<div class="card-actions">' +
+        '<a class="btn btn-sm" href="' + escHtml(game.path) + '" target="_blank" rel="noopener">&#x25B6; Play</a>' +
+        '<button class="btn btn-sm" onclick="downloadExistingGame(\'' + escJs(game.name) + '\', \'' + escJs(game.path) + '\')">&#x2B07; Download HTML</button>' +
+      '</div>';
+    grid.appendChild(card);
+  });
+}
+
+async function downloadExistingGame(name, path) {
+  try {
+    const res = await fetch(path);
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const html = await res.text();
+    triggerDownload(html, sanitizeFilename(name) + '.html', 'text/html');
+  } catch (e) {
+    alert('Could not download "' + name + '".\nThe file may not be accessible from this origin.\n\n' + e.message);
+  }
+}
+
+// ─────────────────────────────────────────────
+// Upload logic
+// ─────────────────────────────────────────────
+var currentFile = null;
+var currentBlobUrl = null;
+var currentHtmlContent = null;
+
+var dropZone = document.getElementById('drop-zone');
+var fileInput = document.getElementById('file-input');
+var fileNameDisplay = document.getElementById('file-name-display');
+var successBox = document.getElementById('success-box');
+
+dropZone.addEventListener('dragover', function(e) {
+  e.preventDefault();
+  dropZone.classList.add('drag-over');
+});
+dropZone.addEventListener('dragleave', function() {
+  dropZone.classList.remove('drag-over');
+});
+dropZone.addEventListener('drop', function(e) {
+  e.preventDefault();
+  dropZone.classList.remove('drag-over');
+  var file = e.dataTransfer.files[0];
+  if (file) setFile(file);
+});
+fileInput.addEventListener('change', function() {
+  if (fileInput.files[0]) setFile(fileInput.files[0]);
+});
+
+function setFile(file) {
+  currentFile = file;
+  fileNameDisplay.textContent = '\uD83D\uDCC4 ' + file.name;
+  successBox.classList.remove('visible');
+  currentBlobUrl = null;
+  currentHtmlContent = null;
+}
+
+document.getElementById('upload-btn').addEventListener('click', async function() {
+  if (!currentFile) {
+    alert('Please select a game file first (.html or .zip).');
+    return;
+  }
+  var name = document.getElementById('game-name').value.trim() || currentFile.name.replace(/\.[^.]+$/, '');
+  var desc = document.getElementById('game-desc').value.trim();
+  var category = document.getElementById('game-category').value;
+
+  try {
+    if (currentFile.name.toLowerCase().endsWith('.html')) {
+      currentHtmlContent = await readFileAsText(currentFile);
+      currentBlobUrl = createBlobUrl(currentHtmlContent, 'text/html');
+    } else if (currentFile.name.toLowerCase().endsWith('.zip')) {
+      currentHtmlContent = await extractHtmlFromZip(currentFile);
+      currentBlobUrl = createBlobUrl(currentHtmlContent, 'text/html');
+    } else {
+      alert('Unsupported file type. Please upload a .html or .zip file.');
+      return;
+    }
+
+    saveUploadedGame({
+      name: name,
+      desc: desc,
+      category: category,
+      fileName: currentFile.name,
+      timestamp: Date.now(),
+      htmlContent: currentHtmlContent
+    });
+
+    successBox.classList.add('visible');
+    renderUploadedGames();
+  } catch (e) {
+    alert('Error processing file: ' + e.message);
+  }
+});
+
+document.getElementById('play-now-btn').addEventListener('click', function() {
+  if (currentBlobUrl) window.open(currentBlobUrl, '_blank');
+});
+
+document.getElementById('download-uploaded-btn').addEventListener('click', function() {
+  if (currentHtmlContent) {
+    var name = document.getElementById('game-name').value.trim() ||
+               (currentFile ? currentFile.name.replace(/\.[^.]+$/, '') : 'game');
+    triggerDownload(currentHtmlContent, sanitizeFilename(name) + '.html', 'text/html');
+  }
+});
+
+// ─────────────────────────────────────────────
+// ZIP extraction
+// ─────────────────────────────────────────────
+async function extractHtmlFromZip(file) {
+  var zip = await JSZip.loadAsync(file);
+  var files = Object.keys(zip.files).filter(function(n) { return !zip.files[n].dir; });
+  var rootIndex = files.find(function(n) { return n === 'index.html' || /^[^/]+\/index\.html$/.test(n); });
+  var anyIndex  = files.find(function(n) { return n.toLowerCase().endsWith('index.html'); });
+  var anyHtml   = files.find(function(n) { return n.toLowerCase().endsWith('.html'); });
+  var target = rootIndex || anyIndex || anyHtml;
+  if (!target) throw new Error('No HTML file found in the ZIP archive.');
+  return await zip.files[target].async('string');
+}
+
+// ─────────────────────────────────────────────
+// localStorage helpers
+// ─────────────────────────────────────────────
+var STORAGE_KEY = 'uploaded_games';
+
+function loadUploadedGames() {
+  try { return JSON.parse(localStorage.getItem(STORAGE_KEY)) || []; }
+  catch(e) { return []; }
+}
+
+function saveUploadedGame(game) {
+  var games = loadUploadedGames();
+  games.unshift(game);
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(games));
+}
+
+function deleteUploadedGame(index) {
+  var games = loadUploadedGames();
+  games.splice(index, 1);
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(games));
+  renderUploadedGames();
+}
+
+// ─────────────────────────────────────────────
+// Render uploaded games
+// ─────────────────────────────────────────────
+function renderUploadedGames() {
+  var list = document.getElementById('uploaded-games-list');
+  var games = loadUploadedGames();
+  list.innerHTML = '';
+
+  if (games.length === 0) {
+    list.innerHTML = '<p class="empty-state">No uploaded games yet. Upload one above!</p>';
+    return;
+  }
+
+  games.forEach(function(game, i) {
+    var card = document.createElement('div');
+    card.className = 'uploaded-card';
+    var date = new Date(game.timestamp).toLocaleDateString();
+    var descSnippet = game.desc ? ' \u00B7 ' + escHtml(game.desc.slice(0, 60)) + (game.desc.length > 60 ? '\u2026' : '') : '';
+    card.innerHTML =
+      '<div class="info">' +
+        '<h4>' + escHtml(game.name) + '</h4>' +
+        '<p>' + escHtml(game.category || 'Uncategorized') + ' \u00B7 Uploaded ' + date + descSnippet + '</p>' +
+      '</div>' +
+      '<div class="actions">' +
+        '<button class="btn btn-sm" onclick="playUploadedGame(' + i + ')">&#x25B6; Play</button>' +
+        '<button class="btn btn-sm" onclick="downloadUploadedGame(' + i + ')">&#x2B07; Download</button>' +
+        '<button class="btn btn-sm btn-danger" onclick="deleteUploadedGame(' + i + ')">&#x1F5D1; Delete</button>' +
+      '</div>';
+    list.appendChild(card);
+  });
+}
+
+function playUploadedGame(index) {
+  var games = loadUploadedGames();
+  var game = games[index];
+  if (!game || !game.htmlContent) { alert('Game data not found.'); return; }
+  var url = createBlobUrl(game.htmlContent, 'text/html');
+  window.open(url, '_blank');
+}
+
+function downloadUploadedGame(index) {
+  var games = loadUploadedGames();
+  var game = games[index];
+  if (!game || !game.htmlContent) { alert('Game data not found.'); return; }
+  triggerDownload(game.htmlContent, sanitizeFilename(game.name) + '.html', 'text/html');
+}
+
+// ─────────────────────────────────────────────
+// Utility helpers
+// ─────────────────────────────────────────────
+function readFileAsText(file) {
+  return new Promise(function(resolve, reject) {
+    var reader = new FileReader();
+    reader.onload = function(e) { resolve(e.target.result); };
+    reader.onerror = function() { reject(new Error('Failed to read file.')); };
+    reader.readAsText(file);
+  });
+}
+
+function createBlobUrl(content, mimeType) {
+  var blob = new Blob([content], { type: mimeType });
+  return URL.createObjectURL(blob);
+}
+
+function triggerDownload(content, filename, mimeType) {
+  var url = createBlobUrl(content, mimeType);
+  var a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  setTimeout(function() { URL.revokeObjectURL(url); }, 10000);
+}
+
+function sanitizeFilename(name) {
+  return name.replace(/[^a-z0-9_\-\s]/gi, '').replace(/\s+/g, '-').toLowerCase() || 'game';
+}
+
+function escHtml(str) {
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+function escJs(str) {
+  return String(str).replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+}
+
+// ─────────────────────────────────────────────
+// Init
+// ─────────────────────────────────────────────
+renderExistingGames();
+renderUploadedGames();
+</script>
+</body>
+</html>
