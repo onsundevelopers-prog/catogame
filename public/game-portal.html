@@ -381,15 +381,15 @@
 
 <!-- Header -->
 <header>
-  <a class="logo" href="/index.html">&#x1F431; Catagame</a>
-  <a class="back-link" href="/index.html">&#x2190; Back to Home</a>
+  <a class="logo" href="/index.html">Catagame</a>
+  <a class="back-link" href="/index.html">&larr; Back to Home</a>
 </header>
 
 <main>
 
   <!-- SECTION 1: Upload Your Game -->
   <section>
-    <h1 class="section-title">&#x1F4E4; Upload Your Game</h1>
+    <h1 class="section-title">Upload Your Game</h1>
 
     <div class="card">
       <div class="upload-grid">
@@ -398,14 +398,14 @@
         <div>
           <div class="drop-zone" id="drop-zone">
             <input type="file" id="file-input" accept=".html,.zip" />
-            <span class="drop-icon">&#x1F3AE;</span>
+            <span class="drop-icon"></span>
             <strong>Drag &amp; drop your game here</strong>
             <p>Accepts <code>.html</code> or <code>.zip</code> files</p>
             <div class="file-name" id="file-name-display"></div>
           </div>
 
           <div class="instructions">
-            <h3>&#x1F4CB; How to upload</h3>
+            <h3>How to upload</h3>
             <ul>
               <li><strong>HTML Game:</strong> Upload a single <code>.html</code> file &mdash; works instantly in the browser.</li>
               <li><strong>Unity WebGL:</strong> Export as WebGL from Unity, zip the <code>Build</code> folder + <code>index.html</code>, upload the zip.</li>
@@ -434,15 +434,15 @@
           </select>
 
           <div class="upload-btn-row">
-            <button class="btn btn-primary" id="upload-btn">&#x1F680; Upload &amp; Play</button>
+            <button class="btn btn-primary" id="upload-btn">Upload &amp; Play</button>
           </div>
 
           <!-- Success message -->
           <div class="success-box" id="success-box">
-            <p>&#x2705; Game uploaded successfully!</p>
+            <p>Game uploaded successfully!</p>
             <div class="btn-row">
-              <button class="btn btn-sm" id="play-now-btn">&#x25B6; Play Now</button>
-              <button class="btn btn-sm" id="download-uploaded-btn">&#x2B07; Download</button>
+              <button class="btn btn-sm" id="play-now-btn">Play Now</button>
+              <button class="btn btn-sm" id="download-uploaded-btn">Download</button>
             </div>
           </div>
         </div>
@@ -453,13 +453,13 @@
 
   <!-- SECTION 2: Download Existing Games -->
   <section>
-    <h1 class="section-title">&#x2B07; Download Existing Games</h1>
+    <h1 class="section-title">Download Existing Games</h1>
     <div class="games-grid" id="existing-games-grid"></div>
   </section>
 
   <!-- SECTION 3: My Uploaded Games -->
   <section>
-    <h1 class="section-title">&#x1F5C2; My Uploaded Games</h1>
+    <h1 class="section-title">My Uploaded Games</h1>
     <div id="uploaded-games-list"></div>
   </section>
 
@@ -511,8 +511,8 @@ function renderExistingGames() {
       '<h3>' + escHtml(game.name) + '</h3>' +
       '<span class="game-path">' + escHtml(game.path) + '</span>' +
       '<div class="card-actions">' +
-        '<a class="btn btn-sm" href="' + escHtml(game.path) + '" target="_blank" rel="noopener">&#x25B6; Play</a>' +
-        '<button class="btn btn-sm" onclick="downloadExistingGame(\'' + escJs(game.name) + '\', \'' + escJs(game.path) + '\')">&#x2B07; Download HTML</button>' +
+        '<a class="btn btn-sm" href="' + escHtml(game.path) + '" target="_blank" rel="noopener">Play Play</a>' +
+        '<button class="btn btn-sm" onclick="downloadExistingGame(\'' + escJs(game.name) + '\', \'' + escJs(game.path) + '\')">Download Download HTML</button>' +
       '</div>';
     grid.appendChild(card);
   });
@@ -614,7 +614,7 @@ document.getElementById('upload-btn').addEventListener('click', async function()
   } catch (e) {
     alert('Upload error: ' + e.message);
   } finally {
-    btn.textContent = ' Upload & Play'; btn.disabled = false;
+    btn.textContent = 'Upload & Play'; btn.disabled = false;
   }
 });
 
@@ -696,8 +696,8 @@ async function renderUploadedGames() {
         '<p>' + escHtml(game.category || 'Uncategorized') + '  Uploaded ' + date + descSnippet + '</p>' +
       '</div>' +
       '<div class="actions">' +
-        '<button class="btn btn-sm" onclick="playUploadedGame(' + i + ', ' + JSON.stringify(game) + ')"> Play</button>' +
-        '<button class="btn btn-sm" onclick="deleteUploadedGame(' + i + ', \'' + escJs(game.source || 'local') + '\', \'' + escJs(game.id || '') + '\', \'' + escJs(game.storagePath || '') + '\')"> Delete</button>' +
+        '<button class="btn btn-sm" onclick="playUploadedGame(' + i + ', ' + JSON.stringify(game) + ')">Play</button>' +
+        '<button class="btn btn-sm" onclick="deleteUploadedGame(' + i + ', \'' + escJs(game.source || 'local') + '\', \'' + escJs(game.id || '') + '\', \'' + escJs(game.storagePath || '') + '\')">Delete</button>' +
       '</div>';
     list.appendChild(card);
   });
