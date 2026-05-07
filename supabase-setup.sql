@@ -28,6 +28,9 @@ CREATE TABLE IF NOT EXISTS uploaded_games (
   storage_path TEXT NOT NULL,
   uploader_id TEXT NOT NULL,
   play_count INTEGER DEFAULT 0,
+  status TEXT DEFAULT 'pending_review',  -- pending_review | approved | rejected
+  review_token TEXT,                      -- secret token for admin review link
+  reject_reason TEXT,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 

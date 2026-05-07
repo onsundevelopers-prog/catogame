@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
     <!-- Google Tag Manager -->
@@ -1535,6 +1535,17 @@
         </div>
     </div>
 
+    <!-- Community Games Section -->
+    <div class="container" id="community-section" style="padding-top:0;">
+        <div class="section-header" style="margin-top:40px;">
+            <h2 class="section-heading">Community Games</h2>
+            <span class="section-count" id="community-count">Loading...</span>
+        </div>
+        <div class="bento-grid" id="community-grid">
+            <p style="color:var(--muted);font-size:14px;padding:20px 0;">Loading community games...</p>
+        </div>
+    </div>
+
     <footer>Catagame  made with curiosity</footer>
 
     <script>
@@ -2281,6 +2292,62 @@
             e.preventDefault();
             window.location.href = '/game-creator.html';
         };
+
+        // Load approved community games from Supabase
+        (async function loadCommunityGames() {
+            const SUPABASE_URL = 'https://psydvmqkeenwuxvmdrgj.supabase.co';
+            const SUPABASE_KEY = 'sb_publishable_4SLqZQElvgeuG2ZYp88uQw_Z8xg0xrg';
+            const grid = document.getElementById('community-grid');
+            const count = document.getElementById('community-count');
+
+            try {
+                const sb = window.supabaseClient || window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+                const { data, error } = await sb
+                    .from('uploaded_games')
+                    .select('id, name, description, category, storage_path, play_count, created_at')
+                    .eq('status', 'approved')
+                    .order('created_at', { ascending: false });
+
+                if (error || !data || data.length === 0) {
+                    grid.innerHTML = '<p style="color:var(--muted);font-size:14px;padding:20px 0;">No community games yet. Be the first to upload one!</p>';
+                    count.textContent = '0 games';
+                    return;
+                }
+
+                count.textContent = data.length + ' game' + (data.length !== 1 ? 's' : '');
+                grid.innerHTML = '';
+
+                data.forEach(game => {
+                    const { data: urlData } = sb.storage.from('games').getPublicUrl(game.storage_path);
+                    const gameUrl = urlData?.publicUrl || '#';
+                    const card = document.createElement('a');
+                    card.href = gameUrl;
+                    card.target = '_blank';
+                    card.rel = 'noopener';
+                    card.className = 'game-card';
+                    card.dataset.category = (game.category || '').toLowerCase();
+                    card.dataset.title = game.name.toLowerCase();
+                    card.innerHTML = `
+                        <div class="icon-box" style="background:var(--accent);display:flex;align-items:center;justify-content:center;">
+                            <span style="font-size:32px;color:var(--muted);">${(game.name[0] || '?').toUpperCase()}</span>
+                        </div>
+                        <div class="game-card-info">
+                            <h4>${escHtmlInline(game.name)}</h4>
+                            <small>${escHtmlInline(game.category || 'Community')}</small>
+                            <div class="game-card-reward">Community</div>
+                        </div>
+                    `;
+                    grid.appendChild(card);
+                });
+            } catch(e) {
+                grid.innerHTML = '<p style="color:var(--muted);font-size:14px;padding:20px 0;">Could not load community games.</p>';
+                count.textContent = '';
+            }
+        })();
+
+        function escHtmlInline(str) {
+            return String(str || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+        }
     </script>
 
 </body>

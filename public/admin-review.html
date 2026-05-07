@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Game Review | Catagame Admin</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Inter:wght@400;600;700&display=swap');
+    :root {
+      --bg: #fdf3e7; --card-bg: #fffaf4; --accent: #feeacf;
+      --border: #4d3529; --text: #2c1a0e; --muted: #7a5c47;
+      --card-shadow: 6px 6px 0px #291b14; --hover-shadow: 10px 10px 0px #291b14;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); padding: 40px 6%; }
+    h1 { font-family: 'Playfair Display', serif; font-size: 2rem; color: var(--border); margin-bottom: 8px; }
+    .subtitle { color: var(--muted); margin-bottom: 32px; font-size: 15px; }
+    .card { background: var(--card-bg); border: 3px solid var(--border); border-radius: 12px; padding: 28px; box-shadow: var(--card-shadow); max-width: 800px; }
+    .meta { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 20px; }
+    .meta-item label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: var(--muted); display: block; margin-bottom: 2px; }
+    .meta-item span { font-size: 15px; font-weight: 600; color: var(--border); }
+    .status-badge { display: inline-block; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; }
+    .status-pending { background: #fff3cd; color: #856404; border: 1px solid #ffc107; }
+    .status-approved { background: #d4edda; color: #155724; border: 1px solid #28a745; }
+    .status-rejected { background: #f8d7da; color: #721c24; border: 1px solid #dc3545; }
+    .preview-frame { width: 100%; height: 500px; border: 3px solid var(--border); border-radius: 8px; margin: 20px 0; background: white; }
+    .actions { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 20px; }
+    .btn { padding: 12px 28px; font-family: 'Inter', sans-serif; font-weight: 700; font-size: 15px; border: 2.5px solid var(--border); border-radius: 6px; cursor: pointer; transition: all 0.15s; box-shadow: var(--card-shadow); }
+    .btn:hover { box-shadow: var(--hover-shadow); transform: translate(-2px,-2px); }
+    .btn-approve { background: #28a745; color: white; border-color: #1e7e34; box-shadow: 6px 6px 0 #1e7e34; }
+    .btn-approve:hover { box-shadow: 10px 10px 0 #1e7e34; }
+    .btn-reject { background: #dc3545; color: white; border-color: #bd2130; box-shadow: 6px 6px 0 #bd2130; }
+    .btn-reject:hover { box-shadow: 10px 10px 0 #bd2130; }
+    .btn-neutral { background: var(--accent); color: var(--border); }
+    textarea { width: 100%; padding: 10px 14px; border: 2.5px solid var(--border); border-radius: 6px; font-family: 'Inter', sans-serif; font-size: 14px; margin-top: 12px; resize: vertical; min-height: 80px; background: var(--bg); color: var(--text); display: none; }
+    .msg { padding: 16px 20px; border-radius: 8px; font-weight: 700; margin-bottom: 20px; }
+    .msg-error { background: #f8d7da; color: #721c24; border: 2px solid #dc3545; }
+    .msg-success { background: #d4edda; color: #155724; border: 2px solid #28a745; }
+    .loading { color: var(--muted); font-size: 16px; padding: 40px 0; }
+  </style>
+</head>
+<body>
+  <h1>Game Review</h1>
+  <p class="subtitle">Catagame Admin Panel — review submitted games before they go live</p>
+
+  <div id="message"></div>
+  <div id="content"><p class="loading">Loading game details...</p></div>
+
+  <script>
+    const SUPABASE_URL = 'https://psydvmqkeenwuxvmdrgj.supabase.co';
+    const SUPABASE_KEY = 'sb_publishable_4SLqZQElvgeuG2ZYp88uQw_Z8xg0xrg';
+    const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    const BUCKET = 'games';
+
+    // Get token and game id from URL
+    const params = new URLSearchParams(window.location.search);
+    const token = params.get('token');
+    const gameId = params.get('id');
+
+    function showMsg(text, type) {
+      document.getElementById('message').innerHTML =
+        '<div class="msg msg-' + type + '">' + text + '</div>';
+    }
+
+    async function loadGame() {
+      if (!token || !gameId) {
+        showMsg('Invalid review link. Missing token or game ID.', 'error');
+        document.getElementById('content').innerHTML = '';
+        return;
+      }
+
+      const { data: game, error } = await sb
+        .from('uploaded_games')
+        .select('*')
+        .eq('id', gameId)
+        .eq('review_token', token)
+        .single();
+
+      if (error || !game) {
+        showMsg('Game not found or invalid review token.', 'error');
+        document.getElementById('content').innerHTML = '';
+        return;
+      }
+
+      // Get public URL for the game file
+      const { data: urlData } = sb.storage.from(BUCKET).getPublicUrl(game.storage_path);
+      const gameUrl = urlData?.publicUrl || '';
+
+      const statusClass = 'status-' + (game.status || 'pending');
+      const statusLabel = (game.status || 'pending_review').replace('_', ' ').toUpperCase();
+
+      document.getElementById('content').innerHTML = `
+        <div class="card">
+          <div class="meta">
+            <div class="meta-item"><label>Game Name</label><span>${escHtml(game.name)}</span></div>
+            <div class="meta-item"><label>Category</label><span>${escHtml(game.category || 'Uncategorized')}</span></div>
+            <div class="meta-item"><label>Submitted</label><span>${new Date(game.created_at).toLocaleString()}</span></div>
+            <div class="meta-item"><label>Status</label><span class="status-badge ${statusClass}">${statusLabel}</span></div>
+            <div class="meta-item" style="grid-column:1/-1"><label>Description</label><span>${escHtml(game.description || 'No description')}</span></div>
+          </div>
+
+          <p style="font-weight:700;color:var(--border);margin-bottom:8px;">Game Preview:</p>
+          <iframe class="preview-frame" src="${escHtml(gameUrl)}" sandbox="allow-scripts allow-same-origin"></iframe>
+
+          <div class="actions" id="actions">
+            ${game.status === 'approved' ? '<p style="color:#155724;font-weight:700;">This game has already been approved.</p>' :
+              game.status === 'rejected' ? '<p style="color:#721c24;font-weight:700;">This game has already been rejected.</p>' : `
+              <button class="btn btn-approve" onclick="approveGame('${gameId}')">Approve — Add to Catalogue</button>
+              <button class="btn btn-reject" onclick="showRejectForm()">Reject</button>
+              <button class="btn btn-neutral" onclick="window.open('${escHtml(gameUrl)}', '_blank')">Open Full Screen</button>
+            `}
+          </div>
+
+          <div id="reject-form" style="display:none;margin-top:16px;">
+            <label style="font-weight:700;color:var(--border);">Reason for rejection (optional):</label>
+            <textarea id="reject-reason" placeholder="e.g. Game contains inappropriate content..."></textarea>
+            <div style="display:flex;gap:10px;margin-top:12px;">
+              <button class="btn btn-reject" onclick="rejectGame('${gameId}')">Confirm Rejection</button>
+              <button class="btn btn-neutral" onclick="hideRejectForm()">Cancel</button>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    async function approveGame(id) {
+      const { error } = await sb
+        .from('uploaded_games')
+        .update({ status: 'approved' })
+        .eq('id', id);
+
+      if (error) { showMsg('Error approving game: ' + error.message, 'error'); return; }
+      showMsg('Game approved! It is now live in the catalogue.', 'success');
+      document.getElementById('actions').innerHTML = '<p style="color:#155724;font-weight:700;">Approved — game is now live.</p>';
+    }
+
+    function showRejectForm() {
+      document.getElementById('reject-form').style.display = 'block';
+    }
+    function hideRejectForm() {
+      document.getElementById('reject-form').style.display = 'none';
+    }
+
+    async function rejectGame(id) {
+      const reason = document.getElementById('reject-reason').value.trim();
+      const { error } = await sb
+        .from('uploaded_games')
+        .update({ status: 'rejected', reject_reason: reason || null })
+        .eq('id', id);
+
+      if (error) { showMsg('Error rejecting game: ' + error.message, 'error'); return; }
+      showMsg('Game rejected.', 'success');
+      document.getElementById('actions').innerHTML = '<p style="color:#721c24;font-weight:700;">Rejected.</p>';
+      document.getElementById('reject-form').style.display = 'none';
+    }
+
+    function escHtml(str) {
+      return String(str || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+    }
+
+    loadGame();
+  </script>
+</body>
+</html>

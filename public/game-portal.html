@@ -439,7 +439,7 @@
 
           <!-- Success message -->
           <div class="success-box" id="success-box">
-            <p>Game uploaded successfully!</p>
+            <p>Game submitted for review! You will be notified once it is approved.</p>
             <div class="btn-row">
               <button class="btn btn-sm" id="play-now-btn">Play Now</button>
               <button class="btn btn-sm" id="download-uploaded-btn">Download</button>
@@ -601,12 +601,18 @@ document.getElementById('upload-btn').addEventListener('click', async function()
     const publicUrl = urlData.publicUrl;
     currentBlobUrl = publicUrl;
 
-    // 4. Save metadata to DB
-    const { error: dbError } = await sb.from('uploaded_games').insert({
+    // 4. Save metadata to DB with pending_review status
+    const reviewToken = Math.random().toString(36).substr(2, 16) + Math.random().toString(36).substr(2, 16);
+    const { data: insertData, error: dbError } = await sb.from('uploaded_games').insert({
       name, description: desc, category, file_name: currentFile.name,
-      storage_path: storagePath, uploader_id: uploaderId
-    });
+      storage_path: storagePath, uploader_id: uploaderId,
+      status: 'pending_review', review_token: reviewToken
+    }).select().single();
     if (dbError) throw new Error('DB insert failed: ' + dbError.message);
+
+    // 5. Send review email via EmailJS
+    const reviewLink = window.location.origin + '/admin-review.html?id=' + insertData.id + '&token=' + reviewToken;
+    await sendReviewEmail(name, desc, category, reviewLink);
 
     successBox.classList.add('visible');
     renderUploadedGames();
@@ -627,6 +633,33 @@ document.getElementById('download-uploaded-btn').addEventListener('click', funct
     triggerDownload(currentHtmlContent, sanitizeFilename(name) + '.html', 'text/html');
   }
 });
+
+// 
+// Send review email via EmailJS
+// 
+async function sendReviewEmail(name, desc, category, reviewLink) {
+  try {
+    if (!window.emailjs) {
+      await new Promise((resolve, reject) => {
+        const s = document.createElement('script');
+        s.src = 'https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js';
+        s.onload = resolve; s.onerror = reject;
+        document.head.appendChild(s);
+      });
+      emailjs.init('SO55TqC_tt33X30Qn');
+    }
+    await emailjs.send('service_6c3aei8', 'template_bps5scb', {
+      to_email: 'onsundevelopers@gmail.com',
+      item_name: 'New Game Submission: ' + name,
+      item_price: 0,
+      remaining_catabux: 0,
+      purchase_time: new Date().toLocaleString(),
+      user_info: 'Category: ' + (category || 'Uncategorized') + ' | Description: ' + (desc || 'None') + ' | REVIEW LINK: ' + reviewLink
+    });
+  } catch(e) {
+    console.warn('Review email failed (upload still succeeded):', e);
+  }
+}
 
 // 
 // ZIP extraction
@@ -667,6 +700,8 @@ async function renderUploadedGames() {
         category: g.category,
         timestamp: new Date(g.created_at).getTime(),
         storagePath: g.storage_path,
+        status: g.status || 'pending_review',
+        rejectReason: g.reject_reason,
         source: 'supabase'
       }));
     }
@@ -690,13 +725,20 @@ async function renderUploadedGames() {
     const badge = game.source === 'supabase'
       ? '<span style="font-size:11px;background:#d4edda;color:#155724;border:1px solid #c3e6cb;padding:2px 8px;border-radius:10px;margin-left:8px;">Cloud</span>'
       : '<span style="font-size:11px;background:var(--accent);color:var(--muted);border:1px solid var(--border);padding:2px 8px;border-radius:10px;margin-left:8px;">Local</span>';
+    const statusColors = { approved: '#d4edda|#155724|#c3e6cb', pending_review: '#fff3cd|#856404|#ffc107', rejected: '#f8d7da|#721c24|#f5c6cb' };
+    const sc = (statusColors[game.status] || statusColors['pending_review']).split('|');
+    const statusBadge = game.status
+      ? '<span style="font-size:11px;background:' + sc[0] + ';color:' + sc[1] + ';border:1px solid ' + sc[2] + ';padding:2px 8px;border-radius:10px;margin-left:8px;">' + (game.status === 'pending_review' ? 'Under Review' : game.status.charAt(0).toUpperCase() + game.status.slice(1)) + '</span>'
+      : '';
+    const rejectNote = game.rejectReason ? '<p style="color:#721c24;font-size:12px;margin-top:4px;">Reason: ' + escHtml(game.rejectReason) + '</p>' : '';
     card.innerHTML =
       '<div class="info">' +
-        '<h4>' + escHtml(game.name) + badge + '</h4>' +
+        '<h4>' + escHtml(game.name) + badge + statusBadge + '</h4>' +
         '<p>' + escHtml(game.category || 'Uncategorized') + '  Uploaded ' + date + descSnippet + '</p>' +
+        rejectNote +
       '</div>' +
       '<div class="actions">' +
-        '<button class="btn btn-sm" onclick="playUploadedGame(' + i + ', ' + JSON.stringify(game) + ')">Play</button>' +
+        (game.status === 'approved' ? '<button class="btn btn-sm" onclick="playUploadedGame(' + i + ', ' + JSON.stringify(game) + ')">Play</button>' : '') +
         '<button class="btn btn-sm" onclick="deleteUploadedGame(' + i + ', \'' + escJs(game.source || 'local') + '\', \'' + escJs(game.id || '') + '\', \'' + escJs(game.storagePath || '') + '\')">Delete</button>' +
       '</div>';
     list.appendChild(card);
