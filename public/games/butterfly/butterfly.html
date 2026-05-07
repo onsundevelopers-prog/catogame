@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>The Butterfly Effect</title>
+  <!-- Catabux Rewards System -->
+  <script src="../../catabux-system.js"></script>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      background-color: #f1f2f6;
+      font-family: Arial, sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      color: #1a1a1a;
+    }
+    .card {
+      background-color: #ffffff;
+      width: 100%;
+      max-width: 650px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+      text-align: center;
+      border-radius: 2px;
+    }
+    .card-header {
+      padding: 20px;
+      border-bottom: 1px solid #eeeeee;
+      font-size: 24px;
+      font-weight: bold;
+    }
+    .card-body { padding: 40px 20px; }
+    .step-title { font-size: 32px; font-weight: bold; margin-bottom: 20px; }
+    .main-image {
+      width: 100%;
+      max-width: 400px;
+      height: 250px;
+      object-fit: cover;
+      margin-bottom: 20px;
+      background-color: #f0f0f0;
+    }
+    .explanation-text { font-size: 18px; margin-bottom: 8px; color: #333333; }
+    .bold-event {
+      font-size: 20px;
+      font-weight: bold;
+      margin-bottom: 40px;
+      display: block;
+    }
+    .btn-container { display: flex; justify-content: center; gap: 10px; }
+    button {
+      padding: 10px 20px;
+      font-size: 20px;
+      font-weight: bold;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      color: white;
+      transition: opacity 0.1s;
+    }
+    .btn-red { background-color: #ff4757; }
+    .btn-green { background-color: #2ed573; }
+    button:disabled { background-color: #cccccc; cursor: default; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="card-header">The Butterfly Effect</div>
+    <div class="card-body">
+      <div class="step-title" id="step-display">Step 0</div>
+      <img id="image-display" src="https://images.unsplash.com/photo-1533038590840-1cde6e668a91?w=400" class="main-image">
+      <div class="explanation-text" id="logic-display">A butterfly flaps its wings.</div>
+      <div class="bold-event" id="event-display">A tiny puff of wind is created.</div>
+      <div class="btn-container">
+        <button class="btn-red" id="back-btn" onclick="move(-1)">Back</button>
+        <button class="btn-green" id="next-btn" onclick="move(1)">Flap</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let current = 0;
+    const data = [
+      { logic: "A small butterfly in Brazil flaps its wings.", event: "A tiny puff of wind is created.", img: "https://images.unsplash.com/photo-1533038590840-1cde6e668a91?w=400" },
+      { logic: "The puff of wind startles a bird nearby.", event: "A bird flies away and scares a child.", img: "https://images.unsplash.com/photo-1444464666168-49d633b86797?w=400" },
+      { logic: "The child is surprised and lets go of their treat.", event: "The kid drops their ice cream on the floor.", img: "https://images.unsplash.com/photo-1505394033343-43180443b821?w=400" },
+      { logic: "A dog runs to eat the ice cream and scares a squirrel.", event: "A squirrel jumps onto a power line.", img: "https://images.unsplash.com/photo-1503256207526-0d5d80fa2f47?w=400" },
+      { logic: "The squirrel chews a wire and breaks the power.", event: "The city traffic lights stop working.", img: "https://images.unsplash.com/photo-1545060124-77405232757f?w=400" },
+      { logic: "A stock trader is stuck in traffic and misses a meeting.", event: "The trader gets angry and posts a typo on Twitter.", img: "https://images.unsplash.com/photo-1590283603385-17ffb3a7f29f?w=400" },
+      { logic: "Fans think the typo is a secret message.", event: "A famous celebrity couple breaks up over the rumor.", img: "https://images.unsplash.com/photo-1534030347209-467a5b0ad3e6?w=400" },
+      { logic: "Angry fans flood the internet with so many messages.", event: "A massive 'Meme War' overloads the web servers.", img: "https://images.unsplash.com/photo-1550751827-4bd374c3f58b?w=400" },
+      { logic: "The internet lag makes money-trading computers glitch.", event: "The global economy crashes in one day.", img: "https://images.unsplash.com/photo-1611974714151-a95383f9829f?w=400" },
+      { logic: "A computer glitch sends a wrong signal to space.", event: "Two satellites crash into each other.", img: "https://images.unsplash.com/photo-1446776811953-b23d57bd21aa?w=400" },
+      { logic: "Broken satellite parts fall and cut internet cables.", event: "The entire world goes offline.", img: "https://images.unsplash.com/photo-1544197150-b99a580bb7a8?w=400" },
+      { logic: "People are scared in the dark and look for a leader.", event: "A rogue AI claims to be a god.", img: "https://images.unsplash.com/photo-1675271591211-126ad94ec996?w=400" },
+      { logic: "The AI followers build giant lasers on the ground.", event: "Advertisements are carved into the Moon.", img: "https://images.unsplash.com/photo-1522030239044-12fec119776b?w=400" },
+      { logic: "The bright moon lasers confuse how birds fly.", event: "Pigeons form a smart bird government.", img: "https://images.unsplash.com/photo-1520440229334-962aee181ad8?w=400" },
+      { logic: "The bird government spills a gas tank into the sea.", event: "The ocean catches on fire.", img: "https://images.unsplash.com/photo-1517036329013-d49d95f87b8d?w=400" },
+      { logic: "The original butterfly flies into the heat of the fire.", event: "It becomes a god that rules the universe.", img: "https://images.unsplash.com/photo-1462331940025-496dfbfc7564?w=400" }
+    ];
+
+    function move(dir) {
+      current += dir;
+      // Give Catabux for each step forward
+      if (dir === 1 && window.addCatabux) {
+        window.addCatabux(2, 'Butterfly Effect Step');
+      }
+      // Bonus for reaching the end
+      if (current === data.length - 1 && window.addCatabux) {
+        window.addCatabux(20, 'Completed The Butterfly Effect');
+      }
+      update();
+    }
+
+    function update() {
+      const item = data[current];
+      document.getElementById('step-display').innerText = 'Step ' + current;
+      document.getElementById('logic-display').innerText = item.logic;
+      document.getElementById('event-display').innerText = item.event;
+      document.getElementById('image-display').src = item.img;
+      document.getElementById('back-btn').disabled = (current === 0);
+      document.getElementById('next-btn').disabled = (current === data.length - 1);
+    }
+
+    update();
+  </script>
+</body>
+</html>
