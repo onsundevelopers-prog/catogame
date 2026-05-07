@@ -1366,10 +1366,10 @@
             Catagame
         </a>
         <nav>
-            <a href="#">Browse</a>
+            <a href="#" onclick="browseGames(event)">Browse</a>
             <a href="games/shop/shop.html">Shop</a>
-            <a href="#">New Releases</a>
-            <a href="#">Top Played</a>
+            <a href="#" onclick="showNewReleases(event)">New Releases</a>
+            <a href="#" onclick="showTopPlayed(event)">Top Played</a>
             <a href="#" id="game-creator-link" style="display: none; cursor: pointer;" onclick="goToGameCreator(event)">Create Game</a>
         </nav>
         <div class="header-right">
@@ -1595,6 +1595,48 @@
             window.location.href = 'games/passwordgame/dywyt.html';
         });
 
+        // Nav link functions
+        window.browseGames = function(e) {
+            e.preventDefault();
+            document.getElementById('game-grid').scrollIntoView({ behavior: 'smooth', block: 'start' });
+        };
+
+        // New Releases — show all games, reset filters
+        window.showNewReleases = function(e) {
+            e.preventDefault();
+            // Reset category filter to all
+            document.querySelectorAll('.cat-pill').forEach(p => p.classList.remove('active'));
+            document.querySelector('.cat-pill').classList.add('active');
+            const cards = document.querySelectorAll('#game-grid .game-card');
+            cards.forEach(c => c.classList.remove('hidden'));
+            document.getElementById('game-count').textContent = cards.length + ' games';
+            document.querySelector('.section-heading').textContent = 'New Releases';
+            document.getElementById('game-grid').scrollIntoView({ behavior: 'smooth', block: 'start' });
+        };
+
+        // Top Played — sort by a predefined popularity order
+        window.showTopPlayed = function(e) {
+            e.preventDefault();
+            const order = [
+                'the homework game', 'are you a robot', 'asteroid clicker',
+                'distractions', 'unfair typer', 'tower defense',
+                'the sandbox', 'pick one', 'whats behind the door'
+            ];
+            const grid = document.getElementById('game-grid');
+            const cards = Array.from(grid.querySelectorAll('.game-card'));
+            cards.sort((a, b) => {
+                const ai = order.indexOf(a.dataset.title);
+                const bi = order.indexOf(b.dataset.title);
+                return (ai === -1 ? 99 : ai) - (bi === -1 ? 99 : bi);
+            });
+            cards.forEach(c => { c.classList.remove('hidden'); grid.appendChild(c); });
+            document.querySelectorAll('.cat-pill').forEach(p => p.classList.remove('active'));
+            document.querySelector('.cat-pill').classList.add('active');
+            document.getElementById('game-count').textContent = cards.length + ' games';
+            document.querySelector('.section-heading').textContent = 'Top Played';
+            grid.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        };
+
         // Category filter
         function filterCategory(cat, btn) {
             document.querySelectorAll('.cat-pill').forEach(p => p.classList.remove('active'));
@@ -1607,6 +1649,7 @@
                 if (match) visible++;
             });
             document.getElementById('game-count').textContent = visible + ' game' + (visible !== 1 ? 's' : '');
+            document.querySelector('.section-heading').textContent = cat === 'all' ? 'All Games' : cat.charAt(0).toUpperCase() + cat.slice(1);
         }
 
         // Search filter
