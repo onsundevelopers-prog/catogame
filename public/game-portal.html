@@ -470,7 +470,22 @@
 
 </main>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
+// ─────────────────────────────────────────────
+// Supabase setup
+// ─────────────────────────────────────────────
+const SUPABASE_URL = 'https://psydvmqkeenwuxvmdrgj.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_4SLqZQElvgeuG2ZYp88uQw_Z8xg0xrg';
+const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+const BUCKET = 'games';
+
+function getUploaderId() {
+  let id = localStorage.getItem('catagame_user_id');
+  if (!id) { id = 'user_' + Math.random().toString(36).substr(2, 9); localStorage.setItem('catagame_user_id', id); }
+  return id;
+}
+
 // ─────────────────────────────────────────────
 // Existing games catalogue
 // ─────────────────────────────────────────────
@@ -486,9 +501,6 @@ const EXISTING_GAMES = [
   { name: "Distractions",            path: "/games/distractions/distractions.html" },
 ];
 
-// ─────────────────────────────────────────────
-// Render existing games grid
-// ─────────────────────────────────────────────
 function renderExistingGames() {
   const grid = document.getElementById('existing-games-grid');
   grid.innerHTML = '';
@@ -513,12 +525,12 @@ async function downloadExistingGame(name, path) {
     const html = await res.text();
     triggerDownload(html, sanitizeFilename(name) + '.html', 'text/html');
   } catch (e) {
-    alert('Could not download "' + name + '".\nThe file may not be accessible from this origin.\n\n' + e.message);
+    alert('Could not download "' + name + '".\n' + e.message);
   }
 }
 
 // ─────────────────────────────────────────────
-// Upload logic
+// Upload logic — Supabase Storage + DB
 // ─────────────────────────────────────────────
 var currentFile = null;
 var currentBlobUrl = null;
@@ -529,76 +541,89 @@ var fileInput = document.getElementById('file-input');
 var fileNameDisplay = document.getElementById('file-name-display');
 var successBox = document.getElementById('success-box');
 
-dropZone.addEventListener('dragover', function(e) {
-  e.preventDefault();
-  dropZone.classList.add('drag-over');
-});
-dropZone.addEventListener('dragleave', function() {
-  dropZone.classList.remove('drag-over');
-});
+dropZone.addEventListener('dragover', function(e) { e.preventDefault(); dropZone.classList.add('drag-over'); });
+dropZone.addEventListener('dragleave', function() { dropZone.classList.remove('drag-over'); });
 dropZone.addEventListener('drop', function(e) {
-  e.preventDefault();
-  dropZone.classList.remove('drag-over');
-  var file = e.dataTransfer.files[0];
-  if (file) setFile(file);
+  e.preventDefault(); dropZone.classList.remove('drag-over');
+  var file = e.dataTransfer.files[0]; if (file) setFile(file);
 });
-fileInput.addEventListener('change', function() {
-  if (fileInput.files[0]) setFile(fileInput.files[0]);
-});
+fileInput.addEventListener('change', function() { if (fileInput.files[0]) setFile(fileInput.files[0]); });
 
 function setFile(file) {
   currentFile = file;
-  fileNameDisplay.textContent = '\uD83D\uDCC4 ' + file.name;
+  fileNameDisplay.textContent = '📄 ' + file.name;
   successBox.classList.remove('visible');
-  currentBlobUrl = null;
-  currentHtmlContent = null;
+  currentBlobUrl = null; currentHtmlContent = null;
 }
 
 document.getElementById('upload-btn').addEventListener('click', async function() {
-  if (!currentFile) {
-    alert('Please select a game file first (.html or .zip).');
-    return;
-  }
-  var name = document.getElementById('game-name').value.trim() || currentFile.name.replace(/\.[^.]+$/, '');
-  var desc = document.getElementById('game-desc').value.trim();
-  var category = document.getElementById('game-category').value;
+  if (!currentFile) { alert('Please select a game file first (.html or .zip).'); return; }
+  const name = document.getElementById('game-name').value.trim() || currentFile.name.replace(/\.[^.]+$/, '');
+  const desc = document.getElementById('game-desc').value.trim();
+  const category = document.getElementById('game-category').value;
+  const uploaderId = getUploaderId();
+  const btn = document.getElementById('upload-btn');
+  btn.textContent = 'Uploading...'; btn.disabled = true;
 
   try {
+    // 1. Extract HTML content
     if (currentFile.name.toLowerCase().endsWith('.html')) {
       currentHtmlContent = await readFileAsText(currentFile);
-      currentBlobUrl = createBlobUrl(currentHtmlContent, 'text/html');
     } else if (currentFile.name.toLowerCase().endsWith('.zip')) {
       currentHtmlContent = await extractHtmlFromZip(currentFile);
-      currentBlobUrl = createBlobUrl(currentHtmlContent, 'text/html');
     } else {
-      alert('Unsupported file type. Please upload a .html or .zip file.');
-      return;
+      alert('Unsupported file type. Please upload a .html or .zip file.'); return;
     }
 
-    saveUploadedGame({
-      name: name,
-      desc: desc,
-      category: category,
-      fileName: currentFile.name,
-      timestamp: Date.now(),
-      htmlContent: currentHtmlContent
+    // 2. Upload to Supabase Storage
+    const storagePath = uploaderId + '/' + Date.now() + '_' + sanitizeFilename(name) + '.html';
+    const htmlBlob = new Blob([currentHtmlContent], { type: 'text/html' });
+
+    const { error: storageError } = await sb.storage
+      .from(BUCKET)
+      .upload(storagePath, htmlBlob, { contentType: 'text/html', upsert: false });
+
+    if (storageError) {
+      // If bucket doesn't exist yet, fall back to localStorage
+      if (storageError.message && storageError.message.includes('Bucket not found')) {
+        console.warn('Supabase Storage bucket not set up yet — falling back to localStorage');
+        saveToLocalStorage({ name, desc, category, fileName: currentFile.name, timestamp: Date.now(), htmlContent: currentHtmlContent });
+        currentBlobUrl = createBlobUrl(currentHtmlContent, 'text/html');
+        successBox.classList.add('visible');
+        renderUploadedGames();
+        return;
+      }
+      throw new Error('Storage upload failed: ' + storageError.message);
+    }
+
+    // 3. Get public URL
+    const { data: urlData } = sb.storage.from(BUCKET).getPublicUrl(storagePath);
+    const publicUrl = urlData.publicUrl;
+    currentBlobUrl = publicUrl;
+
+    // 4. Save metadata to DB
+    const { error: dbError } = await sb.from('uploaded_games').insert({
+      name, description: desc, category, file_name: currentFile.name,
+      storage_path: storagePath, uploader_id: uploaderId
     });
+    if (dbError) throw new Error('DB insert failed: ' + dbError.message);
 
     successBox.classList.add('visible');
     renderUploadedGames();
+
   } catch (e) {
-    alert('Error processing file: ' + e.message);
+    alert('Upload error: ' + e.message);
+  } finally {
+    btn.textContent = '🚀 Upload & Play'; btn.disabled = false;
   }
 });
 
 document.getElementById('play-now-btn').addEventListener('click', function() {
   if (currentBlobUrl) window.open(currentBlobUrl, '_blank');
 });
-
 document.getElementById('download-uploaded-btn').addEventListener('click', function() {
   if (currentHtmlContent) {
-    var name = document.getElementById('game-name').value.trim() ||
-               (currentFile ? currentFile.name.replace(/\.[^.]+$/, '') : 'game');
+    const name = document.getElementById('game-name').value.trim() || (currentFile ? currentFile.name.replace(/\.[^.]+$/, '') : 'game');
     triggerDownload(currentHtmlContent, sanitizeFilename(name) + '.html', 'text/html');
   }
 });
@@ -607,84 +632,120 @@ document.getElementById('download-uploaded-btn').addEventListener('click', funct
 // ZIP extraction
 // ─────────────────────────────────────────────
 async function extractHtmlFromZip(file) {
-  var zip = await JSZip.loadAsync(file);
-  var files = Object.keys(zip.files).filter(function(n) { return !zip.files[n].dir; });
-  var rootIndex = files.find(function(n) { return n === 'index.html' || /^[^/]+\/index\.html$/.test(n); });
-  var anyIndex  = files.find(function(n) { return n.toLowerCase().endsWith('index.html'); });
-  var anyHtml   = files.find(function(n) { return n.toLowerCase().endsWith('.html'); });
-  var target = rootIndex || anyIndex || anyHtml;
+  const zip = await JSZip.loadAsync(file);
+  const files = Object.keys(zip.files).filter(n => !zip.files[n].dir);
+  const target = files.find(n => n === 'index.html') ||
+                 files.find(n => /^[^/]+\/index\.html$/.test(n)) ||
+                 files.find(n => n.toLowerCase().endsWith('index.html')) ||
+                 files.find(n => n.toLowerCase().endsWith('.html'));
   if (!target) throw new Error('No HTML file found in the ZIP archive.');
   return await zip.files[target].async('string');
 }
 
 // ─────────────────────────────────────────────
-// localStorage helpers
+// Render uploaded games — from Supabase + localStorage fallback
 // ─────────────────────────────────────────────
-var STORAGE_KEY = 'uploaded_games';
+async function renderUploadedGames() {
+  const list = document.getElementById('uploaded-games-list');
+  list.innerHTML = '<p class="empty-state">Loading...</p>';
 
-function loadUploadedGames() {
-  try { return JSON.parse(localStorage.getItem(STORAGE_KEY)) || []; }
-  catch(e) { return []; }
-}
+  const uploaderId = getUploaderId();
+  let games = [];
 
-function saveUploadedGame(game) {
-  var games = loadUploadedGames();
-  games.unshift(game);
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(games));
-}
+  // Try Supabase first
+  try {
+    const { data, error } = await sb.from('uploaded_games')
+      .select('*')
+      .eq('uploader_id', uploaderId)
+      .order('created_at', { ascending: false });
 
-function deleteUploadedGame(index) {
-  var games = loadUploadedGames();
-  games.splice(index, 1);
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(games));
-  renderUploadedGames();
-}
+    if (!error && data && data.length > 0) {
+      games = data.map(g => ({
+        id: g.id,
+        name: g.name,
+        desc: g.description,
+        category: g.category,
+        timestamp: new Date(g.created_at).getTime(),
+        storagePath: g.storage_path,
+        source: 'supabase'
+      }));
+    }
+  } catch(e) { /* fall through to localStorage */ }
 
-// ─────────────────────────────────────────────
-// Render uploaded games
-// ─────────────────────────────────────────────
-function renderUploadedGames() {
-  var list = document.getElementById('uploaded-games-list');
-  var games = loadUploadedGames();
+  // Merge with localStorage games
+  const localGames = loadFromLocalStorage();
+  games = [...games, ...localGames];
+
   list.innerHTML = '';
-
   if (games.length === 0) {
     list.innerHTML = '<p class="empty-state">No uploaded games yet. Upload one above!</p>';
     return;
   }
 
   games.forEach(function(game, i) {
-    var card = document.createElement('div');
+    const card = document.createElement('div');
     card.className = 'uploaded-card';
-    var date = new Date(game.timestamp).toLocaleDateString();
-    var descSnippet = game.desc ? ' \u00B7 ' + escHtml(game.desc.slice(0, 60)) + (game.desc.length > 60 ? '\u2026' : '') : '';
+    const date = new Date(game.timestamp).toLocaleDateString();
+    const descSnippet = game.desc ? ' · ' + escHtml(game.desc.slice(0, 60)) + (game.desc.length > 60 ? '…' : '') : '';
+    const badge = game.source === 'supabase'
+      ? '<span style="font-size:11px;background:#d4edda;color:#155724;border:1px solid #c3e6cb;padding:2px 8px;border-radius:10px;margin-left:8px;">Cloud</span>'
+      : '<span style="font-size:11px;background:var(--accent);color:var(--muted);border:1px solid var(--border);padding:2px 8px;border-radius:10px;margin-left:8px;">Local</span>';
     card.innerHTML =
       '<div class="info">' +
-        '<h4>' + escHtml(game.name) + '</h4>' +
-        '<p>' + escHtml(game.category || 'Uncategorized') + ' \u00B7 Uploaded ' + date + descSnippet + '</p>' +
+        '<h4>' + escHtml(game.name) + badge + '</h4>' +
+        '<p>' + escHtml(game.category || 'Uncategorized') + ' · Uploaded ' + date + descSnippet + '</p>' +
       '</div>' +
       '<div class="actions">' +
-        '<button class="btn btn-sm" onclick="playUploadedGame(' + i + ')">&#x25B6; Play</button>' +
-        '<button class="btn btn-sm" onclick="downloadUploadedGame(' + i + ')">&#x2B07; Download</button>' +
-        '<button class="btn btn-sm btn-danger" onclick="deleteUploadedGame(' + i + ')">&#x1F5D1; Delete</button>' +
+        '<button class="btn btn-sm" onclick="playUploadedGame(' + i + ', ' + JSON.stringify(game) + ')">▶ Play</button>' +
+        '<button class="btn btn-sm" onclick="deleteUploadedGame(' + i + ', \'' + escJs(game.source || 'local') + '\', \'' + escJs(game.id || '') + '\', \'' + escJs(game.storagePath || '') + '\')">🗑 Delete</button>' +
       '</div>';
     list.appendChild(card);
   });
 }
 
-function playUploadedGame(index) {
-  var games = loadUploadedGames();
-  var game = games[index];
-  if (!game || !game.htmlContent) { alert('Game data not found.'); return; }
-  var url = createBlobUrl(game.htmlContent, 'text/html');
-  window.open(url, '_blank');
+async function playUploadedGame(index, game) {
+  if (game.source === 'supabase' && game.storagePath) {
+    const { data } = sb.storage.from(BUCKET).getPublicUrl(game.storagePath);
+    window.open(data.publicUrl, '_blank');
+  } else if (game.htmlContent) {
+    window.open(createBlobUrl(game.htmlContent, 'text/html'), '_blank');
+  } else {
+    alert('Game data not found.');
+  }
 }
 
-function downloadUploadedGame(index) {
-  var games = loadUploadedGames();
-  var game = games[index];
-  if (!game || !game.htmlContent) { alert('Game data not found.'); return; }
-  triggerDownload(game.htmlContent, sanitizeFilename(game.name) + '.html', 'text/html');
+async function deleteUploadedGame(index, source, id, storagePath) {
+  if (!confirm('Delete this game?')) return;
+  if (source === 'supabase') {
+    await sb.storage.from(BUCKET).remove([storagePath]);
+    await sb.from('uploaded_games').delete().eq('id', id);
+  } else {
+    const games = loadFromLocalStorage();
+    games.splice(index - (await getSupabaseCount()), 1);
+    saveAllToLocalStorage(games);
+  }
+  renderUploadedGames();
+}
+
+async function getSupabaseCount() {
+  try {
+    const { data } = await sb.from('uploaded_games').select('id').eq('uploader_id', getUploaderId());
+    return data ? data.length : 0;
+  } catch(e) { return 0; }
+}
+
+// ─────────────────────────────────────────────
+// localStorage fallback helpers
+// ─────────────────────────────────────────────
+const LS_KEY = 'uploaded_games_local';
+function loadFromLocalStorage() {
+  try { return JSON.parse(localStorage.getItem(LS_KEY)) || []; } catch(e) { return []; }
+}
+function saveToLocalStorage(game) {
+  const games = loadFromLocalStorage(); games.unshift(game); saveAllToLocalStorage(games);
+}
+function saveAllToLocalStorage(games) {
+  localStorage.setItem(LS_KEY, JSON.stringify(games));
 }
 
 // ─────────────────────────────────────────────
@@ -692,44 +753,30 @@ function downloadUploadedGame(index) {
 // ─────────────────────────────────────────────
 function readFileAsText(file) {
   return new Promise(function(resolve, reject) {
-    var reader = new FileReader();
-    reader.onload = function(e) { resolve(e.target.result); };
-    reader.onerror = function() { reject(new Error('Failed to read file.')); };
+    const reader = new FileReader();
+    reader.onload = e => resolve(e.target.result);
+    reader.onerror = () => reject(new Error('Failed to read file.'));
     reader.readAsText(file);
   });
 }
-
 function createBlobUrl(content, mimeType) {
-  var blob = new Blob([content], { type: mimeType });
-  return URL.createObjectURL(blob);
+  return URL.createObjectURL(new Blob([content], { type: mimeType }));
 }
-
 function triggerDownload(content, filename, mimeType) {
-  var url = createBlobUrl(content, mimeType);
-  var a = document.createElement('a');
-  a.href = url;
-  a.download = filename;
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
-  setTimeout(function() { URL.revokeObjectURL(url); }, 10000);
+  const url = createBlobUrl(content, mimeType);
+  const a = document.createElement('a');
+  a.href = url; a.download = filename;
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  setTimeout(() => URL.revokeObjectURL(url), 10000);
 }
-
 function sanitizeFilename(name) {
   return name.replace(/[^a-z0-9_\-\s]/gi, '').replace(/\s+/g, '-').toLowerCase() || 'game';
 }
-
 function escHtml(str) {
-  return String(str)
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#39;');
+  return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
 }
-
 function escJs(str) {
-  return String(str).replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+  return String(str).replace(/\\/g,'\\\\').replace(/'/g,"\\'");
 }
 
 // ─────────────────────────────────────────────
