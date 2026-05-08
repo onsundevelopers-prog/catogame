@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Catagame Admin</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Inter:wght@400;600;700&display=swap');
+    :root {
+      --bg: #fdf3e7; --card-bg: #fffaf4; --accent: #feeacf;
+      --border: #4d3529; --text: #2c1a0e; --muted: #7a5c47;
+      --card-shadow: 6px 6px 0px #291b14; --hover-shadow: 10px 10px 0px #291b14;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); }
+    header {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 14px 6%; border-bottom: 3px solid var(--border);
+      background: var(--card-bg); position: sticky; top: 0; z-index: 100;
+    }
+    .logo { font-family: 'Playfair Display', serif; font-weight: 900; font-size: 20px; color: var(--border); text-decoration: none; }
+    .admin-badge { background: var(--border); color: white; font-size: 11px; font-weight: 700; padding: 4px 10px; border-radius: 20px; letter-spacing: 1px; }
+    main { max-width: 1100px; margin: 0 auto; padding: 40px 6% 80px; }
+    h2 { font-family: 'Playfair Display', serif; font-size: 1.6rem; color: var(--border); margin-bottom: 20px; }
+    .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 40px; }
+    @media (max-width: 700px) { .grid { grid-template-columns: 1fr; } }
+    .card { background: var(--card-bg); border: 3px solid var(--border); border-radius: 12px; padding: 24px; box-shadow: var(--card-shadow); }
+    .card h3 { font-family: 'Playfair Display', serif; font-size: 1.1rem; color: var(--border); margin-bottom: 16px; }
+    label { display: block; font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: var(--muted); margin-bottom: 6px; margin-top: 14px; }
+    label:first-child { margin-top: 0; }
+    input, textarea, select {
+      width: 100%; padding: 10px 14px; border: 2.5px solid var(--border);
+      border-radius: 6px; font-family: 'Inter', sans-serif; font-size: 14px;
+      background: var(--bg); color: var(--text); outline: none;
+    }
+    textarea { resize: vertical; min-height: 80px; }
+    .btn {
+      display: inline-block; padding: 11px 24px; font-family: 'Inter', sans-serif;
+      font-weight: 700; font-size: 14px; border: 2.5px solid var(--border);
+      border-radius: 6px; cursor: pointer; transition: all 0.15s;
+      box-shadow: var(--card-shadow); background: var(--border); color: white;
+      margin-top: 14px; width: 100%;
+    }
+    .btn:hover { box-shadow: var(--hover-shadow); transform: translate(-2px,-2px); }
+    .btn-secondary { background: var(--accent); color: var(--border); }
+    .btn-danger { background: #dc3545; border-color: #bd2130; box-shadow: 6px 6px 0 #bd2130; }
+    .msg { padding: 12px 16px; border-radius: 6px; font-weight: 700; font-size: 14px; margin-top: 12px; }
+    .msg-ok { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+    .msg-err { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+    .stat-row { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid var(--accent); font-size: 14px; }
+    .stat-row:last-child { border-bottom: none; }
+    .stat-val { font-weight: 700; color: var(--border); }
+    #insights-output { background: var(--bg); border: 2px solid var(--border); border-radius: 8px; padding: 16px; font-size: 14px; line-height: 1.7; white-space: pre-wrap; min-height: 120px; margin-top: 12px; color: var(--text); }
+    .lock-screen { position: fixed; inset: 0; background: var(--bg); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 9999; gap: 16px; }
+    .lock-screen h1 { font-family: 'Playfair Display', serif; font-size: 2rem; color: var(--border); }
+    .lock-screen input { max-width: 320px; text-align: center; letter-spacing: 3px; font-size: 18px; }
+    .lock-screen .btn { max-width: 320px; }
+    .lock-screen .err { color: #dc3545; font-size: 14px; font-weight: 700; }
+  </style>
+</head>
+<body>
+
+<!-- Lock screen -->
+<div class="lock-screen" id="lock-screen">
+  <h1>Admin Access</h1>
+  <p style="color:var(--muted);font-size:14px;">Enter your admin code to continue</p>
+  <input type="password" id="admin-code-input" placeholder="Admin code" autocomplete="off">
+  <button class="btn" onclick="unlockAdmin()">Unlock</button>
+  <span class="err" id="lock-err"></span>
+</div>
+
+<header>
+  <a class="logo" href="/index.html">Catagame</a>
+  <span class="admin-badge">ADMIN</span>
+</header>
+
+<main>
+
+  <!-- Catabux Donation -->
+  <h2>Catabux Donation</h2>
+  <div class="grid">
+    <div class="card">
+      <h3>Broadcast Catabux to All Users</h3>
+      <p style="font-size:13px;color:var(--muted);margin-bottom:16px;">
+        Sets a "global bonus" in Supabase. Every user who visits will receive this amount added to their balance (once per bonus event).
+      </p>
+      <label>Amount to give everyone</label>
+      <input type="number" id="donate-amount" placeholder="e.g. 500" min="1">
+      <label>Message (shown to users)</label>
+      <input type="text" id="donate-message" placeholder="e.g. Happy New Year from OnSun!">
+      <button class="btn" onclick="broadcastCatabux()">Broadcast Catabux</button>
+      <div id="donate-msg"></div>
+    </div>
+
+    <div class="card">
+      <h3>Current Broadcast Status</h3>
+      <div id="broadcast-status"><p style="color:var(--muted);font-size:14px;">Loading...</p></div>
+      <button class="btn btn-secondary" onclick="loadBroadcastStatus()" style="margin-top:16px;">Refresh</button>
+      <button class="btn btn-danger" onclick="clearBroadcast()" style="margin-top:8px;">Clear Active Broadcast</button>
+      <div id="clear-msg"></div>
+    </div>
+  </div>
+
+  <!-- Analytics Overview -->
+  <h2>Analytics Overview</h2>
+  <div class="grid">
+    <div class="card">
+      <h3>Local Session Stats</h3>
+      <div id="local-stats"><p style="color:var(--muted);font-size:14px;">Loading...</p></div>
+    </div>
+    <div class="card">
+      <h3>Supabase Data</h3>
+      <div id="supabase-stats"><p style="color:var(--muted);font-size:14px;">Loading...</p></div>
+    </div>
+  </div>
+
+  <!-- AI Insights -->
+  <h2>AI Insights</h2>
+  <div class="card" style="margin-bottom:40px;">
+    <h3>Generate & Email Insights Report</h3>
+    <p style="font-size:13px;color:var(--muted);margin-bottom:16px;">
+      Uses Gemini AI to analyze collected analytics data and sends a summary to onsundevelopers@gmail.com.
+    </p>
+    <label>Report Type</label>
+    <select id="report-type">
+      <option value="weekly">Weekly Summary</option>
+      <option value="games">Game Performance</option>
+      <option value="users">User Behavior</option>
+      <option value="revenue">Catabux Economy</option>
+    </select>
+    <button class="btn" onclick="generateInsights()">Generate & Send Report</button>
+    <button class="btn btn-secondary" onclick="generateInsights(true)" style="margin-top:8px;">Preview Only (no email)</button>
+    <div id="insights-output">Report will appear here...</div>
+    <div id="insights-msg"></div>
+  </div>
+
+</main>
+
+<script>
+const SUPABASE_URL = 'https://psydvmqkeenwuxvmdrgj.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_4SLqZQElvgeuG2ZYp88uQw_Z8xg0xrg';
+const GEMINI_KEY = 'AIzaSyAxYpHbZI0563uroePgpX9Se34am-sgn48';
+const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+// ─── Admin unlock ───
+const ADMIN_HASH = '7acbacc14acd7c10d3b08c8dd95ad3d3d0a0807a38c5791ec237e783f54e7a69'; // same as creator code
+
+async function sha256(str) {
+  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(str));
+  return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2,'0')).join('');
+}
+
+async function unlockAdmin() {
+  const code = document.getElementById('admin-code-input').value.trim().toUpperCase();
+  const hash = await sha256(code);
+  if (hash === ADMIN_HASH) {
+    localStorage.setItem('catagame_admin', hash);
+    document.getElementById('lock-screen').style.display = 'none';
+    initAdmin();
+  } else {
+    document.getElementById('lock-err').textContent = 'Wrong code.';
+  }
+}
+
+// Check if already unlocked
+(async function() {
+  const stored = localStorage.getItem('catagame_admin');
+  if (stored === ADMIN_HASH) {
+    document.getElementById('lock-screen').style.display = 'none';
+    initAdmin();
+  }
+  // Also allow Enter key
+  document.getElementById('admin-code-input').addEventListener('keydown', e => {
+    if (e.key === 'Enter') unlockAdmin();
+  });
+})();
+
+function initAdmin() {
+  loadLocalStats();
+  loadSupabaseStats();
+  loadBroadcastStatus();
+}
+
+// ─── Catabux Broadcast ───
+async function broadcastCatabux() {
+  const amount = parseInt(document.getElementById('donate-amount').value);
+  const message = document.getElementById('donate-message').value.trim();
+  const msgEl = document.getElementById('donate-msg');
+
+  if (!amount || amount < 1) {
+    msgEl.innerHTML = '<div class="msg msg-err">Enter a valid amount.</div>'; return;
+  }
+
+  const broadcastId = 'broadcast_' + Date.now();
+  const payload = { id: broadcastId, amount, message: message || 'Gift from OnSun!', created_at: new Date().toISOString(), active: true };
+
+  try {
+    // Try Supabase first
+    const { error } = await sb.from('catabux_broadcasts').insert(payload);
+    if (error) throw error;
+    msgEl.innerHTML = '<div class="msg msg-ok">Broadcast saved to Supabase! All users will receive ' + amount.toLocaleString() + ' Catabux on next visit.</div>';
+  } catch(e) {
+    // Fallback: store in a public localStorage key that other tabs can read
+    // (works for same-device testing; for cross-device you need the DB)
+    localStorage.setItem('catagame_broadcast', JSON.stringify(payload));
+    msgEl.innerHTML = '<div class="msg msg-ok">Broadcast saved locally (Supabase table not set up yet). Works on this device. Run supabase-setup.sql for cross-device support.</div>';
+  }
+  loadBroadcastStatus();
+}
+
+async function loadBroadcastStatus() {
+  const el = document.getElementById('broadcast-status');
+  try {
+    const { data, error } = await sb.from('catabux_broadcasts').select('*').eq('active', true).order('created_at', { ascending: false }).limit(1);
+    if (error || !data || data.length === 0) throw new Error('none');
+    const b = data[0];
+    el.innerHTML = `
+      <div class="stat-row"><span>Amount</span><span class="stat-val">${b.amount.toLocaleString()} Catabux</span></div>
+      <div class="stat-row"><span>Message</span><span class="stat-val">${b.message}</span></div>
+      <div class="stat-row"><span>Created</span><span class="stat-val">${new Date(b.created_at).toLocaleString()}</span></div>
+      <div class="stat-row"><span>Status</span><span class="stat-val" style="color:#28a745;">Active</span></div>
+    `;
+  } catch(e) {
+    const local = localStorage.getItem('catagame_broadcast');
+    if (local) {
+      const b = JSON.parse(local);
+      el.innerHTML = `<div class="stat-row"><span>Amount (local)</span><span class="stat-val">${b.amount.toLocaleString()} Catabux</span></div><div class="stat-row"><span>Message</span><span class="stat-val">${b.message}</span></div>`;
+    } else {
+      el.innerHTML = '<p style="color:var(--muted);font-size:14px;">No active broadcast.</p>';
+    }
+  }
+}
+
+async function clearBroadcast() {
+  try {
+    await sb.from('catabux_broadcasts').update({ active: false }).eq('active', true);
+  } catch(e) {}
+  localStorage.removeItem('catagame_broadcast');
+  document.getElementById('clear-msg').innerHTML = '<div class="msg msg-ok">Broadcast cleared.</div>';
+  loadBroadcastStatus();
+}
+
+// ─── Local Stats ───
+function loadLocalStats() {
+  const el = document.getElementById('local-stats');
+  const prefs = JSON.parse(localStorage.getItem('catagame_preferences') || '{}');
+  const events = JSON.parse(localStorage.getItem('catagame_events') || '[]');
+  const rewards = JSON.parse(localStorage.getItem('game_rewards') || '{}');
+  const totalCatabux = parseInt(localStorage.getItem('catabux')) || 0;
+  const userId = localStorage.getItem('catagame_user_id') || 'unknown';
+  const gamesPlayed = Object.keys(rewards).length;
+
+  el.innerHTML = `
+    <div class="stat-row"><span>Your Catabux</span><span class="stat-val">${totalCatabux.toLocaleString()}</span></div>
+    <div class="stat-row"><span>User ID</span><span class="stat-val" style="font-size:11px;">${userId.substr(0,20)}...</span></div>
+    <div class="stat-row"><span>Games Played</span><span class="stat-val">${gamesPlayed}</span></div>
+    <div class="stat-row"><span>Events Tracked</span><span class="stat-val">${events.length}</span></div>
+    <div class="stat-row"><span>Purchased Items</span><span class="stat-val">${JSON.parse(localStorage.getItem('purchased_items')||'[]').length}</span></div>
+  `;
+}
+
+// ─── Supabase Stats ───
+async function loadSupabaseStats() {
+  const el = document.getElementById('supabase-stats');
+  try {
+    const [likes, comments, games] = await Promise.all([
+      sb.from('likes').select('id', { count: 'exact', head: true }),
+      sb.from('comments').select('id', { count: 'exact', head: true }),
+      sb.from('uploaded_games').select('id, status', { count: 'exact' })
+    ]);
+    const pending = games.data ? games.data.filter(g => g.status === 'pending_review').length : 0;
+    const approved = games.data ? games.data.filter(g => g.status === 'approved').length : 0;
+    el.innerHTML = `
+      <div class="stat-row"><span>Total Likes</span><span class="stat-val">${likes.count || 0}</span></div>
+      <div class="stat-row"><span>Total Comments</span><span class="stat-val">${comments.count || 0}</span></div>
+      <div class="stat-row"><span>Uploaded Games</span><span class="stat-val">${games.count || 0}</span></div>
+      <div class="stat-row"><span>Pending Review</span><span class="stat-val" style="color:#856404;">${pending}</span></div>
+      <div class="stat-row"><span>Approved Games</span><span class="stat-val" style="color:#155724;">${approved}</span></div>
+    `;
+  } catch(e) {
+    el.innerHTML = '<p style="color:var(--muted);font-size:14px;">Could not load Supabase stats. Run supabase-setup.sql first.</p>';
+  }
+}
+
+// ─── AI Insights ───
+async function generateInsights(previewOnly = false) {
+  const reportType = document.getElementById('report-type').value;
+  const output = document.getElementById('insights-output');
+  const msgEl = document.getElementById('insights-msg');
+  output.textContent = 'Generating insights with Gemini AI...';
+  msgEl.innerHTML = '';
+
+  // Gather all available data
+  const rewards = JSON.parse(localStorage.getItem('game_rewards') || '{}');
+  const purchased = JSON.parse(localStorage.getItem('purchased_items') || '[]');
+  const totalCatabux = parseInt(localStorage.getItem('catabux')) || 0;
+  const usedCodes = JSON.parse(localStorage.getItem('usedCodes') || '[]');
+  const localGames = JSON.parse(localStorage.getItem('uploaded_games_local') || '[]');
+
+  let supabaseData = {};
+  try {
+    const [likes, comments, games] = await Promise.all([
+      sb.from('likes').select('game_id'),
+      sb.from('comments').select('game_id, created_at'),
+      sb.from('uploaded_games').select('name, category, status, created_at')
+    ]);
+    supabaseData = {
+      likes: likes.data || [],
+      comments: comments.data || [],
+      uploadedGames: games.data || []
+    };
+  } catch(e) {}
+
+  // Build data summary for Gemini
+  const dataSummary = `
+CATAGAME ANALYTICS REPORT — ${new Date().toLocaleDateString()}
+Report Type: ${reportType}
+
+=== CATABUX ECONOMY ===
+Total Catabux (this session): ${totalCatabux.toLocaleString()}
+Codes Redeemed: ${usedCodes.length}
+Shop Items Purchased: ${purchased.join(', ') || 'none'}
+
+=== GAME ENGAGEMENT ===
+Games with play data: ${Object.keys(rewards).length}
+Game details: ${JSON.stringify(rewards, null, 2)}
+
+=== COMMUNITY ===
+Uploaded Games (local): ${localGames.length}
+Supabase Likes: ${supabaseData.likes?.length || 0}
+Supabase Comments: ${supabaseData.comments?.length || 0}
+Uploaded Games (DB): ${supabaseData.uploadedGames?.length || 0}
+Game categories: ${[...new Set(supabaseData.uploadedGames?.map(g => g.category))].join(', ') || 'n/a'}
+
+=== MOST LIKED GAMES ===
+${JSON.stringify(
+  Object.entries(
+    (supabaseData.likes || []).reduce((acc, l) => { acc[l.game_id] = (acc[l.game_id]||0)+1; return acc; }, {})
+  ).sort((a,b) => b[1]-a[1]).slice(0,5)
+)}
+  `.trim();
+
+  const prompt = `You are an analytics AI for Catagame, a browser gaming platform. Analyze this data and write a concise, actionable ${reportType} insights report for the platform owner (OnSun). Focus on what's working, what needs attention, and 3 specific recommendations. Be direct and data-driven. Keep it under 400 words.
+
+DATA:
+${dataSummary}`;
+
+  try {
+    const res = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=' + GEMINI_KEY, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
+    });
+    const data = await res.json();
+    const report = data.candidates?.[0]?.content?.parts?.[0]?.text || 'No response from AI.';
+    output.textContent = report;
+
+    if (!previewOnly) {
+      await sendInsightsEmail(reportType, report, dataSummary);
+      msgEl.innerHTML = '<div class="msg msg-ok">Report generated and emailed to onsundevelopers@gmail.com</div>';
+    } else {
+      msgEl.innerHTML = '<div class="msg msg-ok">Preview generated (not emailed).</div>';
+    }
+  } catch(e) {
+    output.textContent = 'Error: ' + e.message;
+    msgEl.innerHTML = '<div class="msg msg-err">AI generation failed: ' + e.message + '</div>';
+  }
+}
+
+async function sendInsightsEmail(reportType, report, rawData) {
+  if (!window.emailjs) {
+    await new Promise((resolve, reject) => {
+      const s = document.createElement('script');
+      s.src = 'https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js';
+      s.onload = resolve; s.onerror = reject;
+      document.head.appendChild(s);
+    });
+    emailjs.init('SO55TqC_tt33X30Qn');
+  }
+  await emailjs.send('service_6c3aei8', 'template_bps5scb', {
+    to_email: 'onsundevelopers@gmail.com',
+    item_name: 'AI Insights Report: ' + reportType.charAt(0).toUpperCase() + reportType.slice(1),
+    item_price: 0,
+    remaining_catabux: 0,
+    purchase_time: new Date().toLocaleString(),
+    user_info: report + '\n\n--- RAW DATA ---\n' + rawData.substring(0, 1000)
+  });
+}
+</script>
+</body>
+</html>

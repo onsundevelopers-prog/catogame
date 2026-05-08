@@ -17,6 +17,21 @@ CREATE TABLE IF NOT EXISTS likes (
 );
 
 -- ─────────────────────────────────────────────
+-- Catabux Broadcasts table (admin donations to all users)
+-- ─────────────────────────────────────────────
+CREATE TABLE IF NOT EXISTS catabux_broadcasts (
+  id TEXT PRIMARY KEY,
+  amount INTEGER NOT NULL,
+  message TEXT DEFAULT 'Gift from OnSun!',
+  active BOOLEAN DEFAULT true,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+ALTER TABLE catabux_broadcasts ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Anyone can read broadcasts" ON catabux_broadcasts FOR SELECT USING (true);
+CREATE POLICY "Anyone can insert broadcasts" ON catabux_broadcasts FOR INSERT WITH CHECK (true);
+CREATE POLICY "Anyone can update broadcasts" ON catabux_broadcasts FOR UPDATE USING (true);
+
+-- ─────────────────────────────────────────────
 -- Create uploaded_games table (for Game Portal)
 -- ─────────────────────────────────────────────
 CREATE TABLE IF NOT EXISTS uploaded_games (

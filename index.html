@@ -1515,6 +1515,7 @@
             <a href="#" onclick="showTopPlayed(event)">Top Played</a>
             <a href="game-portal.html">Upload / Download</a>
             <a href="#" id="game-creator-link" style="display: none; cursor: pointer;" onclick="goToGameCreator(event)">Create Game</a>
+            <a href="admin.html" id="admin-link" style="display: none; cursor: pointer; color: var(--border); font-weight: 900;">Admin</a>
         </nav>
         <div class="header-right">
             <div class="search-bar">
@@ -1778,6 +1779,71 @@
                 });
             });
         });
+
+        // ─── Catabux Broadcast Receiver ───
+        // Checks for active broadcasts from admin and gives users their Catabux
+        (async function checkBroadcast() {
+            const SUPABASE_URL = 'https://psydvmqkeenwuxvmdrgj.supabase.co';
+            const SUPABASE_KEY = 'sb_publishable_4SLqZQElvgeuG2ZYp88uQw_Z8xg0xrg';
+            const receivedKey = 'catagame_received_broadcasts';
+            const received = JSON.parse(localStorage.getItem(receivedKey) || '[]');
+
+            // Check Supabase for active broadcasts
+            try {
+                const sb = window.supabaseClient || window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+                const { data } = await sb.from('catabux_broadcasts')
+                    .select('*').eq('active', true)
+                    .order('created_at', { ascending: false });
+
+                if (data && data.length > 0) {
+                    data.forEach(broadcast => {
+                        if (!received.includes(broadcast.id)) {
+                            const current = getCatabux();
+                            setCatabux(current + broadcast.amount);
+                            received.push(broadcast.id);
+                            localStorage.setItem(receivedKey, JSON.stringify(received));
+                            // Show notification
+                            showBroadcastNotification(broadcast.amount, broadcast.message);
+                        }
+                    });
+                }
+            } catch(e) {
+                // Fallback: check localStorage broadcast (same-device admin)
+                const local = localStorage.getItem('catagame_broadcast');
+                if (local) {
+                    const broadcast = JSON.parse(local);
+                    if (broadcast.active && !received.includes(broadcast.id)) {
+                        const current = getCatabux();
+                        setCatabux(current + broadcast.amount);
+                        received.push(broadcast.id);
+                        localStorage.setItem(receivedKey, JSON.stringify(received));
+                        showBroadcastNotification(broadcast.amount, broadcast.message);
+                    }
+                }
+            }
+        })();
+
+        function showBroadcastNotification(amount, message) {
+            const notif = document.createElement('div');
+            notif.style.cssText = `
+                position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%);
+                background: var(--card-bg); border: 3px solid var(--border);
+                border-radius: 16px; padding: 20px 28px; box-shadow: var(--hover-shadow);
+                z-index: 99999; text-align: center; max-width: 340px; width: 90%;
+                animation: slideUp 0.4s ease;
+            `;
+            notif.innerHTML = `
+                <div style="font-family:'Playfair Display',serif;font-size:18px;font-weight:900;color:var(--border);margin-bottom:6px;">Gift from OnSun!</div>
+                <div style="font-size:24px;font-weight:700;color:var(--border);margin-bottom:6px;">+${amount.toLocaleString()} Catabux</div>
+                <div style="font-size:13px;color:var(--muted);">${message}</div>
+            `;
+            document.body.appendChild(notif);
+            setTimeout(() => {
+                notif.style.opacity = '0';
+                notif.style.transition = 'opacity 0.5s';
+                setTimeout(() => notif.remove(), 500);
+            }, 5000);
+        }
 
         // Nav link functions
         window.browseGames = function(e) {
@@ -2247,6 +2313,11 @@
                 if (!link) { setTimeout(checkGameCreatorLink, 100); return; }
                 const purchasedItems = JSON.parse(localStorage.getItem('purchased_items') || '[]');
                 if (purchasedItems.includes('game-creator')) link.style.display = 'inline-block';
+                // Show admin link if admin is unlocked
+                const adminLink = document.getElementById('admin-link');
+                if (adminLink && localStorage.getItem('catagame_admin') === '7acbacc14acd7c10d3b08c8dd95ad3d3d0a0807a38c5791ec237e783f54e7a69') {
+                    adminLink.style.display = 'inline-block';
+                }
             };
             checkGameCreatorLink();
 
