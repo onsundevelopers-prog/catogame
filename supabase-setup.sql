@@ -28,11 +28,16 @@ CREATE TABLE IF NOT EXISTS uploaded_games (
   storage_path TEXT NOT NULL,
   uploader_id TEXT NOT NULL,
   play_count INTEGER DEFAULT 0,
-  status TEXT DEFAULT 'pending_review',  -- pending_review | approved | rejected
-  review_token TEXT,                      -- secret token for admin review link
+  status TEXT DEFAULT 'pending_review',
+  review_token TEXT,
   reject_reason TEXT,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
+
+-- Add missing columns if table already exists (run these if you get 400 errors)
+ALTER TABLE uploaded_games ADD COLUMN IF NOT EXISTS status TEXT DEFAULT 'pending_review';
+ALTER TABLE uploaded_games ADD COLUMN IF NOT EXISTS review_token TEXT;
+ALTER TABLE uploaded_games ADD COLUMN IF NOT EXISTS reject_reason TEXT;
 
 -- Enable Row Level Security
 ALTER TABLE comments ENABLE ROW LEVEL SECURITY;

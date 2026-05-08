@@ -1028,9 +1028,9 @@
             position: absolute;
             top: 20px;
             left: 20px;
-            background: rgba(0,0,0,0.5);
+            background: rgba(0,0,0,0.6);
             color: white;
-            border: none;
+            border: 2px solid rgba(255,255,255,0.5);
             padding: 10px 20px;
             border-radius: 20px;
             font-weight: 700;
@@ -1039,6 +1039,8 @@
             z-index: 10;
             backdrop-filter: blur(10px);
             pointer-events: auto;
+            min-height: 44px;
+            min-width: 44px;
         }
 
         .pause-btn {
@@ -1533,7 +1535,10 @@
     <!-- Hero Banner -->
     <div class="hero-banner" id="featured-game">
         <div class="hero-banner-bg">
-            <img src="assets/PasswordGame.png" alt="Featured Game">
+            <picture>
+                <source srcset="assets/PasswordGame.png" type="image/png">
+                <img src="assets/PasswordGame.png" alt="Featured Game: The Homework Game" loading="eager" fetchpriority="high" width="1200" height="420">
+            </picture>
             <div class="hero-banner-overlay"></div>
         </div>
         <div class="hero-banner-content">
@@ -2092,21 +2097,7 @@
             const mobileBtn = document.getElementById('mobile-play-btn');
             const scrollContainer = document.getElementById('mobile-scroll-container');
 
-            console.log('Initializing Play on Scroll...');
-            console.log('Button:', mobileBtn);
-            console.log('Container:', scrollContainer);
-
-            if (!mobileBtn) {
-                console.error('Mobile play button not found!');
-                return;
-            }
-
-            if (!scrollContainer) {
-                console.error('Scroll container not found!');
-                return;
-            }
-
-            // Remove any existing event listeners by cloning the button
+            if (!mobileBtn || !scrollContainer) return;            // Remove any existing event listeners by cloning the button
             const newBtn = mobileBtn.cloneNode(true);
             mobileBtn.parentNode.replaceChild(newBtn, mobileBtn);
 
@@ -2135,7 +2126,7 @@
                     slide.className = 'game-slide';
                     slide.setAttribute('data-game-id', game.id);
                     slide.innerHTML = `
-                        <button class="close-scroll-overlay" onclick="closeMobileScroll()"> Close</button>
+                        <button class="close-scroll-overlay" onclick="closeMobileScroll()" aria-label="Close game viewer">Close</button>
                         <button class="pause-btn">
                             <svg viewBox="0 0 24 24">
                                 <rect x="6" y="4" width="4" height="16"></rect>
@@ -2223,7 +2214,9 @@
 
                 scrollContainer.classList.add('active');
                 document.body.style.overflow = 'hidden';
-                console.log('Scroll container activated!');
+                // Focus the close button for keyboard accessibility
+                const closeBtn = scrollContainer.querySelector('.close-scroll-overlay');
+                if (closeBtn) closeBtn.focus();
             });
 
             console.log('Event listener attached to button');
@@ -2236,34 +2229,31 @@
             document.body.style.overflow = '';
         };
 
+        // Escape key closes any open overlay
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                const sc = document.getElementById('mobile-scroll-container');
+                if (sc && sc.classList.contains('active')) window.closeMobileScroll();
+                if (window.closeComments) window.closeComments();
+                if (window.closeRedeemModal) window.closeRedeemModal();
+            }
+        });
+
         // Initialize mobile feature
         document.addEventListener('DOMContentLoaded', () => {
-            console.log('DOM Content Loaded');
-            console.log('Games array:', games);
-            
             // Check if user has purchased Game Creator Access
             const checkGameCreatorLink = () => {
                 const link = document.getElementById('game-creator-link');
-                if (!link) {
-                    setTimeout(checkGameCreatorLink, 100);
-                    return;
-                }
-                
+                if (!link) { setTimeout(checkGameCreatorLink, 100); return; }
                 const purchasedItems = JSON.parse(localStorage.getItem('purchased_items') || '[]');
-                if (purchasedItems.includes('game-creator')) {
-                    link.style.display = 'inline-block';
-                }
+                if (purchasedItems.includes('game-creator')) link.style.display = 'inline-block';
             };
             checkGameCreatorLink();
-            
-            // No need to initialize - Supabase handles data storage
 
-            // Initialize for all devices (remove mobile check for testing)
             try {
                 initMobileScrollPlay();
-                console.log('initMobileScrollPlay completed');
             } catch (error) {
-                console.error('Error initializing:', error);
+                // silent fail — scroll-to-play is non-critical
             }
             
             // Allow Enter key to redeem
