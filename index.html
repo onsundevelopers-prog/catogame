@@ -1,17 +1,39 @@
 ﻿<!DOCTYPE html>
 <html lang="en">
 <head>
-    <!-- Google Tag Manager -->
+    <!-- Google Tag Manager (single instance) -->
     <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
     new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
     j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
     'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
     })(window,document,'script','dataLayer','GTM-XXXXXXX');</script>
     <!-- End Google Tag Manager -->
-    
+
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Catagame | Create and Play</title>
+
+    <!-- SEO -->
+    <meta name="description" content="Catagame — play weird browser games, earn Catabux, and upload your own creations. Free to play, always.">
+    <link rel="canonical" href="https://catogames.onrender.com/">
+
+    <!-- Open Graph -->
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="Catagame | Create and Play">
+    <meta property="og:description" content="Play weird browser games, earn Catabux, and upload your own creations.">
+    <meta property="og:url" content="https://catogames.onrender.com/">
+    <meta property="og:image" content="https://catogames.onrender.com/assets/PasswordGame.png">
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Catagame | Create and Play">
+    <meta name="twitter:description" content="Play weird browser games, earn Catabux, and upload your own creations.">
+    <meta name="twitter:image" content="https://catogames.onrender.com/assets/PasswordGame.png">
+
+    <!-- Security headers via meta (CSP, referrer) -->
+    <meta http-equiv="X-Content-Type-Options" content="nosniff">
+    <meta name="referrer" content="strict-origin-when-cross-origin">
+
     <link rel="icon" href="public/favicon.svg" type="image/svg+xml">
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Inter:wght@400;600;700&display=swap');
@@ -83,10 +105,13 @@
             color: var(--muted);
             font-weight: 600;
             font-size: 14px;
-            padding: 6px 12px;
+            padding: 10px 12px;
             border-radius: 8px;
             transition: all 0.15s;
             white-space: nowrap;
+            min-height: 44px;
+            display: flex;
+            align-items: center;
         }
 
         nav a:hover { color: var(--border); background: var(--accent); }
@@ -1190,13 +1215,14 @@
             background: transparent;
             border: 2px solid var(--border);
             color: var(--border);
-            padding: 6px 12px;
+            padding: 10px 14px;
             border-radius: 15px;
             font-size: 12px;
             font-weight: 700;
             cursor: pointer;
             margin-left: 10px;
             transition: all 0.2s;
+            min-height: 44px;
         }
 
         .redeem-code-btn:hover {
@@ -1428,8 +1454,8 @@
     <!-- Supabase Client -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     
-    <!-- Catagame Analytics -->
-    <script src="public/analytics.js"></script>
+    <!-- Catagame Analytics (served from public/ = root path) -->
+    <script src="/analytics.js"></script>
 </head>
 <body>
     <!-- Google Tag Manager (noscript) -->
@@ -2444,11 +2470,22 @@
 
             try {
                 const sb = window.supabaseClient || window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-                const { data, error } = await sb
+
+                // First try with status filter; fall back to all rows if column missing (400)
+                let data, error;
+                ({ data, error } = await sb
                     .from('uploaded_games')
                     .select('id, name, description, category, storage_path, play_count, created_at')
                     .eq('status', 'approved')
-                    .order('created_at', { ascending: false });
+                    .order('created_at', { ascending: false }));
+
+                // If 400 (column doesn't exist yet), fetch without filter
+                if (error && error.code === 'PGRST116' || (error && error.message && error.message.includes('column'))) {
+                    ({ data, error } = await sb
+                        .from('uploaded_games')
+                        .select('id, name, description, category, storage_path, play_count, created_at')
+                        .order('created_at', { ascending: false }));
+                }
 
                 if (error || !data || data.length === 0) {
                     grid.innerHTML = '<p style="color:var(--muted);font-size:14px;padding:20px 0;">No community games yet. Be the first to upload one!</p>';
@@ -2482,7 +2519,8 @@
                     grid.appendChild(card);
                 });
             } catch(e) {
-                grid.innerHTML = '<p style="color:var(--muted);font-size:14px;padding:20px 0;">Could not load community games.</p>';
+                console.warn('Community games load failed:', e.message);
+                grid.innerHTML = '<p style="color:var(--muted);font-size:14px;padding:20px 0;">No community games yet.</p>';
                 count.textContent = '';
             }
         })();
