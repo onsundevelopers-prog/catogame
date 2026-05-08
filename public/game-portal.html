@@ -575,43 +575,64 @@ document.getElementById('upload-btn').addEventListener('click', async function()
       alert('Unsupported file type. Please upload a .html or .zip file.'); return;
     }
 
-    // 2. Upload to Supabase Storage
-    const storagePath = uploaderId + '/' + Date.now() + '_' + sanitizeFilename(name) + '.html';
-    const htmlBlob = new Blob([currentHtmlContent], { type: 'text/html' });
+    // Always create a local blob URL so Play Now works immediately
+    currentBlobUrl = createBlobUrl(currentHtmlContent, 'text/html');
 
-    const { error: storageError } = await sb.storage
-      .from(BUCKET)
-      .upload(storagePath, htmlBlob, { contentType: 'text/html', upsert: false });
+    // 2. Try Supabase Storage upload (non-blocking — falls back gracefully)
+    let storagePath = null;
+    let publicUrl = null;
+    let gameId = null;
+    const reviewToken = Math.random().toString(36).substr(2, 16) + Math.random().toString(36).substr(2, 16);
 
-    if (storageError) {
-      // If bucket doesn't exist yet, fall back to localStorage
-      if (storageError.message && storageError.message.includes('Bucket not found')) {
-        console.warn('Supabase Storage bucket not set up yet  falling back to localStorage');
-        saveToLocalStorage({ name, desc, category, fileName: currentFile.name, timestamp: Date.now(), htmlContent: currentHtmlContent });
-        currentBlobUrl = createBlobUrl(currentHtmlContent, 'text/html');
-        successBox.classList.add('visible');
-        renderUploadedGames();
-        return;
+    try {
+      storagePath = uploaderId + '/' + Date.now() + '_' + sanitizeFilename(name) + '.html';
+      const htmlBlob = new Blob([currentHtmlContent], { type: 'text/html' });
+      const { error: storageError } = await sb.storage
+        .from(BUCKET)
+        .upload(storagePath, htmlBlob, { contentType: 'text/html', upsert: false });
+
+      if (!storageError) {
+        const { data: urlData } = sb.storage.from(BUCKET).getPublicUrl(storagePath);
+        publicUrl = urlData?.publicUrl || null;
+        if (publicUrl) currentBlobUrl = publicUrl;
+      } else {
+        storagePath = null; // bucket not set up, use local only
       }
-      throw new Error('Storage upload failed: ' + storageError.message);
+    } catch(e) { storagePath = null; }
+
+    // 3. Try DB insert (non-blocking)
+    if (storagePath) {
+      try {
+        const { data: insertData, error: dbError } = await sb.from('uploaded_games').insert({
+          name, description: desc, category,
+          file_name: currentFile.name,
+          storage_path: storagePath,
+          uploader_id: uploaderId,
+          status: 'pending_review',
+          review_token: reviewToken
+        }).select('id').single();
+
+        if (!dbError && insertData) {
+          gameId = insertData.id;
+        }
+      } catch(e) { /* DB not set up yet — continue */ }
     }
 
-    // 3. Get public URL
-    const { data: urlData } = sb.storage.from(BUCKET).getPublicUrl(storagePath);
-    const publicUrl = urlData.publicUrl;
-    currentBlobUrl = publicUrl;
+    // 4. Always save to localStorage as backup
+    saveToLocalStorage({
+      name, desc, category,
+      fileName: currentFile.name,
+      timestamp: Date.now(),
+      htmlContent: currentHtmlContent,
+      storagePath,
+      publicUrl,
+      status: 'pending_review'
+    });
 
-    // 4. Save metadata to DB with pending_review status
-    const reviewToken = Math.random().toString(36).substr(2, 16) + Math.random().toString(36).substr(2, 16);
-    const { data: insertData, error: dbError } = await sb.from('uploaded_games').insert({
-      name, description: desc, category, file_name: currentFile.name,
-      storage_path: storagePath, uploader_id: uploaderId,
-      status: 'pending_review', review_token: reviewToken
-    }).select().single();
-    if (dbError) throw new Error('DB insert failed: ' + dbError.message);
-
-    // 5. Send review email via EmailJS
-    const reviewLink = window.location.origin + '/admin-review.html?id=' + insertData.id + '&token=' + reviewToken;
+    // 5. Always send review email (works even without DB)
+    const reviewLink = gameId
+      ? window.location.origin + '/admin-review.html?id=' + gameId + '&token=' + reviewToken
+      : window.location.origin + '/admin-review.html?local=1&name=' + encodeURIComponent(name) + '&url=' + encodeURIComponent(currentBlobUrl);
     await sendReviewEmail(name, desc, category, reviewLink);
 
     successBox.classList.add('visible');

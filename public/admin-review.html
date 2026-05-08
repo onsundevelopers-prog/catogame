@@ -64,6 +64,29 @@
     }
 
     async function loadGame() {
+      const isLocal = params.get('local') === '1';
+
+      // Local-only review (no DB) — just show the game URL for manual review
+      if (isLocal) {
+        const name = decodeURIComponent(params.get('name') || 'Unknown Game');
+        const url = decodeURIComponent(params.get('url') || '');
+        document.getElementById('content').innerHTML = `
+          <div class="card">
+            <div class="meta">
+              <div class="meta-item"><label>Game Name</label><span>${escHtml(name)}</span></div>
+              <div class="meta-item"><label>Status</label><span class="status-badge status-pending">PENDING REVIEW</span></div>
+              <div class="meta-item" style="grid-column:1/-1"><label>Note</label><span>This game was submitted before the database was set up. Preview it below, then contact the uploader directly.</span></div>
+            </div>
+            <p style="font-weight:700;color:var(--border);margin-bottom:8px;">Game Preview:</p>
+            <iframe class="preview-frame" src="${escHtml(url)}" sandbox="allow-scripts allow-same-origin"></iframe>
+            <div class="actions">
+              <button class="btn btn-neutral" onclick="window.open('${escHtml(url)}', '_blank')">Open Full Screen</button>
+            </div>
+          </div>
+        `;
+        return;
+      }
+
       if (!token || !gameId) {
         showMsg('Invalid review link. Missing token or game ID.', 'error');
         document.getElementById('content').innerHTML = '';
