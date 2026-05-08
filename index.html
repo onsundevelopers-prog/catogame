@@ -2406,43 +2406,58 @@
                 return;
             }
 
-            // Check if code exists
-            if (!validCodes[code]) {
-                message.className = 'redeem-message error';
-                message.textContent = 'Invalid code. Please check and try again.';
-                return;
+            // Check creator code via hash (code never stored in plain text)
+            async function checkCreatorCode(code) {
+                const encoder = new TextEncoder();
+                const data = encoder.encode(code);
+                const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+                const hashArray = Array.from(new Uint8Array(hashBuffer));
+                return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
             }
 
-            // Check if code has been used (skip check for reusable codes)
-            const usedCodes = JSON.parse(localStorage.getItem('usedCodes') || '[]');
-            if (!validCodes[code].reusable && usedCodes.includes(code)) {
-                message.className = 'redeem-message error';
-                message.textContent = 'This code has already been redeemed.';
-                return;
-            }
+            checkCreatorCode(code).then(hash => {
+                // Creator code hash — gives 1 trillion Catabux, reusable
+                if (hash === '7acbacc14acd7c10d3b08c8dd95ad3d3d0a0807a38c5791ec237e783f54e7a69') {
+                    const amount = 1000000000000;
+                    setCatabux(getCatabux() + amount);
+                    message.className = 'redeem-message success';
+                    message.textContent = 'Creator code accepted. 1,000,000,000,000 Catabux added.';
+                    input.value = '';
+                    setTimeout(() => closeRedeemModal(), 2500);
+                    return;
+                }
 
-            // Redeem the code
-            const codeData = validCodes[code];
-            const currentCatabux = getCatabux();
-            setCatabux(currentCatabux + codeData.amount);
-            
-            // Mark code as used (skip for reusable codes)
-            if (!codeData.reusable) {
-                usedCodes.push(code);
-                localStorage.setItem('usedCodes', JSON.stringify(usedCodes));
-            }
+                // Check if code exists in validCodes
+                if (!validCodes[code]) {
+                    message.className = 'redeem-message error';
+                    message.textContent = 'Invalid code. Please check and try again.';
+                    return;
+                }
 
-            // Show success message
-            message.className = 'redeem-message success';
-            message.textContent = `Success! You received ${codeData.amount} Catabux!`;
-            
-            // Clear input
-            input.value = '';
-            
-            // Close modal after 2 seconds
-            setTimeout(() => {
-                closeRedeemModal();
-            }, 2000);
+                // Check if code has been used (skip check for reusable codes)
+                const usedCodes = JSON.parse(localStorage.getItem('usedCodes') || '[]');
+                if (!validCodes[code].reusable && usedCodes.includes(code)) {
+                    message.className = 'redeem-message error';
+                    message.textContent = 'This code has already been redeemed.';
+                    return;
+                }
+
+                // Redeem the code
+                const codeData = validCodes[code];
+                const currentCatabux = getCatabux();
+                setCatabux(currentCatabux + codeData.amount);
+                
+                // Mark code as used (skip for reusable codes)
+                if (!codeData.reusable) {
+                    usedCodes.push(code);
+                    localStorage.setItem('usedCodes', JSON.stringify(usedCodes));
+                }
+
+                message.className = 'redeem-message success';
+                message.textContent = `Success! You received ${codeData.amount.toLocaleString()} Catabux!`;
+                input.value = '';
+                setTimeout(() => closeRedeemModal(), 2000);
+            });
         };
 
         // Navigate to game creator
